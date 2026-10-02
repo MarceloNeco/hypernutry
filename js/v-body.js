@@ -44,7 +44,7 @@
   var NUTL = [['kcal', 'Energia (kcal)', 'Energy (kcal)'], ['c', 'Carboidratos (g)', 'Carbs (g)'], ['sug', 'Açúcares totais (g)', 'Total sugars (g)'], ['sugAdd', 'Açúcares adicionados (g)', 'Added sugars (g)'], ['p', 'Proteínas (g)', 'Protein (g)'], ['f', 'Gorduras totais (g)', 'Total fat (g)'], ['sat', 'Gord. saturadas (g)', 'Saturated fat (g)'], ['fib', 'Fibras (g)', 'Fiber (g)'], ['na', 'Sódio (mg)', 'Sodium (mg)']];
   var SEM = { verde: ['Sem alertas relevantes', 'No relevant warnings'], amarelo: ['Atenção', 'Caution'], vermelho: ['Vários alertas', 'Several warnings'], cinza: ['Não consegui avaliar (faltam números)', 'Could not assess (numbers missing)'] };
   function showRotulo(r) {
-    var box = HN.q('#rotres'); if (!box) return; var a = r.avaliacao, mine = HN.perfil() ? (HN.perfil().restricoes || []) : [], cf = r.alergenos.concat(r.podeConter).map(function (x) { return x.replace('*', ''); }).filter(function (x) { return mine.indexOf(x) >= 0; });
+    var box = HN.q('#rotres'); if (!box) return; var a = r.avaliacao, mine = HN.restrAll(), cf = r.alergenos.concat(r.podeConter).map(function (x) { return x.replace('*', ''); }).filter(function (x) { return mine.indexOf(x) >= 0; });
     var h = '';
     if (cf.length) h += '<div class="notice bad" role="alert"><b>⚠️ ' + T('Conflita com o seu perfil:', 'Conflicts with your profile:') + ' ' + cf.map(HN.alergName).join(', ') + '</b><br>' + T('Não consuma sem conferir a embalagem.', 'Do not eat without checking the package.') + '</div>';
     h += '<div class="big-sem ' + a.nivel + '"><span class="sem ' + a.nivel + '" style="width:1.6rem;height:1.6rem"></span><span>' + HN.tt(SEM[a.nivel]) + '</span></div>';

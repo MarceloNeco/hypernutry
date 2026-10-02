@@ -123,7 +123,8 @@ Fonte: análises públicas de avaliações de 1 estrela (Unstar, Kimola, set/202
 
 ## Melhores práticas absorvidas (já no app ou no roteiro)
 - Já no app: base brasileira, semáforo ANVISA, perfis e alergias, registro rápido, modo sem números, cardápio + despensa + compras filtrados por eletrodomésticos, modo cozinheiro, exportar/apagar grátis.
-- Próximas (roteiro): código de barras com Open Food Facts; TACO completa; OCR hospedado no repositório; micronutrientes; foto do prato com conferência.
+- Feito na v0.2.0: TACO completa, micronutrientes, calculadora de calorias aberta sem cadastro, app em duas partes (LGPD só no acompanhamento).
+- Próximas (roteiro): código de barras com Open Food Facts; OCR hospedado no repositório; foto do prato com conferência.
 
 ## Fontes das reclamações
 - [Unstar — apps de calorias ranqueados por avaliações de 1 estrela (2026)](https://unstar.app/blog/calorie-tracking-apps-ranked-1-star-reviews-2026)

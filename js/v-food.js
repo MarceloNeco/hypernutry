@@ -4,7 +4,7 @@
   var S = HN.S, C = HN.calc, U = HN.ui, esc = HN.esc, T = HN.T, V = HN.views, A = HN.acts;
   var AL = { gluten: ['Glúten', 'Gluten'], leite: ['Leite', 'Milk'], ovo: ['Ovo', 'Egg'], castanhas: ['Castanhas', 'Tree nuts'], amendoim: ['Amendoim', 'Peanut'], soja: ['Soja', 'Soy'], peixe: ['Peixe', 'Fish'], crustaceo: ['Crustáceos', 'Shellfish'] };
   HN.alergName = function (a) { var k = a.replace('*', ''); return (AL[k] ? HN.tt(AL[k]) : k) + (a.indexOf('*') >= 0 ? '*' : ''); };
-  function myRestr() { var p = HN.perfil(); return (p && p.restricoes) || []; }
+  function myRestr() { return HN.restrAll ? HN.restrAll() : ((HN.perfil() || {}).restricoes || []); }
   function conflicts(f) {
     var r = myRestr(), out = [];
     f.allergens.forEach(function (a) { if (r.indexOf(a) >= 0) out.push(a); });
@@ -17,7 +17,7 @@
   /* ---------- Alimentos ---------- */
   function foodRows() {
     var q = HN.nrm(sUi.q).trim(), list = HN.foodList.filter(function (f) { return (!sUi.g || f.group === sUi.g) && (!q || HN.nrm(f.pt + ' ' + f.en).indexOf(q) >= 0); });
-    list.sort(function (a, b) { return HN.foodName(a) < HN.foodName(b) ? -1 : 1; });
+    list.sort(function (a, b) { if (!q && !sUi.g && !!a.taco !== !!b.taco) return a.taco ? 1 : -1; return HN.foodName(a) < HN.foodName(b) ? -1 : 1; });
     if (!list.length) return '<p class="muted">' + T('Nada encontrado. Tente outra palavra ou leia um rótulo para cadastrar o produto.', 'Nothing found. Try another word or read a label to add the product.') + '</p>';
     return '<div class="list">' + list.slice(0, 60).map(function (f) {
       var cf = conflicts(f);
@@ -28,7 +28,7 @@
     var h = U.title('🔎', T('Alimentos', 'Foods'), HN.foodBase.name + ' · ' + HN.foodList.length + ' ' + T('itens', 'items')) +
       '<input type="search" id="faq" data-in="faq" value="' + esc(sUi.q) + '" placeholder="' + T('Buscar alimento…', 'Search food…') + '" autocomplete="off">' +
       '<div class="chips mt mb" id="fgrp">' + groupChips() + '</div><div id="frows">' + foodRows() + '</div>' +
-      U.notice('info', T('Tabela de <b>referência</b> com valores arredondados (TACO/UNICAMP e tabelas de apoio). A importação da TACO/TBCA completa está no roadmap. Confira sempre dados importantes na fonte oficial.', 'A <b>reference</b> table with rounded values (TACO/UNICAMP and supporting tables). Full TACO/TBCA import is on the roadmap. Always check important data at the official source.'));
+      U.notice('info', T('Base: <b>TACO/UNICAMP</b> completa (591 itens) + referências com medidas caseiras. Valores por 100 g; o preparo e a marca mudam os números. Alérgenos dos itens TACO são estimados pelo nome: confira a embalagem.', 'Base: full <b>TACO/UNICAMP</b> (591 items) + references with household measures. Per 100 g; cooking and brand change numbers. Allergens of TACO items are estimated from the name: check the package.'));
     return h;
   };
   function groupChips() { var ks = Object.keys(HN.foodGroups); return '<button class="chip' + (!sUi.g ? ' on' : '') + '" data-act="fgrp" data-arg="">' + T('Todos', 'All') + '</button>' + ks.map(function (g) { return '<button class="chip' + (sUi.g === g ? ' on' : '') + '" data-act="fgrp" data-arg="' + g + '">' + HN.tt(HN.foodGroups[g]) + '</button>'; }).join(''); }

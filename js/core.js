@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.1.1';
+  HN.version = '0.2.0';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -76,7 +76,9 @@
 
   /* ---------- menu e busca ---------- */
   HN.nav = {
-    inicio: { r: '/', e: '🏠', pt: 'Início', en: 'Home', k: 'home inicio painel dashboard' },
+    calc: { r: '/', e: '🧮', pt: 'Calculadora de calorias', en: 'Calorie calculator', k: 'calculadora calorias calcular refeicao kcal macros home inicio calculator calories' },
+    acomp: { r: '/acomp', e: '🩺', pt: 'Meu acompanhamento', en: 'My follow-up', k: 'acompanhamento painel saude inicio dashboard follow-up' },
+    gostos: { r: '/gostos', e: '😋', pt: 'Gostos e cozinha', en: 'Tastes & kitchen', k: 'gostos preferencias nao gosto evito restricoes eletrodomesticos tastes preferences' },
     diario: { r: '/diario', e: '📝', pt: 'Diário', en: 'Diary', k: 'registrar refeição comi diario meal log food' },
     saciedade: { r: '/saciedade', e: '🥣', pt: 'Saciedade Raiz', en: 'Real Fullness', k: 'saciedade fome sustenta prato proteina fibra fullness hunger plate' },
     intuitivo: { r: '/intuitivo', e: '🧘', pt: 'Fome e emoções', en: 'Hunger & mood', k: 'intuitiva fome saciedade emocao gatilho mindful atencao plena intuitive eating' },
@@ -97,16 +99,20 @@
     sobre: { r: '/sobre', e: 'ℹ️', pt: 'Sobre e avisos legais', en: 'About & legal', k: 'sobre avisos legais lgpd termos cfn about legal privacy' }
   };
   HN.menuGroups = [
-    [['Principal', 'Main'], ['inicio', 'diario', 'saciedade', 'intuitivo']],
-    [['Números', 'Numbers'], ['metas', 'alimentos']],
-    [['Casa e cozinha', 'Home & kitchen'], ['planejar', 'despensa', 'compras', 'receitas']],
-    [['Pessoas', 'People'], ['familia', 'cozinheiro']],
-    [['Corpo e rótulos', 'Body & labels'], ['corpo', 'rotulos', 'tele']],
-    [['Plano', 'Plan'], ['planos']],
-    [['App', 'App'], ['ajuda', 'config', 'sobre']]
+    [['🧮 Calcular e cozinhar', '🧮 Calculate & cook'], ['calc', 'planejar', 'despensa', 'compras', 'receitas', 'alimentos', 'rotulos', 'saciedade', 'gostos', 'cozinheiro']],
+    [['🩺 Meu acompanhamento (saúde 🔒)', '🩺 My follow-up (health 🔒)'], ['acomp', 'diario', 'intuitivo', 'metas', 'corpo', 'familia', 'tele']],
+    [['App', 'App'], ['planos', 'ajuda', 'config', 'sobre']]
   ];
-  HN.defaultBar = ['inicio', 'diario', 'receitas', 'rotulos', 'planejar'];
-  HN.barIds = function () { var b = HN.cfg().bar; return (b && b.length ? b : HN.defaultBar).filter(function (i) { return HN.nav[i]; }).slice(0, 5); };
+  // a que parte cada tela pertence: A = calcular/cozinhar · B = acompanhamento (exige aceite LGPD) · C = comum
+  HN.navShort = { calc: ['Calcular', 'Calculate'], planejar: ['Cardápio', 'Menu'], receitas: ['Receitas', 'Recipes'], compras: ['Compras', 'Shopping'], rotulos: ['Rótulo', 'Label'], acomp: ['Início', 'Home'], diario: ['Diário', 'Diary'], intuitivo: ['Fome', 'Hunger'], corpo: ['Corpo', 'Body'], metas: ['Metas', 'Goals'], despensa: ['Despensa', 'Pantry'], alimentos: ['Alimentos', 'Foods'], saciedade: ['Saciedade', 'Fullness'], tele: ['Consulta', 'Consult'], familia: ['Família', 'Family'], gostos: ['Gostos', 'Tastes'], cozinheiro: ['Cozinheiro', 'Cook'] };
+  HN.partMap = { home: 'A', planejar: 'A', receitas: 'A', receita: 'A', alimentos: 'A', alimento: 'A', rotulos: 'A', saciedade: 'A', gostos: 'A', cozinheiro: 'A', acomp: 'B', diario: 'B', intuitivo: 'B', metas: 'B', familia: 'B', corpo: 'B', tele: 'B', wizard: 'B', boasvindas: 'B' };
+  HN.partOf = function (name) { return HN.partMap[name] || 'C'; };
+  var lastPart = 'A';
+  HN.curPart = function () { var p = HN.partOf(cur.name); if (p !== 'C') lastPart = p; return lastPart; };
+  HN.homeOf = function () { return HN.curPart() === 'B' ? '/acomp' : '/'; };
+  HN.defaultBars = { A: ['calc', 'planejar', 'receitas', 'compras', 'rotulos'], B: ['acomp', 'diario', 'intuitivo', 'corpo', 'metas'] };
+  HN.barIds = function (part) { part = part || HN.curPart(); var c = HN.cfg(), b = c.bars && c.bars[part]; return (b && b.length ? b : HN.defaultBars[part]).filter(function (i) { return HN.nav[i]; }).slice(0, 5); };
+  HN.setBar = function (part, list) { var c = HN.cfg(), o = c.bars || {}; o[part] = list ? list.slice(0, 5) : null; HN.setCfg({ bars: o }); };
 
   HN.searchIndex = function () {
     var out = [];
@@ -188,7 +194,7 @@
   var cur = { name: '', parts: [] }, guarded = false;
   HN.route = function () { return cur; };
   function parseHash() { var h = (location.hash || '#/').slice(1); var qi = h.indexOf('?'); var query = {}; if (qi >= 0) { h.slice(qi + 1).split('&').forEach(function (kv) { var p = kv.split('='); query[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || ''); }); h = h.slice(0, qi); } var parts = h.split('/').filter(Boolean); return { name: parts[0] || 'home', parts: parts, query: query }; }
-  function isTop(name) { if (name === 'home') return true; return HN.barIds().some(function (id) { return HN.nav[id].r.split('/')[1] === name; }); }
+  function isTop(name) { if (name === 'home' || name === 'acomp') return true; return HN.barIds('A').concat(HN.barIds('B')).some(function (id) { return HN.nav[id].r.split('/')[1] === name; }); }
   HN.go = function (route, opt) {
     opt = opt || {};
     var run = function () {
@@ -202,6 +208,13 @@
   };
   HN.render = function (keepScroll) {
     var r = parseHash(), name = r.name, view = HN.views[name];
+    if (HN.partOf(name) === 'B' && name !== 'boasvindas' && name !== 'wizard' && !HN.cfg().aceite) { // parte de saúde: exige aceite LGPD
+      try { history.replaceState({ r: '/boasvindas' }, '', '#/boasvindas'); } catch (e) { /* ignora */ }
+      r = parseHash(); name = r.name; view = HN.views[name];
+    } else if (HN.partOf(name) === 'B' && name !== 'boasvindas' && name !== 'wizard' && !HN.perfil() && HN.cfg().aceite) {
+      try { history.replaceState({ r: '/wizard/1' }, '', '#/wizard/1'); } catch (e) { /* ignora */ }
+      r = parseHash(); name = r.name; view = HN.views[name];
+    }
     if (!view) { name = 'home'; view = HN.views.home; r = { name: 'home', parts: ['home'], query: {} }; }
     cur = r; var app = HN.q('#app'), y = window.scrollY;
     var html; try { html = view(r.parts, r.query); } catch (e) { console.error(e); html = '<div class="notice bad">' + HN.T('Algo deu errado nesta tela. Volte ao Início.', 'Something went wrong on this screen. Go back Home.') + '</div>'; }
@@ -216,7 +229,7 @@
   var LOGO = '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22b573"/><stop offset="1" stop-color="#0b6b45"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lg)"/><path d="M18 46V18M18 32h14M32 18v28" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M38 30c0-10 8-15 16-15 0 9-5 16-16 15z" fill="#ffb55a"/></svg>';
   HN.logo = LOGO;
   HN.renderChrome = function () {
-    var T = HN.T, name = cur.name, hasProfile = !!HN.perfil() && (HN.cfg().aceite), inWizard = name === 'wizard' || name === 'boasvindas';
+    var T = HN.T, name = cur.name, hasProfile = true, inWizard = name === 'wizard' || name === 'boasvindas';
     var top = HN.q('#top');
     top.innerHTML =
       (inWizard || !hasProfile ? '' : '<button class="ib" data-act="menu" aria-label="Menu" aria-expanded="false" aria-haspopup="dialog">☰</button>') +
@@ -227,16 +240,18 @@
       '<button class="ib" data-act="go" data-arg="/config" aria-label="' + T('Configurações', 'Settings') + '">⚙️</button>' +
       '<button class="ib" data-act="home" aria-label="' + T('Início', 'Home') + '"' + (name === 'home' ? ' aria-current="page"' : '') + '>🏠</button>';
     var bn = HN.q('#bn');
+    var pn = HN.q('#parts');
+    if (pn) { if (inWizard) pn.classList.add('hide'); else { pn.classList.remove('hide'); var cp = HN.curPart(), ok = !!HN.cfg().aceite; pn.innerHTML = '<button data-act="go" data-arg="/" class="' + (cp === 'A' ? 'on' : '') + '"' + (cp === 'A' ? ' aria-current="true"' : '') + '>🧮 ' + T('Calcular e cozinhar', 'Calculate & cook') + '</button><button data-act="go" data-arg="/acomp" class="' + (cp === 'B' ? 'on' : '') + '"' + (cp === 'B' ? ' aria-current="true"' : '') + '>🩺 ' + T('Meu acompanhamento', 'My follow-up') + (ok ? '' : ' 🔒') + '</button>'; } }
     if (inWizard || !hasProfile) { bn.classList.add('hide'); } else {
       bn.classList.remove('hide');
-      bn.innerHTML = HN.barIds().map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '" class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt([n.pt, n.en]) + '</span></button>'; }).join('');
+      bn.innerHTML = HN.barIds(HN.curPart()).map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '" class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt(HN.navShort[id] || [n.pt, n.en]) + '</span></button>'; }).join('');
     }
   };
 
   /* ---------- ações globais ---------- */
   var A = HN.acts;
   A.go = function (arg) { HN.go(arg); };
-  A.home = function () { HN.go('/'); };
+  A.home = function () { HN.go(HN.homeOf()); };
   A['layer-close'] = function () { HN.layer.close(); };
   A.lang = function () { HN.setCfg({ lang: HN.lang === 'pt' ? 'en' : 'pt' }); HN.lang = HN.cfg().lang; document.documentElement.lang = HN.lang === 'pt' ? 'pt-BR' : 'en'; HN.render(true); document.dispatchEvent(new CustomEvent('hn:idioma', { detail: HN.lang })); };
   A.help = function () { HN.go('/ajuda'); };
@@ -308,8 +323,6 @@
     HN.applyCfg(); HN.loadCustomFoods();
     var h = location.hash;
     if (!h || h === '#' || h === '#/') { try { history.replaceState({ inicio: 1 }, '', '#/'); } catch (e) { /* ignora */ } }
-    // primeira vez / sem perfil: boas-vindas
-    if (!HN.cfg().aceite || !HN.perfil()) { if (parseHash().name !== 'boasvindas' && parseHash().name !== 'wizard') { try { history.replaceState({ inicio: 1 }, '', '#/boasvindas'); } catch (e) { /* ignora */ } } }
     HN.render();
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) navigator.serviceWorker.register('sw.js').catch(function () { /* sem offline nesta visita */ });
   };

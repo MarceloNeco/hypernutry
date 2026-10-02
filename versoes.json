@@ -1,6 +1,12 @@
 {
  "versoes": [
   {
+   "v": "0.2.0",
+   "data": "02/Out/2026",
+   "pt": "App dividido em duas partes: 🧮 Calcular e cozinhar (abre primeiro, sem cadastro) e 🩺 Meu acompanhamento (aceite LGPD só ao entrar). Nova calculadora de calorias com macros, micronutrientes e saciedade; calculadora de necessidade diária (nada salvo); TACO completa (591 itens); gostos e cozinha moldam o cardápio.",
+   "en": "App split in two: 🧮 Calculate & cook (opens first, no sign-up) and 🩺 My follow-up (LGPD consent only on entry). New calorie calculator with macros, micronutrients and fullness; daily-needs calculator (nothing saved); full TACO (591 items); tastes & kitchen shape the menu."
+  },
+  {
    "v": "0.1.1",
    "data": "02/Out/2026",
    "pt": "Benchmark saiu do app (virou briefing BENCHMARK.md). Novo: repetir a última refeição, cadastrar alimento que não está na base, lembrete gentil de backup. Princípios: sem sequências, sem alimentos proibidos, sem anúncios.",

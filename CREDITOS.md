@@ -1,3 +1,3 @@
-- Composição de alimentos: baseada na TACO (NEPA/Unicamp) e referências públicas; valores aproximados, conferir.
+- Composição de alimentos: TACO — Tabela Brasileira de Composição de Alimentos (NEPA/UNICAMP), 4ª ed. ampliada, via conversão pública em JSON (github.com/isaquetdiniz/taco-api, MIT para o código). Valores por 100 g; conferir na fonte oficial. Alérgenos dos itens TACO são estimados pelo nome.
 - OCR: Tesseract.js (Apache-2.0), carregado sob demanda via jsDelivr.
 - Benchmark: avaliação editorial a partir de fontes públicas listadas em `js/data-bench.js` (aba Fontes do app). Marcas citadas pertencem aos donos.

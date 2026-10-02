@@ -26,7 +26,7 @@
       '<p>' + T('<b>Dados:</b> medidas, hábitos, saúde e o que você registra. <b>Finalidade:</b> personalizar sugestões. <b>Onde ficam:</b> só neste aparelho (armazenamento do navegador). <b>Fotos de rótulos e laudos</b> são lidas no próprio aparelho; o motor de leitura, se precisar baixar, só baixa o programa — a foto não é enviada.', '<b>Data:</b> measurements, habits, health and what you log. <b>Purpose:</b> personalise suggestions. <b>Where:</b> this device only (browser storage). <b>Photos of labels and reports</b> are read on the device; if the reading engine must be downloaded, only the program is downloaded — the photo is not uploaded.') + '</p>' +
       '<p>' + T('<b>Seus direitos:</b> exportar (JSON), corrigir e apagar — em Configurações. <b>Menores de 18:</b> peça a um responsável para acompanhar. <b>Controlador:</b> será identificado antes do lançamento comercial.', '<b>Your rights:</b> export (JSON), correct and delete — in Settings. <b>Under 18:</b> ask a guardian to help. <b>Controller:</b> will be identified before commercial launch.') + '</p></div></details>' +
       '<button class="btn block mt" data-act="wel-go">' + T('Começar meu perfil', 'Start my profile') + ' →</button>' +
-      '<button class="btn ghost block mt" data-act="wel-demo">' + T('Só quero olhar (não salva nada)', 'Just looking (saves nothing)') + '</button></div>';
+      '<button class="btn ghost block mt" data-act="go" data-arg="/">← ' + T('Voltar para a calculadora (não pede dados)', 'Back to the calculator (asks for no data)') + '</button><button class="btn ghost block mt" data-act="wel-demo">' + T('Só quero olhar (não salva nada)', 'Just looking (saves nothing)') + '</button></div>';
   };
   HN.ins['wel-a'] = function (v) { HN.draftWelcome.a = v; }; HN.ins['wel-b'] = function (v) { HN.draftWelcome.b = v; };
   A['wel-go'] = function () {
@@ -36,7 +36,7 @@
   A['wel-demo'] = function () {
     S.setVolatile(true); S.set('cfg', { lang: HN.lang, aceite: { versao: 'demo', data: new Date().toISOString() }, demo: true });
     HN.savePerfil({ id: 'demo', nome: T('Visitante', 'Guest'), nasc: '1990-06-15', sexo: 'F', altura: 165, peso: 65, fator: 1.375, modo: 'hibrido', restricoes: [], equipamentos: ['stove', 'microwave', 'blender'], moradores: 2, tempo: 45, habilidade: 2, alergias: [] });
-    HN.toast(T('Modo visitante: nada será salvo ao fechar.', 'Guest mode: nothing is saved when you close.')); HN.go('/', { replace: true });
+    HN.toast(T('Modo visitante: nada será salvo ao fechar.', 'Guest mode: nothing is saved when you close.')); HN.go('/acomp', { replace: true });
   };
 
   /* ================= WIZARD ================= */
@@ -122,7 +122,7 @@
     if (!d.modo) { HN.toast(T('Escolha um modo para continuar.', 'Choose a mode to continue.')); return; }
     var p = HN.perfil(); d.id = p ? p.id : HN.id(); d.nome = d.nome || T('Você', 'You'); d.tempo = d.tempo ? +d.tempo : 45; d.habilidade = d.habilidade ? +d.habilidade : 2; d.equipamentos = d.equipamentos || []; d.moradores = d.moradores || 1; d.principal = true;
     HN.savePerfil(d); S.set('perfilAtivo', d.id); S.del('wizDraft'); S.del('cardapio'); HN.setCfg({ wizardOk: true });
-    HN.toast(T('Perfil pronto! Bem-vindo(a) 🌱', 'Profile ready! Welcome 🌱')); HN.go('/', { replace: true });
+    HN.toast(T('Perfil pronto! Bem-vindo(a) 🌱', 'Profile ready! Welcome 🌱')); HN.go('/acomp', { replace: true });
   };
 
   /* ================= INÍCIO ================= */
@@ -143,7 +143,7 @@
     var m = HN.metasCfg(), g = C.get(pc, m.metodo); var f = C.faixa(g, m.delta, m.ajuste); var piso = C.piso(pc.sexo); f.piso = piso; f.abaixoPiso = f.min < piso; if (f.min < piso) { f.min = piso; if (f.centro < piso) f.centro = piso; } f.get = g; return f;
   };
 
-  V.home = function () {
+  V.acomp = function () {
     var p = HN.perfil(); if (!p || !HN.cfg().aceite) return V.boasvindas();
     var ents = todayEntries(), h = '', now = new Date(), nome = p.nome ? p.nome.split(' ')[0] : '';
     var greet = now.getHours() < 12 ? T('Bom dia', 'Good morning') : now.getHours() < 18 ? T('Boa tarde', 'Good afternoon') : T('Boa noite', 'Good evening');

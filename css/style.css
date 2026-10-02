@@ -183,3 +183,21 @@ details.acc { border: 1px solid var(--line); border-radius: 12px; background: va
 @media print { .top, .bn, .fab, .no-print { display: none !important; } body { background: #fff; color: #000; } main { padding: 0; max-width: none; } .card { box-shadow: none; break-inside: avoid; } }
 .tbl tr.grp th { background: var(--brand-soft); text-align: left; font-size: .75rem; max-width: none; }
 .sc { font-size: 1.05rem; }
+/* seletor das duas partes do app */
+.parts { position: sticky; top: var(--hh); z-index: 29; display: flex; gap: .35rem; padding: .35rem .5rem; background: var(--bg); border-bottom: 1px solid var(--line); }
+.parts.hide { display: none; }
+.parts button { flex: 1; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: .88rem; line-height: 1.15; padding: .25rem .4rem; cursor: pointer; }
+.parts button.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+html { scroll-padding-top: calc(var(--hh) + 56px); }
+/* calculadora */
+.kcal-big { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--brand); }
+.pbar { display: flex; height: .7rem; border-radius: 99px; overflow: hidden; background: var(--line); margin: .5rem 0; }
+.pbar i { display: block; height: 100%; }
+.ci { display: flex; align-items: center; gap: .4rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.ci .nm { flex: 1; min-width: 0; font-weight: 600; font-size: .95rem; }
+.ci input[type=number] { width: 4.6rem; padding: .4rem; text-align: center; }
+.ci select { width: auto; max-width: 7rem; padding: .4rem; }
+.like3 { display: flex; flex-wrap: wrap; gap: .4rem; }
+.like3 button { border: 1.5px solid var(--line); background: var(--card); color: var(--ink); border-radius: 99px; padding: .45rem .8rem; font: inherit; min-height: 44px; cursor: pointer; }
+.like3 button.up { background: var(--brand-soft); border-color: var(--brand); font-weight: 700; }
+.like3 button.down { text-decoration: line-through; opacity: .65; border-style: dashed; }

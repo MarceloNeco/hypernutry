@@ -149,6 +149,7 @@
         if (!cand.length) { dia[m] = null; return; }
         var novas = cand.filter(function (r) { return !usadas[r.id + m]; });
         var from = novas.length ? novas : cand;
+        if (perfil && perfil.curte && perfil.curte.length) { var fav = from.filter(function (r) { return r.ing.some(function (i) { return perfil.curte.indexOf(i[0]) >= 0; }); }); from = from.concat(fav, fav); } // gostos pesam mais
         var pick = from[Math.floor(rnd() * from.length)];
         usadas[pick.id + m] = 1; dia[m] = pick.id;
       });
