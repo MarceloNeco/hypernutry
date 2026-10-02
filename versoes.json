@@ -1,0 +1,16 @@
+{
+ "versoes": [
+  {
+   "v": "0.1.1",
+   "data": "02/Out/2026",
+   "pt": "Benchmark saiu do app (virou briefing BENCHMARK.md). Novo: repetir a última refeição, cadastrar alimento que não está na base, lembrete gentil de backup. Princípios: sem sequências, sem alimentos proibidos, sem anúncios.",
+   "en": "Benchmark removed from the app (now a BENCHMARK.md brief). New: repeat last meal, add a food missing from the base, gentle backup reminder. Principles: no streaks, no forbidden foods, no ads."
+  },
+  {
+   "v": "0.1.0",
+   "data": "02/Out/2026",
+   "pt": "Primeira versão: diário intuitivo, Saciedade Raiz, metas flexíveis, alimentos (base TACO de referência), cardápio, despensa, compras, receitas, modo cozinheiro, leitor de rótulos e laudos, corpo e bem-estar, telenutrição (em preparação) e benchmark de mercado.",
+   "en": "First release: intuitive diary, Real Fullness, flexible goals, foods (TACO-based reference), menu, pantry, shopping, recipes, cook mode, label and report reader, body & well-being, telenutrition (in preparation) and market benchmark."
+  }
+ ]
+}

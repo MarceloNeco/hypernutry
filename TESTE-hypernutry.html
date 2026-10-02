@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>TESTE HyperNutry</title><body style="font:16px system-ui;padding:1rem"><h1>Teste rápido — HyperNutry</h1><pre id="o">rodando…</pre>
+<script src="js/data-foods.js"></script><script src="js/data-recipes.js"></script><script src="js/calc.js"></script><script src="js/ocr.js"></script>
+<script>var o=[];function t(n,c){o.push((c?'OK   ':'FALHOU ')+n)}
+var r=HN.ocr.parseRotulo('Porção de 30 g\n100 g 30 g\nValor energético (kcal) 470 141\nAçúcares adicionados (g) 30 9\nGorduras saturadas (g) 8 2,4\nSódio (mg) 190 57\nCONTÉM GLÚTEN');
+t('rótulo: kcal 470',r.per100.kcal===470);t('rótulo: alto em açúcar',r.avaliacao.altos.indexOf('acucar')>=0);t('rótulo: glúten',r.alergenos.indexOf('gluten')>=0);
+t('bio: gordura 24,1',HN.ocr.parseBio('Percentual de Gordura Corporal 24,1 %').gordura===24.1);
+t('Mifflin F 30a 165cm 65kg ≈1370',Math.abs(HN.calc.mifflin({sexo:'F',peso:65,altura:165,idade:30})-1370.25)<2);
+document.getElementById('o').textContent=o.join('\n');</script>

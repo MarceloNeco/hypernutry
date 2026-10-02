@@ -1,0 +1,3 @@
+- Composição de alimentos: baseada na TACO (NEPA/Unicamp) e referências públicas; valores aproximados, conferir.
+- OCR: Tesseract.js (Apache-2.0), carregado sob demanda via jsDelivr.
+- Benchmark: avaliação editorial a partir de fontes públicas listadas em `js/data-bench.js` (aba Fontes do app). Marcas citadas pertencem aos donos.
