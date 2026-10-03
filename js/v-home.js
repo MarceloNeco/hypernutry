@@ -150,15 +150,19 @@
     h += '<div class="card hero"><div class="row"><div class="grow"><div class="small" style="opacity:.85">' + HN.fmtDate(now) + '</div><h1 style="margin:.1rem 0">' + greet + (nome ? ', ' + esc(nome) : '') + '!</h1><div class="small" style="opacity:.9">' + (p.modo === 'hibrido' ? '⚖️ ' + T('Modo Híbrido', 'Hybrid mode') : '🧘 ' + T('Modo Intuitivo', 'Intuitive mode')) + (S.isVolatile() ? ' · ' + T('visitante', 'guest') : '') + '</div></div><button class="btn sm" style="background:#fff;color:#0d6b47" data-act="go" data-arg="/diario/novo">＋ ' + T('Registrar', 'Log') + '</button></div></div>';
     // check-in de fome
     var last = (S.get('sinais', []) || []).slice(-1)[0], lastTxt = last ? '<div class="small muted mt">' + T('Último check-in: ', 'Last check-in: ') + last.v + '/10 · ' + HN.fmtDate(last.ts, true) + '</div>' : '';
-    h += '<div class="card"><h3>🍽️ ' + T('Como está sua fome agora?', 'How hungry are you right now?') + '</h3>' + U.scale('ck', HN.ckVal || null, LO(), HI()) + '<div id="ckmsg" class="small mt" style="min-height:1.4rem">' + (HN.ckVal ? SCALE_HINT(HN.ckVal) : T('Toque num número. Não existe resposta errada.', 'Tap a number. There is no wrong answer.')) + '</div>' + lastTxt + '</div>';
+    h += '<div class="card"><h3>🍽️ ' + T('Como está sua fome agora?', 'How hungry are you right now?') + '</h3>' + U.slider('ck', HN.ckVal || null, LO(), HI()) + '<div id="ckmsg" class="small mt" style="min-height:1.4rem">' + (HN.ckVal ? SCALE_HINT(HN.ckVal) : T('Arraste até o número que combina com agora. Ao soltar, fica salvo. Não existe resposta errada.', 'Drag to the number that fits right now. It saves when you let go. There is no wrong answer.')) + '</div>' + lastTxt + '</div>';
     // resumo do dia
     h += '<div class="card"><h3>' + T('Seu dia', 'Your day') + '</h3>';
     var fx = HN.faixaHoje(p);
     if (fx) {
-      var tot = C.totais([].concat.apply([], ents.map(function (e) { return e.items || []; }))), maxv = Math.max(fx.max * 1.25, tot.kcal * 1.05), pos = tot.kcal / maxv * 100;
-      h += '<div class="row small"><b>' + HN.num(tot.kcal) + '</b> kcal <span class="muted">· ' + T('faixa de hoje', 'today\'s range') + ' ' + fx.min + '–' + fx.max + '</span></div><div class="range mt" role="img" aria-label="' + HN.num(tot.kcal) + ' kcal"><div class="zone" style="left:' + (fx.min / maxv * 100) + '%;width:' + ((fx.max - fx.min) / maxv * 100) + '%"></div><div class="dot" style="left:' + HN.clamp(pos, 1, 99) + '%"></div></div>' +
-        '<p class="small muted mt">' + (tot.kcal === 0 ? T('Nada registrado ainda. A faixa é só uma referência — sentir fome e saciedade vem primeiro.', 'Nothing logged yet. The range is just a reference — feeling hunger and fullness comes first.') : tot.kcal < fx.min ? T('Abaixo da faixa por enquanto: ainda dá tempo, e tudo bem variar.', 'Below the range so far: there is time, and variation is fine.') : tot.kcal <= fx.max ? T('Dentro da faixa. 👏', 'Within the range. 👏') : T('Acima da faixa hoje. Sem culpa: amanhã o corpo compensa naturalmente.', 'Above the range today. No guilt: your body balances out tomorrow.')) + '</p>' +
-        '<div class="stat"><div><b>' + HN.num(tot.p) + ' g</b><span>' + T('proteína', 'protein') + '</span></div><div><b>' + HN.num(tot.c) + ' g</b><span>' + T('carboidratos', 'carbs') + '</span></div><div><b>' + HN.num(tot.f) + ' g</b><span>' + T('gorduras', 'fat') + '</span></div></div>';
+      var tot = C.totais([].concat.apply([], ents.map(function (e) { return e.items || []; }))), mcfg = HN.metasCfg(), mc = C.macros(fx.centro, C.presetsMacro[mcfg.macro] || C.presetsMacro.equilibrado);
+      h += U.ring({ rings: [
+        { l: T('Energia', 'Energy'), v: tot.kcal, t: fx.centro, c: 'var(--brand)', u: ' kcal' },
+        { l: T('Proteína', 'Protein'), v: tot.p, t: mc.p.g, c: 'var(--cyan)', u: ' g' },
+        { l: T('Carboidratos', 'Carbs'), v: tot.c, t: mc.c.g, c: 'var(--accent)', u: ' g' },
+        { l: T('Gorduras', 'Fat'), v: tot.f, t: mc.f.g, c: '#ec4899', u: ' g' }
+      ], center: { big: HN.num(tot.kcal), small: T('de ', 'of ') + fx.min + '–' + fx.max } }) +
+        '<p class="small muted mt">' + (tot.kcal === 0 ? T('Nada registrado ainda. A faixa é só uma referência — sentir fome e saciedade vem primeiro.', 'Nothing logged yet. The range is just a reference — feeling hunger and fullness comes first.') : tot.kcal < fx.min ? T('Abaixo da faixa por enquanto: ainda dá tempo, e tudo bem variar.', 'Below the range so far: there is time, and variation is fine.') : tot.kcal <= fx.max ? T('Dentro da faixa tranquila (anel violeta). Escute sua saciedade.', 'Within the calm range (violet ring). Listen to your fullness.') : T('Acima da faixa hoje. Tudo bem: um dia não define nada. Amanhã é outro dia.', 'Above the range today. That is fine: one day defines nothing.')) + '</p>';
     } else {
       var hb = ents.filter(function (e) { return e.hb != null; }), sa = ents.filter(function (e) { return e.sa != null; });
       var avg = function (a, k) { return a.length ? HN.num(a.reduce(function (s, e) { return s + e[k]; }, 0) / a.length, 1) : '–'; };
@@ -181,6 +185,11 @@
     h += '<div class="card"><h3>💡 ' + T('Dica do dia', 'Tip of the day') + '</h3><p style="margin:0">' + HN.tt(TIPS[Math.floor(Date.now() / 864e5) % TIPS.length]) + '</p></div>';
     h += '<div class="card small"><div class="kv"><span>' + T('Base de alimentos', 'Food base') + '</span><b>' + HN.foodBase.count + ' ' + T('itens', 'items') + ' · ' + HN.foodBase.name + '</b></div><div class="kv"><span>' + T('Funciona sem internet', 'Works offline') + '</span><b>' + (('serviceWorker' in navigator) ? '✅' : '⚠️') + ' · ' + (navigator.onLine ? T('conectado', 'online') : T('sem conexão', 'offline')) + '</b></div><div class="kv"><span>' + T('Versão', 'Version') + '</span><b>' + HN.version + '</b></div></div>' + U.legal();
     return h;
+  };
+  var ckT;
+  HN.ins['hs-ck'] = function (v, el, e) {
+    var n = HN.ui.sliderMove(el), m = HN.q('#ckmsg'); if (m) m.textContent = SCALE_HINT(n);
+    if (e.type === 'change') { clearTimeout(ckT); ckT = setTimeout(function () { HN.chipFn.ck(n); }, 600); } // teclado gera vários "change": junta num só registro
   };
   HN.chipFn.ck = function (v) {
     var l = S.get('sinais', []); l.push({ ts: Date.now(), v: v }); S.set('sinais', l.slice(-500)); HN.ckVal = v;
