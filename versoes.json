@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.2.1",
+   "data": "03/Out/2026",
+   "hora": "13:23:50",
+   "pt": "Novo visual para celular: cores Obsidiana/Esmeralda, cabeçalho e barras de vidro, seletor das duas partes mais claro (🧮 verde, sem cadastro · 🩺 violeta, saúde protegida), barra de baixo flutuante com 📷 câmera no centro e até 4 favoritos, números que não pulam, vibração leve no Android (desligável).",
+   "en": "New mobile look: Obsidian/Emerald colours, glass header and bars, clearer switch between the two parts (🧮 green, no sign-up · 🩺 violet, protected health), floating bottom bar with the 📷 camera in the centre and up to 4 favourites, steady numbers, light vibration on Android (can be turned off)."
+  },
+  {
    "v": "0.2.0",
    "data": "02/Out/2026",
    "pt": "App dividido em duas partes: 🧮 Calcular e cozinhar (abre primeiro, sem cadastro) e 🩺 Meu acompanhamento (aceite LGPD só ao entrar). Nova calculadora de calorias com macros, micronutrientes e saciedade; calculadora de necessidade diária (nada salvo); TACO completa (591 itens); gostos e cozinha moldam o cardápio.",

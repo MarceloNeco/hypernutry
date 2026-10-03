@@ -30,3 +30,15 @@ Ao mudar arquivos, aumente `V` em `sw.js` e `HN.version` em `core.js`.
 - **B · 🩺 Meu acompanhamento** (dados de saúde): diário, fome e emoções, metas, corpo, família/perfis, telenutrição. **O aceite LGPD só é pedido ao entrar aqui** (guarda em `HN.render` via `HN.partMap`).
 - Telas comuns: planos, ajuda, config, sobre. Barra de baixo e menu mudam conforme a parte (`HN.barIds(parte)`).
 - Parte A nunca lê peso/altura salvos; a calculadora diária não salva nada. Restrições/gostos da Parte A ficam em `gostos` (só no aparelho) e se somam às do perfil (`HN.restrAll`).
+
+## Design system (desde a v0.2.1)
+Tudo em `css/style.css`, como variáveis no `:root` (claro) e repetidas para o escuro (`data-theme="dark"` e `prefers-color-scheme`).
+- **Superfícies:** Alabastro `#F8FAFC` (claro) · Obsidiana `#0F172A` (escuro); cartões `--card`.
+- **Destaques:** Esmeralda `--brand #10B981 → --brand-2 #059669` (Parte A, ações) · Âmbar `--accent #F59E0B` · Ciano `--cyan #06B6D4` (água/foco) · Violeta `--violet #8B5CF6` / `--violet-strong #7C3AED` (Parte B e faixa de tolerância) · Sálvia `--sage #94A3B8` (neutro de saciedade).
+- **Contraste (não quebrar):** cor viva é para **preencher**. Texto colorido usa `--brand-tx` (verde escuro no claro, verde claro no escuro). Botão esmeralda/âmbar leva texto escuro (`--brand-ink`, `--accent-ink`), nunca branco.
+- **Vidro:** `--glass` (65–70%) no cabeçalho, seletor das partes, folhas; `--glass-bar` (88–90%) na barra de baixo, para os rótulos lerem bem. Vira sólido sem suporte a `backdrop-filter`, com `prefers-reduced-transparency` e em alto contraste.
+- **Tipografia:** fonte do sistema (SF Pro no iPhone, Roboto no Android; nada baixado). `.t-display` 36pt para números do dia, `.t-title` 24pt, corpo 16pt/1.5, `.t-caption` 12pt. Números com `tabular-nums` (não "pulam").
+- **Movimento:** `--ease` `cubic-bezier(.4,0,.2,1)` e `--spring` (folhas, chips). Tudo some com "Reduzir animações" ou `prefers-reduced-motion`.
+- **Vibração:** `HN.haptic('leve'|'media'|'sucesso')`. Só Android (o iPhone não deixa site vibrar). Desligável em Configurações (`cfg.semVibrar`) e desligada com "Reduzir animações".
+- **Cromo:** `<html data-part="A|B">` diz em que parte a pessoa está. Seletor das partes = pílula segmentada (A esmeralda "sem cadastro", B violeta "saúde · protegido 🔒"). Barra de baixo flutuante: até 4 favoritos (`HN.BAR_MAX`, 2 de cada lado) + **📷 câmera fixa no centro** (`data-act="scan"`).
+- **Sem sequência de dias (streak)** em lugar nenhum: é princípio do app (decisão de 03/Out/2026).
