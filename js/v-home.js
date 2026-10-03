@@ -156,12 +156,12 @@
     var fx = HN.faixaHoje(p);
     if (fx) {
       var tot = C.totais([].concat.apply([], ents.map(function (e) { return e.items || []; }))), mcfg = HN.metasCfg(), mc = C.macros(fx.centro, C.presetsMacro[mcfg.macro] || C.presetsMacro.equilibrado);
-      h += U.ring({ rings: [
+      h += '<div class="sens-box">' + U.ring({ rings: [
         { l: T('Energia', 'Energy'), v: tot.kcal, t: fx.centro, c: 'var(--brand)', u: ' kcal' },
         { l: T('Proteína', 'Protein'), v: tot.p, t: mc.p.g, c: 'var(--cyan)', u: ' g' },
         { l: T('Carboidratos', 'Carbs'), v: tot.c, t: mc.c.g, c: 'var(--accent)', u: ' g' },
         { l: T('Gorduras', 'Fat'), v: tot.f, t: mc.f.g, c: '#ec4899', u: ' g' }
-      ], center: { big: HN.num(tot.kcal), small: T('de ', 'of ') + fx.min + '–' + fx.max } }) +
+      ], center: { big: HN.num(tot.kcal), small: T('de ', 'of ') + fx.min + '–' + fx.max } }) + '</div>' +
         '<p class="small muted mt">' + (tot.kcal === 0 ? T('Nada registrado ainda. A faixa é só uma referência — sentir fome e saciedade vem primeiro.', 'Nothing logged yet. The range is just a reference — feeling hunger and fullness comes first.') : tot.kcal < fx.min ? T('Abaixo da faixa por enquanto: ainda dá tempo, e tudo bem variar.', 'Below the range so far: there is time, and variation is fine.') : tot.kcal <= fx.max ? T('Dentro da faixa tranquila (anel violeta). Escute sua saciedade.', 'Within the calm range (violet ring). Listen to your fullness.') : T('Acima da faixa hoje. Tudo bem: um dia não define nada. Amanhã é outro dia.', 'Above the range today. That is fine: one day defines nothing.')) + '</p>';
     } else {
       var hb = ents.filter(function (e) { return e.hb != null; }), sa = ents.filter(function (e) { return e.sa != null; });

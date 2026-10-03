@@ -381,3 +381,22 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .kc-steps { margin: .2rem 0 .7rem; } .kc-steps summary { font-weight: 700; cursor: pointer; padding: .4rem 0; min-height: 2.75rem; display: flex; align-items: center; }
 .kc-steps ol { padding-left: 1.3rem; margin: .3rem 0; } .kc-steps li { margin-bottom: .45rem; line-height: 1.5; }
 .fab-share { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--brand-ink); font-size: 1.5rem; box-shadow: 0 8px 22px rgba(16,185,129,.45); }
+
+/* ===== Corpo (v0.2.5): duas visões, conquistas sem balança, guarda de privacidade ===== */
+.seg.dual { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); margin-bottom: .8rem; box-shadow: var(--shadow); }
+.seg.dual button { min-height: 2.75rem; border: 0; border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-weight: 700; font-size: .85rem; cursor: pointer; padding: 0 .3rem; }
+.seg.dual button.on { background: var(--violet-strong); color: #fff; animation: pop .22s var(--spring); }
+.privacy-guard { background: var(--violet-soft); border-radius: 14px; padding: .55rem .8rem; border: 0; margin-bottom: .8rem; }
+.qstat { grid-template-columns: repeat(2, 1fr); }
+.qstat em { display: block; font-style: normal; font-size: .7rem; color: var(--muted); }
+.nsv-row { display: flex; gap: .6rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .4rem; }
+.nsv { position: relative; flex: none; width: 10.5rem; scroll-snap-align: start; display: flex; flex-direction: column; gap: .2rem; padding: .8rem; border-radius: 18px; border: 1px dashed var(--line); background: var(--card); overflow: hidden; }
+.nsv b { font-size: .9rem; line-height: 1.25; }
+.nsv-e { font-size: 1.6rem; filter: grayscale(.6); }
+.nsv.on { border: 1px solid transparent; background: linear-gradient(150deg, var(--violet-soft), var(--brand-soft)); box-shadow: 0 0 0 1px rgba(139,92,246,.35), 0 6px 18px rgba(139,92,246,.18); animation: pop .3s var(--spring); }
+.nsv.on .nsv-e { filter: none; }
+.nsv i { position: absolute; left: 0; bottom: 0; height: 4px; width: var(--p); background: var(--violet); border-radius: 0 4px 4px 0; }
+/* números sensíveis borrados ("Ocultar números sensíveis"); toque mostra por 3 s */
+:root[data-ocultar] .sens, :root[data-ocultar] .sens-box .num, :root[data-ocultar] .sens-box .s, :root[data-ocultar] .sens-box svg, :root[data-ocultar] .sens-box .rg-c { filter: blur(7px); transition: filter .2s; cursor: pointer; }
+:root[data-ocultar] .sens.peek, :root[data-ocultar] .sens-box.peek .num, :root[data-ocultar] .sens-box.peek .s, :root[data-ocultar] .sens-box.peek svg, :root[data-ocultar] .sens-box.peek .rg-c { filter: none; }
+@media print { :root[data-ocultar] .sens, :root[data-ocultar] .sens-box * { filter: none !important; } }

@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.2.4';
+  HN.version = '0.2.5';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -331,6 +331,7 @@
     if (c.contraste) r.setAttribute('data-contrast', 'alto'); else r.removeAttribute('data-contrast');
     if (c.sublinhar) r.setAttribute('data-links', 'sub'); else r.removeAttribute('data-links');
     if (c.reduzir) r.setAttribute('data-motion', 'reduzir'); else r.removeAttribute('data-motion');
+    if (c.ocultar) r.setAttribute('data-ocultar', ''); else r.removeAttribute('data-ocultar'); // números sensíveis borrados na tela (Corpo, anel do dia)
   };
 
   /* ---------- partida ---------- */

@@ -109,7 +109,58 @@
   };
 
   /* ================= CORPO ================= */
-  var CTABS = [['bem', 'Bem-estar', 'Well-being'], ['medidas', 'Medidas', 'Measures'], ['exame', 'Laudo / InBody', 'Report / InBody']];
+  /* ---------- resumos das duas visões ---------- */
+  function lastOf(l, k) { for (var i = 0; i < l.length; i++) if (l[i][k] != null) return l[i]; return null; } // l: mais novo primeiro
+  function prevOf(l, k) { var n = 0; for (var i = 0; i < l.length; i++) if (l[i][k] != null && ++n === 2) return l[i]; return null; }
+  function delta(a, b, k, d) { if (!a || !b) return ''; var x = a[k] - b[k]; if (Math.abs(x) < Math.pow(10, -(d || 0))) return ' <span class="muted small">=</span>'; return ' <span class="muted small num">(' + (x > 0 ? '+' : '−') + HN.num(Math.abs(x), d || 0) + ')</span>'; }
+  function quantHtml(l, canW) {
+    if (!l.length) return '';
+    var p = HN.perfil() || {}, tiles = [], c = lastOf(l, 'cintura'), q = lastOf(l, 'quadril'), g = lastOf(l, 'gordura'), w = canW ? lastOf(l, 'peso') : null, m = lastOf(l, 'mme');
+    if (c && q && q.quadril) { var rcq = c.cintura / q.quadril, lim = p.sexo === 'M' ? 0.90 : 0.85; tiles.push('<div><b class="num sens">' + HN.num(rcq, 2) + '</b><span>' + T('cintura ÷ quadril', 'waist ÷ hip') + '</span><em>' + T('referência OMS', 'WHO reference') + ' ' + HN.num(lim, 2) + '</em></div>'); }
+    if (c) tiles.push('<div><b class="num sens">' + HN.num(c.cintura, 1) + ' cm' + delta(c, prevOf(l, 'cintura'), 'cintura', 1) + '</b><span>' + T('cintura', 'waist') + '</span></div>');
+    if (g) tiles.push('<div><b class="num sens">' + HN.num(g.gordura, 1) + '%' + delta(g, prevOf(l, 'gordura'), 'gordura', 1) + '</b><span>' + T('gordura corporal', 'body fat') + '</span></div>');
+    if (w && g && w.peso && Math.abs(w.ts - g.ts) < 3 * 864e5) tiles.push('<div><b class="num sens">' + HN.num(w.peso * (1 - g.gordura / 100), 1) + ' kg</b><span>' + T('massa livre de gordura', 'fat-free mass') + '</span></div>');
+    else if (m) tiles.push('<div><b class="num sens">' + HN.num(m.mme, 1) + ' kg' + delta(m, prevOf(l, 'mme'), 'mme', 1) + '</b><span>' + T('músculo esquelético', 'skeletal muscle') + '</span></div>');
+    if (!tiles.length) return '';
+    return '<div class="card"><h3>📊 ' + T('Resumo', 'Summary') + '</h3><div class="stat qstat">' + tiles.join('') + '</div><p class="t-caption muted mt">' + T('Entre parênteses: diferença para o registro anterior. Números ajudam a conversar com a nutricionista; não definem você.', 'In brackets: change since the previous entry. Numbers help the talk with your dietitian; they do not define you.') + '</p></div>';
+  }
+  function qualHtml(l) {
+    var from = HN.dayKey(Date.now() - 6 * 864e5), wk = l.filter(function (x) { return x.day >= from; });
+    if (!wk.length) return '';
+    var avg = function (k) { var v = wk.filter(function (x) { return x[k] != null; }).map(function (x) { return x[k]; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; };
+    var br = wk.filter(function (x) { return x.bristol != null; }), ok = br.filter(function (x) { return x.bristol >= 3 && x.bristol <= 4; }).length;
+    var face = function (v) { return v == null ? '–' : v >= 4 ? '😄' : v >= 3 ? '🙂' : v >= 2 ? '😐' : '😕'; };
+    return '<div class="card"><h3>🌿 ' + T('Últimos 7 dias', 'Last 7 days') + '</h3><div class="stat"><div><b>' + face(avg('disp')) + '</b><span>' + T('energia', 'energy') + '</span></div><div><b>' + face(avg('sonoQ')) + '</b><span>' + T('sono', 'sleep') + '</span></div><div><b class="num">' + (br.length ? ok + '/' + br.length : '–') + '</b><span>' + T('dias de intestino confortável (Bristol 3–4)', 'comfortable gut days (Bristol 3–4)') + '</span></div></div></div>';
+  }
+
+  /* ---------- conquistas sem balança ----------
+   * Contam QUALQUER dia dos últimos 30 — nunca "dias seguidos": nada zera, nada de culpa (sem streaks). */
+  HN.nsv = function () {
+    var since = Date.now() - 30 * 864e5, d30 = HN.dayKey(since);
+    var diario = (S.get('diario', []) || []).filter(function (e) { return e.ts >= since; }), sinais = (S.get('sinais', []) || []).filter(function (e) { return e.ts >= since; }), bem = (S.get('bem', []) || []).filter(function (e) { return e.day >= d30; });
+    var cnt = function (arr, f) { return arr.filter(f).length; };
+    var dias = function (arr) { var u = {}; arr.forEach(function (e) { u[HN.dayKey(e.ts)] = 1; }); return Object.keys(u).length; };
+    var rel7 = bem.slice(-7), rel14 = bem.slice(-14, -7), av = function (a) { var v = a.filter(function (x) { return x.relacao != null; }).map(function (x) { return x.relacao; }); return v.length >= 2 ? v.reduce(function (a2, b) { return a2 + b; }, 0) / v.length : null; };
+    var a1 = av(rel7), a0 = av(rel14);
+    return [
+      { id: 'atencao', e: '🧘', n: cnt(diario, function (e) { return e.hb != null || e.sa != null; }), meta: 10, pt: 'Refeições com atenção à fome', en: 'Meals with hunger awareness' },
+      { id: 'checkin', e: '🎚️', n: dias(sinais), meta: 7, pt: 'Dias em que você escutou o corpo', en: 'Days you listened to your body' },
+      { id: 'sono', e: '😴', n: cnt(bem, function (e) { return e.sonoQ >= 4; }), meta: 7, pt: 'Noites de sono que descansou', en: 'Nights of restful sleep' },
+      { id: 'energia', e: '⚡', n: cnt(bem, function (e) { return e.disp >= 4; }), meta: 7, pt: 'Dias com boa disposição', en: 'Days with good energy' },
+      { id: 'intestino', e: '🌿', n: cnt(bem, function (e) { return e.bristol >= 3 && e.bristol <= 4; }), meta: 7, pt: 'Dias de intestino confortável', en: 'Comfortable gut days' },
+      { id: 'leveza', e: '🌱', n: a1 != null && a0 != null && a1 > a0 + 0.3 ? 1 : 0, meta: 1, pt: 'Relação mais leve com a comida', en: 'Lighter relationship with food' }
+    ];
+  };
+  function nsvHtml() {
+    var l = HN.nsv(), got = l.filter(function (x) { return x.n >= x.meta; }), next = l.filter(function (x) { return x.n < x.meta && x.meta > 1; }).sort(function (a, b) { return b.n / b.meta - a.n / a.meta; }).slice(0, Math.max(0, 3 - got.length));
+    var card = function (x, on) { return '<div class="nsv' + (on ? ' on' : '') + '"><span class="nsv-e" aria-hidden="true">' + x.e + '</span><b>' + HN.tt([x.pt, x.en]) + '</b><span class="t-caption">' + (on ? (x.meta > 1 ? x.n + ' ' + T('nos últimos 30 dias', 'in the last 30 days') : T('nas últimas semanas', 'in recent weeks')) : x.n + ' ' + T('de', 'of') + ' ' + x.meta + ' · ' + T('qualquer dia conta', 'any day counts')) + '</span>' + (on ? '' : '<i style="--p:' + Math.round(x.n / x.meta * 100) + '%"></i>') + '</div>'; };
+    return '<div class="card"><h3>🏅 ' + T('Conquistas sem balança', 'Non-scale victories') + '</h3><div class="nsv-row">' + got.map(function (x) { return card(x, true); }).join('') + next.map(function (x) { return card(x, false); }).join('') + '</div><p class="t-caption muted mt">' + T('Contam os últimos 30 dias, sem precisar ser seguido: um dia fora não apaga nada.', 'They count the last 30 days, no need to be in a row: a day off erases nothing.') + '</p></div>';
+  }
+  HN.ins['cfg-ocultar'] = function (v) { HN.setCfg({ ocultar: v }); HN.applyCfg(); };
+  // toque num número oculto: mostra por 3 s e esconde de novo
+  document.addEventListener('click', function (e) { var el = e.target.closest && e.target.closest('.sens, .sens-box'); if (!el || !document.documentElement.hasAttribute('data-ocultar')) return; el.classList.add('peek'); setTimeout(function () { el.classList.remove('peek'); }, 3000); });
+
+  var CTABS = [['bem', '🌿 Como me sinto', '🌿 How I feel'], ['medidas', '📊 Números', '📊 Numbers'], ['exame', '📄 Laudo', '📄 Report']];
   var bd = { disp: null, sonoQ: null, bristol: null, clareza: null, relacao: null, sonoH: '' };
   var EM5 = ['😞', '😕', '😐', '🙂', '😄'];
   function five(name, val) { return '<div class="chips">' + [1, 2, 3, 4, 5].map(function (n) { return '<button class="chip' + (val === n ? ' on' : '') + '" data-act="chip" data-arg="' + name + '|' + n + '" aria-pressed="' + (val === n) + '">' + EM5[n - 1] + ' ' + n + '</button>'; }).join('') + '</div>'; }
@@ -117,11 +168,14 @@
   HN.chipFn['bd.bristol'] = function (v) { bd.bristol = +v; HN.refresh(); };
   HN.ins['bd-h'] = function (v) { bd.sonoH = v; };
   V.corpo = function (parts) {
-    var tab = parts[1] || 'bem', h = U.title('📏', T('Corpo e bem-estar', 'Body & well-being'), T('Evolução que vai além da balança', 'Progress beyond the scale')) + U.tabs('/corpo', CTABS, tab);
+    var tab = parts[1] || 'bem', hid = !!HN.cfg().ocultar, h = U.title('📏', T('Corpo e bem-estar', 'Body & well-being'), T('Evolução que vai além da balança', 'Progress beyond the scale')) +
+      '<label class="chk privacy-guard"><input type="checkbox" data-in="cfg-ocultar" ' + (hid ? 'checked' : '') + '><span class="tx">🙈 ' + T('Ocultar números sensíveis em público (toque para espiar)', 'Hide sensitive numbers in public (tap to peek)') + '</span></label>' +
+      nsvHtml() +
+      '<div class="seg dual" role="tablist">' + CTABS.map(function (t) { var on = t[0] === tab; return '<button role="tab" aria-selected="' + on + '" class="' + (on ? 'on' : '') + '" data-act="go" data-arg="/corpo/' + t[0] + '">' + HN.tt([t[1], t[2]]) + '</button>'; }).join('') + '</div>';
     if (tab === 'bem') {
       var l = S.get('bem', []), today = HN.today(), td = l.filter(function (x) { return x.day === today; })[0];
       if (td && bd.disp == null && !bd._init) { bd = { disp: td.disp, sonoQ: td.sonoQ, bristol: td.bristol, clareza: td.clareza, relacao: td.relacao, sonoH: td.sonoH || '', _init: 1 }; }
-      h += '<div class="card"><h3>' + T('Como foi seu dia?', 'How was your day?') + '</h3><label class="f">' + T('Disposição física', 'Physical energy') + '</label>' + five('bd.disp', bd.disp) + '<label class="f">' + T('Qualidade do sono', 'Sleep quality') + '</label>' + five('bd.sonoQ', bd.sonoQ) + '<label class="f" for="bdh">' + T('Horas dormidas', 'Hours slept') + '</label><input id="bdh" type="number" inputmode="decimal" min="0" max="16" step="0.5" value="' + esc(bd.sonoH) + '" data-in="bd-h" style="max-width:8rem"><label class="f">' + T('Clareza mental', 'Mental clarity') + '</label>' + five('bd.clareza', bd.clareza) + '<label class="f">' + T('Como está sua relação com a comida hoje?', 'How is your relationship with food today?') + '</label>' + five('bd.relacao', bd.relacao) + '<label class="f">' + T('Intestino (Escala de Bristol)', 'Bowel (Bristol scale)') + '</label>' + U.chips('bd.bristol', C.bristol.map(function (b, i) { return [String(i + 1), b[0], b[1]]; }), bd.bristol != null ? String(bd.bristol) : null, false) + '<button class="btn block mt" data-act="bd-save">' + T('Salvar o dia', 'Save the day') + ' ✓</button></div>';
+      h += qualHtml(l) + '<div class="card"><h3>' + T('Como foi seu dia?', 'How was your day?') + '</h3><label class="f">' + T('Disposição física', 'Physical energy') + '</label>' + five('bd.disp', bd.disp) + '<label class="f">' + T('Qualidade do sono', 'Sleep quality') + '</label>' + five('bd.sonoQ', bd.sonoQ) + '<label class="f" for="bdh">' + T('Horas dormidas', 'Hours slept') + '</label><input id="bdh" type="number" inputmode="decimal" min="0" max="16" step="0.5" value="' + esc(bd.sonoH) + '" data-in="bd-h" style="max-width:8rem"><label class="f">' + T('Clareza mental', 'Mental clarity') + '</label>' + five('bd.clareza', bd.clareza) + '<label class="f">' + T('Como está sua relação com a comida hoje?', 'How is your relationship with food today?') + '</label>' + five('bd.relacao', bd.relacao) + '<label class="f">' + T('Intestino (Escala de Bristol)', 'Bowel (Bristol scale)') + '</label>' + U.chips('bd.bristol', C.bristol.map(function (b, i) { return [String(i + 1), b[0], b[1]]; }), bd.bristol != null ? String(bd.bristol) : null, false) + '<button class="btn block mt" data-act="bd-save">' + T('Salvar o dia', 'Save the day') + ' ✓</button></div>';
       var days = [], i; for (i = 13; i >= 0; i--) days.push(HN.dayKey(Date.now() - i * 864e5));
       var by = {}; l.forEach(function (x) { by[x.day] = x; });
       if (l.length >= 2) {
@@ -137,11 +191,12 @@
       h += U.notice('info', T('Sem fotos de “antes e depois”: o Código de Ética do nutricionista (CFN 599/2018) não permite usá-las para atribuir resultados.', 'No “before and after” photos: the dietitian code of ethics (CFN 599/2018) does not allow using them to attribute results.'));
       h += '<div class="card"><h3>' + T('Novo registro', 'New entry') + '</h3>' + (canW ? '<label class="chk"><input type="checkbox" data-in="show-w" ' + (wOn ? 'checked' : '') + '><span class="tx">' + T('Quero registrar peso (opcional)', 'I want to log weight (optional)') + '</span></label>' : '<p class="small muted">' + T('Por cuidado, o app não pede peso no seu perfil.', 'For care, the app does not ask for weight on your profile.') + '</p>') +
         '<div class="row wrap">' + [['peso', 'Peso (kg)', 'Weight (kg)', wOn], ['cintura', 'Cintura (cm)', 'Waist (cm)', true], ['quadril', 'Quadril (cm)', 'Hip (cm)', true], ['abdomen', 'Abdômen (cm)', 'Abdomen (cm)', true], ['braco', 'Braço (cm)', 'Arm (cm)', true], ['coxa', 'Coxa (cm)', 'Thigh (cm)', true], ['gordura', '% gordura', 'Body fat %', true]].filter(function (x) { return x[3]; }).map(function (x) { return '<div style="flex:1 1 7rem"><label class="f" for="m-' + x[0] + '">' + HN.tt([x[1], x[2]]) + '</label><input id="m-' + x[0] + '" type="number" inputmode="decimal" step="0.1"></div>'; }).join('') + '</div><button class="btn block mt" data-act="med-save">' + T('Salvar medidas', 'Save measures') + '</button></div>';
+      h += quantHtml(l2, canW);
       if (l2.length) {
         var keys = ['cintura', 'peso', 'quadril', 'abdomen', 'braco', 'coxa', 'gordura'].filter(function (k) { return k !== 'peso' || canW; });
         var key = HN.medKey && keys.indexOf(HN.medKey) >= 0 ? HN.medKey : 'cintura', pts = l2.slice().reverse().filter(function (x) { return x[key] != null; });
-        h += '<div class="card"><h3>' + T('Evolução', 'Progress') + '</h3><div class="chips mb">' + keys.map(function (k) { return '<button class="chip' + (k === key ? ' on' : '') + '" data-act="med-key" data-arg="' + k + '">' + k + '</button>'; }).join('') + '</div>' + (pts.length >= 2 ? U.line({ aria: key, labels: pts.map(function (x) { return HN.fmtDate(x.ts).slice(0, 6); }), min: Math.floor(Math.min.apply(null, pts.map(function (x) { return x[key]; }))) - 1, max: Math.ceil(Math.max.apply(null, pts.map(function (x) { return x[key]; }))) + 1, series: [{ name: key, color: '#168a5c', values: pts.map(function (x) { return x[key]; }) }] }) : '<p class="small muted">' + T('Registre ao menos 2 vezes para ver o gráfico.', 'Log at least twice to see the chart.') + '</p>') + '</div>';
-        h += '<div class="card"><h3>' + T('Histórico', 'History') + '</h3><div class="list">' + l2.slice(0, 20).map(function (x) { return '<div class="li" style="cursor:default"><span class="grow"><div class="t">' + HN.fmtDate(x.ts) + (x.src === 'ocr' ? ' <span class="badge">OCR</span>' : '') + '</div><div class="s">' + BIOL.concat([['cintura', 'Cintura', 'Waist'], ['quadril', 'Quadril', 'Hip'], ['abdomen', 'Abdômen', 'Abdomen'], ['braco', 'Braço', 'Arm'], ['coxa', 'Coxa', 'Thigh']]).filter(function (n) { return x[n[0]] != null && (n[0] !== 'peso' || canW); }).map(function (n) { return HN.tt([n[1], n[2]]).split(' (')[0] + ' ' + x[n[0]]; }).join(' · ') + '</div></div><button class="ib" data-act="med-del" data-arg="' + x.id + '" aria-label="' + T('Apagar', 'Delete') + '">🗑</button></div>'; }).join('') + '</div></div>';
+        h += '<div class="card sens-box"><h3>' + T('Evolução', 'Progress') + '</h3><div class="chips mb">' + keys.map(function (k) { return '<button class="chip' + (k === key ? ' on' : '') + '" data-act="med-key" data-arg="' + k + '">' + k + '</button>'; }).join('') + '</div>' + (pts.length >= 2 ? U.line({ aria: key, labels: pts.map(function (x) { return HN.fmtDate(x.ts).slice(0, 6); }), min: Math.floor(Math.min.apply(null, pts.map(function (x) { return x[key]; }))) - 1, max: Math.ceil(Math.max.apply(null, pts.map(function (x) { return x[key]; }))) + 1, series: [{ name: key, color: '#168a5c', values: pts.map(function (x) { return x[key]; }) }] }) : '<p class="small muted">' + T('Registre ao menos 2 vezes para ver o gráfico.', 'Log at least twice to see the chart.') + '</p>') + '</div>';
+        h += '<div class="card sens-box"><h3>' + T('Histórico', 'History') + '</h3><div class="list">' + l2.slice(0, 20).map(function (x) { return '<div class="li" style="cursor:default"><span class="grow"><div class="t">' + HN.fmtDate(x.ts) + (x.src === 'ocr' ? ' <span class="badge">OCR</span>' : '') + '</div><div class="s">' + BIOL.concat([['cintura', 'Cintura', 'Waist'], ['quadril', 'Quadril', 'Hip'], ['abdomen', 'Abdômen', 'Abdomen'], ['braco', 'Braço', 'Arm'], ['coxa', 'Coxa', 'Thigh']]).filter(function (n) { return x[n[0]] != null && (n[0] !== 'peso' || canW); }).map(function (n) { return HN.tt([n[1], n[2]]).split(' (')[0] + ' ' + x[n[0]]; }).join(' · ') + '</div></div><button class="ib" data-act="med-del" data-arg="' + x.id + '" aria-label="' + T('Apagar', 'Delete') + '">🗑</button></div>'; }).join('') + '</div></div>';
       }
     }
     if (tab === 'exame') {
