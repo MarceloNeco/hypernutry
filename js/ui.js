@@ -22,6 +22,53 @@
   };
   HN.acts.scale = function (arg) { var p = arg.split('|'); if (HN.chipFn[p[0]]) HN.chipFn[p[0]](+p[1]); };
 
+  /* Anel adaptativo (blueprint "Adaptive Balance Ring"): um anel por nutriente, sem meta rígida.
+   * O círculo inteiro = 125% da referência; a faixa 90–110% aparece em violeta suave. Dentro dela o anel
+   * fica violeta (zona tranquila); acima de 110% fica sálvia (neutro) — nunca vermelho, nada de punição.
+   * rings: [{ l: rótulo, v: valor, t: referência, c: cor, u: unidade }]; center: { big, small } */
+  U.ring = function (o) {
+    var size = o.size || 168, sw = o.sw || 11, gap = 4, cx = size / 2, FULL = 1.25, svg = '', leg = '';
+    o.rings.forEach(function (r, i) {
+      var rad = cx - sw / 2 - i * (sw + gap), C = 2 * Math.PI * rad, pct = r.t > 0 ? r.v / r.t : 0;
+      var frac = Math.min(pct, FULL) / FULL, zone = pct >= 0.9 && pct <= 1.1 ? 'in' : pct > 1.1 ? 'over' : 'under';
+      var col = zone === 'in' ? 'var(--violet)' : zone === 'over' ? 'var(--sage)' : r.c;
+      var b0 = 0.9 / FULL * C, b1 = 1.1 / FULL * C;
+      svg += '<circle cx="' + cx + '" cy="' + cx + '" r="' + rad + '" class="rg-track" stroke-width="' + sw + '"/>' +
+        '<circle cx="' + cx + '" cy="' + cx + '" r="' + rad + '" class="rg-band" stroke-width="' + sw + '" stroke-dasharray="0 ' + b0.toFixed(1) + ' ' + (b1 - b0).toFixed(1) + ' ' + C.toFixed(1) + '"/>' +
+        '<circle cx="' + cx + '" cy="' + cx + '" r="' + rad + '" class="rg-val' + (zone === 'in' ? ' glow' : '') + '" stroke="' + col + '" stroke-width="' + sw + '" style="stroke-dasharray:' + (frac * C).toFixed(1) + ' ' + C.toFixed(1) + ';opacity:' + (frac > 0 ? 1 : 0) + '"/>';
+      leg += '<div class="rg-leg"><i style="background:' + r.c + '"></i><span class="grow">' + esc(r.l) + '</span><b class="num">' + HN.num(r.v) + '</b><span class="muted num">/' + HN.num(r.t) + (r.u || '') + '</span>' + (zone === 'in' ? ' <span class="rg-ok" title="' + esc(T('na faixa tranquila (90–110%)', 'in the calm range (90–110%)')) + '">✓</span>' : '') + '</div>';
+    });
+    var aria = o.rings.map(function (r) { return r.l + ' ' + HN.num(r.v) + ' / ' + HN.num(r.t) + (r.u || ''); }).join(', ');
+    return '<div class="ring-wrap' + (o.compact ? ' compact' : '') + '"><div class="ring" style="width:' + size + 'px;height:' + size + 'px"><svg viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="' + esc(aria) + '">' + svg + '</svg>' +
+      (o.center ? '<div class="rg-c"><div class="t-display">' + o.center.big + '</div><div class="t-caption muted">' + o.center.small + '</div></div>' : '') + '</div><div class="rg-legend">' + leg + '</div></div>';
+  };
+
+  // Atualiza um anel já desenhado sem recomeçar a animação: o arco "escorre" até o novo valor (transição CSS).
+  U.ringUpdate = function (box, html) {
+    if (!box) return; var old = box.querySelectorAll('.rg-val'), tmp = document.createElement('div'); tmp.innerHTML = html;
+    var neu = tmp.querySelectorAll('.rg-val');
+    if (!old.length || old.length !== neu.length) { box.innerHTML = html; return; }
+    for (var i = 0; i < old.length; i++) { old[i].style.animation = 'none'; old[i].setAttribute('style', neu[i].getAttribute('style') + ';animation:none'); old[i].setAttribute('stroke', neu[i].getAttribute('stroke')); old[i].setAttribute('class', neu[i].getAttribute('class')); }
+    ['.rg-c', '.rg-legend', '.t-caption'].forEach(function (sel) { var a = box.querySelector(sel), b = tmp.querySelector(sel); if (a && b) a.innerHTML = b.innerHTML; });
+    var sv = box.querySelector('svg'), sn = tmp.querySelector('svg'); if (sv && sn) sv.setAttribute('aria-label', sn.getAttribute('aria-label'));
+  };
+
+  /* Escala de fome deslizante 1–10 com rostinho que muda e vibração média a cada número. */
+  U.FACES = ['😫', '😫', '😟', '😕', '😐', '😌', '🙂', '😊', '😮‍💨', '😵'];
+  U.slider = function (name, val, lo, hi) {
+    var v = val || 5;
+    return '<div class="hs" data-name="' + name + '"><div class="hs-face" aria-hidden="true">' + U.FACES[v - 1] + '</div><div class="hs-num num">' + (val ? v : '–') + '<span class="muted">/10</span></div>' +
+      '<input type="range" min="1" max="10" step="1" value="' + v + '" data-in="hs-' + name + '" aria-label="' + esc(T('Fome agora, de 1 (faminto) a 10 (muito cheio)', 'Hunger now, from 1 (starving) to 10 (stuffed)')) + '" aria-valuetext="' + v + '" style="--p:' + ((v - 1) / 9 * 100) + '%">' +
+      '<div class="scale-lab"><span>' + esc(lo || '') + '</span><span>' + esc(hi || '') + '</span></div></div>';
+  };
+  // move o rosto/número na hora; avisa quem pediu só depois de soltar (evita salvar a cada passo)
+  U.sliderMove = function (el) {
+    var v = +el.value, box = el.closest('.hs'); if (!box) return v;
+    if (+el.getAttribute('data-last') !== v) { HN.haptic('media'); el.setAttribute('data-last', v); var f = box.querySelector('.hs-face'); f.textContent = U.FACES[v - 1]; f.classList.remove('bump'); void f.offsetWidth; f.classList.add('bump'); }
+    box.querySelector('.hs-num').innerHTML = v + '<span class="muted">/10</span>'; el.setAttribute('aria-valuetext', v); el.style.setProperty('--p', ((v - 1) / 9 * 100) + '%');
+    return v;
+  };
+
   U.stars = function (n, max) { max = max || 5; var f = Math.round(n), s = ''; for (var i = 1; i <= max; i++) s += i <= f ? '★' : '☆'; return '<span class="stars" aria-label="' + HN.num(n, 1) + ' / ' + max + '">' + s + '</span>'; };
   U.bar = function (pct) { return '<div class="bar" role="img" aria-label="' + Math.round(pct) + '%"><i style="width:' + HN.clamp(pct, 0, 100) + '%"></i></div>'; };
   U.title = function (e, t, sub) { return '<div class="page-title"><span class="em" aria-hidden="true">' + e + '</span><div><h1>' + t + '</h1>' + (sub ? '<div class="muted small">' + sub + '</div>' : '') + '</div></div>'; };

@@ -87,8 +87,8 @@
     if (!x.n) return '';
     var kp = t.p * 4, kcc = t.c * 4, kf = t.f * 9, ks = Math.max(kp + kcc + kf, 1), pp = Math.round(kp / ks * 100), pc = Math.round(kcc / ks * 100), pf = Math.max(0, 100 - pp - pc), m = x.mi.t;
     var mr = [['Cálcio', 'Calcium', m.ca, 'mg'], ['Ferro', 'Iron', m.fe, 'mg'], ['Magnésio', 'Magnesium', m.mg, 'mg'], ['Potássio', 'Potassium', m.k, 'mg'], ['Zinco', 'Zinc', m.zn, 'mg'], ['Vitamina C', 'Vitamin C', m.vc, 'mg'], ['Vitamina A (RAE)', 'Vitamin A (RAE)', m.rae, 'mcg'], ['Gordura saturada', 'Saturated fat', m.sat, 'g'], ['Colesterol', 'Cholesterol', m.col, 'mg']];
-    return '<div class="card"><div class="row" style="align-items:flex-end"><div><div class="kcal-big">' + HN.num(t.kcal) + '</div><div class="muted">kcal ' + T('na refeição', 'in this meal') + ' · ' + HN.num(x.g) + ' g</div></div><div class="grow"></div><div class="right small"><div>' + T('Saciedade', 'Fullness') + '</div>' + U.stars(x.sat) + '</div></div>' +
-      '<div class="pbar" role="img" aria-label="' + T('Proteína', 'Protein') + ' ' + pp + '%, ' + T('carboidrato', 'carbs') + ' ' + pc + '%, ' + T('gordura', 'fat') + ' ' + pf + '%"><i style="width:' + pp + '%;background:#2f6fdd"></i><i style="width:' + pc + '%;background:#f08c00"></i><i style="width:' + pf + '%;background:#d6336c"></i></div>' +
+    return '<div class="card"><div class="row" style="align-items:flex-end"><div><h3 style="margin:0">' + T('Detalhes da refeição', 'Meal details') + '</h3><div class="muted small num">' + HN.num(t.kcal) + ' kcal · ' + HN.num(x.g) + ' g</div></div><div class="grow"></div><div class="right small"><div>' + T('Saciedade', 'Fullness') + '</div>' + U.stars(x.sat) + '</div></div>' +
+      '<div class="pbar" role="img" aria-label="' + T('Proteína', 'Protein') + ' ' + pp + '%, ' + T('carboidrato', 'carbs') + ' ' + pc + '%, ' + T('gordura', 'fat') + ' ' + pf + '%"><i style="width:' + pp + '%;background:var(--cyan)"></i><i style="width:' + pc + '%;background:var(--accent)"></i><i style="width:' + pf + '%;background:#ec4899"></i></div>' +
       '<div class="stat" style="grid-template-columns:repeat(3,1fr)"><div><b>' + HN.num(t.p, 1) + ' g</b><span>' + T('proteína', 'protein') + ' · ' + pp + '%</span></div><div><b>' + HN.num(t.c, 1) + ' g</b><span>' + T('carboidratos', 'carbs') + ' · ' + pc + '%</span></div><div><b>' + HN.num(t.f, 1) + ' g</b><span>' + T('gorduras', 'fat') + ' · ' + pf + '%</span></div></div>' +
       '<div class="kv"><span>' + T('Fibras', 'Fiber') + '</span><b>' + HN.num(t.fib, 1) + ' g</b></div><div class="kv"><span>' + T('Sódio', 'Sodium') + '</span><b>' + HN.num(t.na) + ' mg</b></div>' +
       '<details class="acc mt"><summary>' + T('Micronutrientes', 'Micronutrients') + '</summary><div class="small">' + mr.map(function (r) { return '<div class="kv"><span>' + HN.tt([r[0], r[1]]) + '</span><b>' + HN.num(r[2], r[2] < 10 ? 1 : 0) + ' ' + r[3] + '</b></div>'; }).join('') + (x.mi.partial ? '<p class="muted">' + T('Valores parciais: alguns alimentos não têm todos os nutrientes analisados na TACO (ou são de referência).', 'Partial values: some foods lack some analysed nutrients in TACO (or are reference items).') + '</p>' : '') + '</div></details>' +
@@ -101,9 +101,9 @@
     if (!hits.length) return '<p class="muted">' + T('Não achou? ', 'Not found? ') + '<button class="btn sm sec" data-act="food-new">＋ ' + T('Cadastrar alimento', 'Add a food') + '</button></p>';
     return '<div class="list">' + hits.slice(0, 12).map(function (f) { return '<button class="li" data-act="calc-pick" data-arg="' + f.id + '"><span class="e">＋</span><span class="grow"><div class="t">' + esc(HN.foodName(f)) + '</div><div class="s">' + f.kcal + ' kcal/100 g' + (f.measures.length ? ' · ' + esc(HN.tt([f.measures[0][0], f.measures[0][1]])) : '') + '</div></span></button>'; }).join('') + '</div>';
   }
-  function refresh() { var a = HN.q('#citems'), b = HN.q('#ctot'); if (a) a.innerHTML = itemsHtml(); if (b) b.innerHTML = totalsHtml(); var c = HN.q('#cacts'); if (c) c.style.display = state().items.length ? '' : 'none'; }
+  function refresh() { U.ringUpdate(HN.q('#cring'), ringHtml()); var a = HN.q('#citems'), b = HN.q('#ctot'); if (a) a.innerHTML = itemsHtml(); if (b) b.innerHTML = totalsHtml(); var c = HN.q('#cacts'); if (c) c.style.display = state().items.length ? '' : 'none'; }
   HN.ins.cq = function (v) { var r = HN.q('#cres'); if (r) r.innerHTML = resHtml(v); };
-  HN.ins['ci-q'] = function (v, el) { var it = state().items[+el.getAttribute('data-i')]; if (!it) return; it.q = v === '' ? 0 : +v; saveSt(); var b = HN.q('#ctot'); if (b) b.innerHTML = totalsHtml(); var nm = el.parentNode.querySelector('.small'); if (nm) { var f = HN.foods[it.food], g = gOf(it); nm.textContent = HN.num(f.kcal * g / 100) + ' kcal' + (it.u >= 0 ? ' · ' + HN.num(g) + ' g' : ''); } };
+  HN.ins['ci-q'] = function (v, el) { var it = state().items[+el.getAttribute('data-i')]; if (!it) return; it.q = v === '' ? 0 : +v; saveSt(); var b = HN.q('#ctot'); if (b) b.innerHTML = totalsHtml(); U.ringUpdate(HN.q('#cring'), ringHtml()); var nm = el.parentNode.querySelector('.small'); if (nm) { var f = HN.foods[it.food], g = gOf(it); nm.textContent = HN.num(f.kcal * g / 100) + ' kcal' + (it.u >= 0 ? ' · ' + HN.num(g) + ' g' : ''); } };
   HN.ins['ci-u'] = function (v, el) { var it = state().items[+el.getAttribute('data-i')]; if (!it) return; var f = HN.foods[it.food], g = gOf(it); it.u = +v; var m = it.u >= 0 ? f.measures[it.u][2] : 1; it.q = Math.round(g / m * 100) / 100 || (it.u >= 0 ? 1 : 100); saveSt(); refresh(); };
   A['calc-pick'] = function (id) { addItem(id); var q = HN.q('#cq'); if (q) { q.value = ''; HN.q('#cres').innerHTML = ''; } refresh(); };
   A['ci-del'] = function (i) { state().items.splice(+i, 1); saveSt(); refresh(); };
@@ -148,9 +148,10 @@
     var p = { sexo: nd.sexo, idade: +nd.idade, peso: +nd.peso, altura: +nd.altura, fator: nd.fator, gordura: +nd.gord || 0 };
     if (!(p.idade > 0 && p.peso > 0 && p.altura > 0)) { box.innerHTML = U.notice('warn', T('Preencha idade, peso e altura.', 'Fill in age, weight and height.')); return; }
     var al = C.alertas({ idade: p.idade, historicoTA: nd.ta, gestante: nd.gest });
-    if (al.length) { box.innerHTML = U.notice('warn', '🌱 ' + T('Para o seu caso, números de calorias não são o caminho mais seguro. Procure um(a) nutricionista ou médico(a) para um plano feito para você. Aqui você ainda pode usar a calculadora de refeição, receitas e cardápio sem metas numéricas.', 'For your situation, calorie numbers are not the safest path. Please see a dietitian or doctor for a plan made for you. You can still use the meal calculator, recipes and menu without numeric targets.')); return; }
+    if (al.length) { ndRef = { semNumeros: true }; refresh(); box.innerHTML = U.notice('warn', '🌱 ' + T('Para o seu caso, números de calorias não são o caminho mais seguro. Procure um(a) nutricionista ou médico(a) para um plano feito para você. Aqui você ainda pode usar a calculadora de refeição, receitas e cardápio sem metas numéricas.', 'For your situation, calorie numbers are not the safest path. Please see a dietitian or doctor for a plan made for you. You can still use the meal calculator, recipes and menu without numeric targets.')); return; }
     var metodo = p.gordura > 0 ? 'katch' : 'mifflin', tmb = C.tmb(p, metodo), get = C.get(p, metodo), fx = C.faixa(get, 0.10, nd.obj), piso = C.piso(p.sexo), low = fx.min < piso;
     var mn = Math.max(fx.min, piso), mx = Math.max(fx.max, piso + 100), ce = Math.max(fx.centro, piso), mc = C.macros(ce, C.presetsMacro[nd.preset]);
+    ndRef = { kcal: ce, p: mc.p.g, c: mc.c.g, f: mc.f.g, sua: true }; refresh();
     box.innerHTML = '<div class="card" style="margin:0"><div class="stat" style="grid-template-columns:repeat(2,1fr)"><div><b>' + HN.num(tmb) + '</b><span>' + T('kcal/dia em repouso (TMB)', 'kcal/day at rest (BMR)') + '</span></div><div><b>' + HN.num(get) + '</b><span>' + T('kcal/dia com sua atividade', 'kcal/day with your activity') + '</span></div></div>' +
       '<p style="margin:.7rem 0 .2rem">' + T('Faixa de referência para o seu dia:', 'Reference range for your day:') + '</p><div class="kcal-big" style="font-size:1.9rem">' + HN.num(mn) + '–' + HN.num(mx) + ' <span class="small muted" style="font-weight:600">kcal</span></div>' +
       (low ? U.notice('warn', T('Ajustei a faixa para o piso de segurança (' + piso + ' kcal). Abaixo disso só com acompanhamento profissional.', 'I adjusted the range to the safety floor (' + piso + ' kcal). Below that only with professional follow-up.')) : '') +
@@ -159,17 +160,56 @@
       '<p class="small muted mt">' + T('Equação: ', 'Equation: ') + (metodo === 'katch' ? 'Katch-McArdle' : 'Mifflin-St Jeor') + ' × ' + T('fator de atividade', 'activity factor') + '. ' + T('É uma <b>estimativa educativa</b> com margem de ±10%: sentir fome e saciedade vem primeiro. Não substitui nutricionista. <b>Nada disso foi salvo.</b>', 'It is an <b>educational estimate</b> with ±10% margin: feeling hunger and fullness comes first. It does not replace a dietitian. <b>None of this was saved.</b>') + '</p></div>';
   };
 
+
+  /* ---------- anel do Início (Parte A): referência = a faixa calculada nesta visita, ou 2.000 kcal dos rótulos ---------- */
+  var ndRef = null; // só na memória: some ao fechar o app
+  function ref() { if (ndRef) return ndRef; var m = C.macros(2000, C.presetsMacro.equilibrado); return { kcal: 2000, p: m.p.g, c: m.c.g, f: m.f.g }; }
+  function ringHtml() {
+    var r = ref(), t = totals().t;
+    if (r.semNumeros) return '<p class="small" style="margin:.4rem 0 0;opacity:.9">🌱 ' + T('Sem metas numéricas para você: use a calculadora para conhecer os alimentos, sem anel de calorias.', 'No numeric targets for you: use the calculator to learn about foods, without a calorie ring.') + '</p>';
+    return U.ring({ rings: [
+      { l: T('Energia', 'Energy'), v: t.kcal, t: r.kcal, c: 'var(--brand)', u: ' kcal' },
+      { l: T('Proteína', 'Protein'), v: t.p, t: r.p, c: 'var(--cyan)', u: ' g' },
+      { l: T('Carboidratos', 'Carbs'), v: t.c, t: r.c, c: 'var(--accent)', u: ' g' },
+      { l: T('Gorduras', 'Fat'), v: t.f, t: r.f, c: '#ec4899', u: ' g' }
+    ], center: { big: HN.num(t.kcal), small: 'kcal' }, size: 124, sw: 9, compact: true }) +
+      '<p class="t-caption" style="margin:.5rem 0 0;opacity:.85">' + (r.sua ? T('Referência: a faixa que você calculou (não salva).', 'Reference: the range you calculated (not saved).') : T('Referência: 2.000 kcal dos rótulos.', 'Reference: 2,000 kcal label value.')) + ' ' + T('Violeta = faixa tranquila (90–110%), não é meta.', 'Violet = calm range (90–110%), not a target.') + '</p>';
+  }
+  function greet() { var h = new Date().getHours(); return h < 12 ? T('Bom dia', 'Good morning') : h < 18 ? T('Boa tarde', 'Good afternoon') : T('Boa noite', 'Good evening'); }
+
+  /* ---------- carrossel de receitas por aparelho ---------- */
+  var carEq = null; // aparelhos escolhidos no carrossel (começa com os de "Gostos e cozinha")
+  function carSel() { if (!carEq) carEq = gostos().equip.slice(); return carEq; }
+  function carHtml() {
+    var sel = carSel(), cp = HN.casaPerfil ? HN.casaPerfil(true) : {};
+    var list = HN.recipeList.filter(function (r) { return C.receitaCompativel(r, cp) && (!sel.length || r.equip.every(function (e) { return sel.indexOf(e) >= 0; })); });
+    list.sort(function (a, b) { var ea = a.equip.some(function (e) { return sel.indexOf(e) >= 0; }) ? 0 : 1, eb = b.equip.some(function (e) { return sel.indexOf(e) >= 0; }) ? 0 : 1; return ea - eb || a.time - b.time; });
+    var pills = '<div class="car-pills" role="group" aria-label="' + T('Filtrar por aparelho', 'Filter by appliance') + '"><button class="chip' + (sel.length ? '' : ' on') + '" data-act="car-eq" data-arg="" aria-pressed="' + !sel.length + '">' + T('Todos', 'All') + '</button>' +
+      Object.keys(HN.equipment).map(function (k) { var e = HN.equipment[k], on = sel.indexOf(k) >= 0; return '<button class="chip' + (on ? ' on' : '') + '" data-act="car-eq" data-arg="' + k + '" aria-pressed="' + on + '"><span aria-hidden="true">' + e[2] + '</span>' + esc(HN.tt([e[0], e[1]])) + '</button>'; }).join('') + '</div>';
+    var cards = list.length ? list.map(function (r) {
+      var eq = r.equip.length ? r.equip.map(function (e) { return HN.equipment[e][2]; }).join('') : '🥗';
+      var tag = r.equip.length ? r.equip.map(function (e) { return HN.tt([HN.equipment[e][0], HN.equipment[e][1]]); }).join(' + ') + ' · ' + r.time + ' min' : T('Sem aparelho', 'No appliance') + ' · ' + r.time + ' min';
+      return '<button class="car-card" data-act="go" data-arg="/receita/' + r.id + '"><span class="car-eq" aria-hidden="true">' + eq + '</span><span class="car-t">' + esc(HN.tt([r.pt, r.en])) + '</span><span class="car-s">' + esc(tag) + '</span></button>';
+    }).join('') : '<p class="muted small">' + T('Nenhuma receita só com esses aparelhos. Toque em “Todos”.', 'No recipe with only these appliances. Tap “All”.') + '</p>';
+    return pills + '<div class="car-row">' + cards + '</div>';
+  }
+  A['car-eq'] = function (k) {
+    var sel = carSel(); if (!k) carEq = []; else { var i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); }
+    var box = HN.q('#carousel'); if (box) box.innerHTML = carHtml();
+  };
+
   /* ================= tela inicial (Parte A) ================= */
   V.home = function () {
     var quick = ['arroz_branco', 'feijao_carioca', 'ovo_mexido', 'pao_frances', 'banana', 'frango_grelhado', 'alface', 'leite_integral'].filter(function (id) { return HN.foods[id]; });
     var g = gostos(), unset = !g.pessoas && !g.restr.length && !g.equip.length && !g.curte.length && !g.evita.length;
-    var h = U.title('🧮', T('Calculadora de calorias', 'Calorie calculator'), T('Some calorias e macros do que você vai comer · sem cadastro', 'Add up calories and macros of what you will eat · no sign-up')) +
+    var h = '<div class="card hero home-hero"><div class="small" style="opacity:.85">' + HN.fmtDate(Date.now()) + '</div><h1 style="margin:.1rem 0 .1rem">' + greet() + '!</h1><div class="small" style="opacity:.9">🧮 ' + T('Calculadora de calorias · some o que você vai comer', 'Calorie calculator · add up what you will eat') + '</div><div id="cring" class="mt">' + ringHtml() + '</div></div>' +
       '<div class="card"><label class="f" for="cq">' + T('O que você vai comer?', 'What will you eat?') + '</label><input type="search" id="cq" data-in="cq" placeholder="' + T('Buscar entre ' + HN.foodList.length + ' alimentos (ex.: arroz, frango)', 'Search ' + HN.foodList.length + ' foods (e.g. rice, chicken)') + '" autocomplete="off"><div id="cres" class="mt"></div>' +
       '<div class="chips mt">' + quick.map(function (id) { return '<button class="chip" data-act="calc-quick" data-arg="' + id + '">＋ ' + esc(HN.foodName(HN.foods[id])) + '</button>'; }).join('') + '</div></div>' +
       '<div class="card"><h3>' + T('Minha refeição', 'My meal') + '</h3><div id="citems">' + itemsHtml() + '</div>' +
       '<div id="cacts" class="row wrap mt" style="' + (state().items.length ? '' : 'display:none') + '"><button class="btn sec sm" data-act="calc-copy">📋 ' + T('Copiar', 'Copy') + '</button><button class="btn sec sm" data-act="calc-save">💾 ' + T('Salvar', 'Save') + '</button><button class="btn sec sm" data-act="calc-diary">📝 ' + T('Enviar ao diário', 'Send to diary') + '</button><button class="btn ghost sm" data-act="calc-clear">🗑 ' + T('Limpar', 'Clear') + '</button></div>' +
       '<div class="row wrap mt"><button class="btn ghost sm" data-act="calc-load">📂 ' + T('Minhas refeições', 'My meals') + '</button><button class="btn ghost sm" data-act="food-new">＋ ' + T('Novo alimento', 'New food') + '</button></div></div>' +
       '<div id="ctot">' + totalsHtml() + '</div>' +
+      '<div class="card"><div class="row"><h3 class="grow" style="margin:0">🍳 ' + T('O que dá para fazer com sua cozinha', 'What your kitchen can make') + '</h3><button class="btn sm sec" data-act="go" data-arg="/receitas">' + T('Todas', 'All') + '</button></div><div id="carousel" class="mt">' + carHtml() + '</div></div>' +
       '<details class="acc card" style="padding:.2rem 1rem"><summary>⚡ ' + T('Quantas calorias eu preciso por dia?', 'How many calories do I need per day?') + '</summary><div class="mt">' + ndForm() + '</div></details>';
     if (unset) h += '<div class="card tap" role="button" tabindex="0" data-act="go" data-arg="/gostos"><div class="row"><span style="font-size:1.6rem">😋</span><div class="grow"><b>' + T('Monte o cardápio do seu jeito', 'Build the menu your way') + '</b><div class="small muted">' + T('Conte o que você gosta, evita e tem na cozinha (30 segundos).', 'Tell us what you like, avoid and have in your kitchen (30 seconds).') + '</div></div><span aria-hidden="true">›</span></div></div>';
     h += '<div class="grid mb">' + ['planejar', 'receitas', 'compras', 'rotulos', 'saciedade', 'alimentos'].map(function (id) { var n = HN.nav[id]; return '<button class="sc" data-act="go" data-arg="' + n.r + '"><span class="e" aria-hidden="true">' + n.e + '</span>' + HN.tt([n.pt, n.en]) + '</button>'; }).join('') + '</div>' +
