@@ -10,22 +10,29 @@
   var SAMPLE_BIO = 'InBody 270\nPeso 72,4 kg\nMassa de Músculo Esquelético 28,3 kg\nMassa de Gordura 17,4 kg\nPercentual de Gordura Corporal 24,1 %\nÁgua Corporal Total 38,2 L\nTaxa Metabólica Basal 1520 kcal\nNível de Gordura Visceral 7';
   function widget(kind) {
     return '<div class="card"><h3>📷 ' + (kind === 'bio' ? T('Foto do laudo', 'Report photo') : T('Foto do rótulo', 'Label photo')) + '</h3>' +
-      '<p class="small muted">' + T('A foto é tratada no seu aparelho. Para ler a imagem é preciso o motor de leitura (≈11 MB, só o programa é baixado — a foto não é enviada). Se preferir, cole ou digite o texto abaixo.', 'The photo is handled on your device. Reading the image needs the OCR engine (≈11 MB, only the program is downloaded — the photo is not uploaded). If you prefer, paste or type the text below.') + '</p>' +
+      '<p class="small muted">' + T('A foto é tratada no seu aparelho. Para ler a imagem é preciso o motor de leitura (≈5,5 MB só na primeira vez, baixado deste site — a foto não é enviada). Se preferir, cole ou digite o texto abaixo.', 'The photo is handled on your device. Reading the image needs the OCR engine (≈5.5 MB only the first time, from this site — the photo is not uploaded). If you prefer, paste or type the text below.') + '</p>' +
       '<div class="row wrap"><label class="btn sec sm" for="scfile">📷 ' + T('Tirar / escolher foto', 'Take / choose photo') + '</label><input id="scfile" type="file" accept="image/*" capture="environment" class="sr" data-in="sc-file"><button class="btn sec sm" data-act="sc-ocr">🔤 ' + T('Ler a foto', 'Read the photo') + '</button><button class="btn ghost sm" data-act="sc-sample" data-arg="' + kind + '">🧪 ' + T('Exemplo', 'Example') + '</button></div><div id="scprev" class="mt"></div>' +
       '<label class="f" for="sctext">' + T('Texto lido (edite se precisar)', 'Text read (edit if needed)') + '</label><textarea id="sctext" data-in="sc-text" placeholder="' + (kind === 'bio' ? T('Ex.: Percentual de Gordura Corporal 24,1 %', 'E.g.: Percent Body Fat 24.1 %') : T('Cole aqui a tabela nutricional e os ingredientes', 'Paste the nutrition table and ingredients here')) + '">' + esc(SC.text) + '</textarea>' +
       '<button class="btn block mt" data-act="sc-parse" data-arg="' + kind + '">✅ ' + T('Interpretar texto', 'Interpret text') + '</button></div>';
   }
   HN.ins['sc-text'] = function (v) { SC.text = v; };
+  // foto (arquivo ou câmera) → confere nitidez → trata para leitura → mostra a prévia
+  function useImage(img) {
+    try { var small = document.createElement('canvas'), w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height, k = Math.min(1, 900 / Math.max(w, hh)); small.width = Math.round(w * k); small.height = Math.round(hh * k); var x = small.getContext('2d'); x.drawImage(img, 0, 0, small.width, small.height); var d = x.getImageData(0, 0, small.width, small.height), p = d.data; for (var i = 0; i < p.length; i += 4) { var g = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2]; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); SC.blur = O.nitidez(small) < 60; } catch (e) { SC.blur = false; }
+    SC.canvas = O.preprocessar(img, 1600);
+    var pv = HN.q('#scprev'); if (pv) { pv.innerHTML = '<img src="' + SC.canvas.toDataURL('image/jpeg', .5) + '" alt="' + T('Prévia da foto tratada', 'Preview of processed photo') + '" style="border-radius:12px;border:1px solid var(--line)">' + (SC.blur ? U.notice('warn', T('A foto parece desfocada. Tente de novo com mais luz e o celular firme, ou escolha outra.', 'The photo looks blurry. Try again with more light and a steady phone, or choose another.')) : '<p class="small muted">' + T('Foto pronta. Toque em “Ler a foto”.', 'Photo ready. Tap “Read the photo”.') + '</p>'); }
+  }
   HN.ins['sc-file'] = function (v, el) {
     var f = el.files && el.files[0]; if (!f) return; var img = new Image(), url = URL.createObjectURL(f);
-    img.onload = function () {
-      try { var small = document.createElement('canvas'), k = Math.min(1, 900 / Math.max(img.width, img.height)); small.width = Math.round(img.width * k); small.height = Math.round(img.height * k); var x = small.getContext('2d'); x.drawImage(img, 0, 0, small.width, small.height); var d = x.getImageData(0, 0, small.width, small.height), p = d.data; for (var i = 0; i < p.length; i += 4) { var g = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2]; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); SC.blur = O.nitidez(small) < 60; } catch (e) { SC.blur = false; }
-      SC.canvas = O.preprocessar(img, 1600); URL.revokeObjectURL(url);
-      var pv = HN.q('#scprev'); if (pv) { pv.innerHTML = '<img src="' + SC.canvas.toDataURL('image/jpeg', .5) + '" alt="' + T('Prévia da foto tratada', 'Preview of processed photo') + '" style="border-radius:12px;border:1px solid var(--line)">' + (SC.blur ? U.notice('warn', T('A foto parece desfocada. Tente de novo com mais luz e o celular firme, ou escolha outra.', 'The photo looks blurry. Try again with more light and a steady phone, or choose another.')) : '<p class="small muted">' + T('Foto pronta. Toque em “Ler a foto”.', 'Photo ready. Tap “Read the photo”.') + '</p>'); }
-    };
+    img.onload = function () { useImage(img); URL.revokeObjectURL(url); };
     img.onerror = function () { HN.toast(T('Não consegui abrir essa imagem.', 'Could not open that image.')); };
     img.src = url;
   };
+  // foto tirada na tela da câmera (📷): abre a tela certa já com a foto e começa a ler
+  var pending = null;
+  HN.scanImage = function (kind, canvas) { pending = { kind: kind, canvas: canvas }; HN.go(kind === 'bio' ? '/corpo/exame' : '/rotulos'); };
+  function runPending() { if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas); A['sc-ocr'](); }
+  ['rotulos', 'corpo'].forEach(function (n) { var old = HN.after[n]; HN.after[n] = function (a, b) { if (old) old(a, b); runPending(); }; });
   A['sc-sample'] = function (k) { SC.text = k === 'bio' ? SAMPLE_BIO : SAMPLE_LABEL; var t = HN.q('#sctext'); if (t) t.value = SC.text; };
   A['sc-ocr'] = function () {
     if (!SC.canvas) { HN.toast(T('Escolha uma foto primeiro.', 'Choose a photo first.')); return; }
@@ -33,7 +40,7 @@
       var pv = HN.q('#scprev'), note = document.createElement('p'); note.className = 'small'; note.id = 'scprog'; note.textContent = T('Preparando o leitor…', 'Preparing the reader…'); if (pv) pv.appendChild(note);
       O.ler(SC.canvas, HN.lang === 'pt' ? 'por' : 'eng', function (m) { var n = HN.q('#scprog'); if (n) n.textContent = (m.status || '') + ' ' + Math.round((m.progress || 0) * 100) + '%'; }).then(function (txt) { SC.text = txt; var t = HN.q('#sctext'); if (t) t.value = txt; var n = HN.q('#scprog'); if (n) n.textContent = T('Leitura concluída. Confira o texto e toque em Interpretar.', 'Reading complete. Check the text and tap Interpret.'); }, function () { var n = HN.q('#scprog'); if (n) n.textContent = T('Não consegui carregar o leitor (sem internet?). Cole ou digite o texto.', 'Could not load the reader (offline?). Paste or type the text.'); });
     };
-    if (O.motorPronto()) go(); else HN.confirm(T('Para ler a imagem preciso baixar o motor de leitura (≈11 MB, só o programa). Baixar agora? Em dados móveis isso consome sua franquia.', 'To read the image I need to download the OCR engine (≈11 MB, program only). Download now? On mobile data this uses your allowance.'), T('Baixar e ler', 'Download and read')).then(function (ok) { if (ok) setTimeout(go, 50); });
+    if (O.motorPronto()) go(); else HN.confirm(T('Para ler a imagem preciso baixar o motor de leitura (≈5,5 MB só na primeira vez). Baixar agora? Em dados móveis isso consome sua franquia.', 'To read the image I need to download the OCR engine (≈5.5 MB only the first time). Download now? On mobile data this uses your allowance.'), T('Baixar e ler', 'Download and read')).then(function (ok) { if (ok) setTimeout(go, 50); });
   };
   A['sc-parse'] = function (kind) {
     var txt = (HN.q('#sctext') || {}).value || SC.text; SC.text = txt; if (!txt.trim()) { HN.toast(T('Sem texto para interpretar.', 'No text to interpret.')); return; }

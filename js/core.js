@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.2.2';
+  HN.version = '0.2.3';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -294,19 +294,7 @@
     try { navigator.vibrate(PULSO[tipo] || PULSO.leve); } catch (e) { /* sem vibração neste aparelho */ }
   };
 
-  /* ---------- câmera (botão central da barra de baixo) ---------- */
-  A.scan = function () {
-    var T = HN.T, ok = !!HN.cfg().aceite;
-    var soon = '<span class="badge">' + T('chega na v0.3', 'coming in v0.3') + '</span>';
-    var item = function (o) { return '<button class="li"' + (o.r ? ' data-act="go" data-arg="' + o.r + '"' : ' aria-disabled="true"') + '><span class="e">' + o.e + '</span><span class="grow"><div class="t">' + o.t + (o.b ? ' <span class="lock-b">🔒</span>' : '') + '</div><div class="s">' + o.s + '</div></span>' + (o.r ? '' : soon) + '</button>'; };
-    HN.sheet('📷 ' + T('O que você quer ler?', 'What do you want to scan?'),
-      '<p><span class="privacy">🛡️ ' + T('Rótulo e código de barras são lidos no aparelho', 'Labels and barcodes are read on your device') + '</span></p><div class="scanmodes">' +
-      item({ e: '🏷️', t: T('Rótulo nutricional', 'Nutrition label'), s: T('Foto da tabela: macros e alérgenos', 'Photo of the table: macros and allergens'), r: '/rotulos' }) +
-      item({ e: '▮▯▮', t: T('Código de barras', 'Barcode'), s: T('Busca o produto no Open Food Facts', 'Looks the product up on Open Food Facts') }) +
-      item({ e: '🍽️', t: T('Prato ou refeição', 'Plate or meal'), s: T('Meu acompanhamento · usa a IA da sua chave, com aviso', 'My follow-up · uses your AI key, with a notice'), b: true }) +
-      item({ e: '📄', t: T('Laudo de bioimpedância', 'Body composition report'), s: T('Meu acompanhamento · massa magra, gordura, TMB', 'My follow-up · lean mass, fat, BMR'), b: true }) +
-      '</div>' + (ok ? '' : '<p class="small muted mt">🔒 ' + T('Os itens com cadeado ficam em Meu acompanhamento e pedem o aceite de privacidade (LGPD).', 'Items with a lock live in My follow-up and need the privacy consent (LGPD).') + '</p>'));
-  };
+  /* câmera (botão 📷 do centro): A.scan fica em js/v-scan.js */
 
   /* ---------- delegação de eventos ---------- */
   document.addEventListener('click', function (e) {

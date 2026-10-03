@@ -232,7 +232,7 @@
   V.diario = (function (orig) { return function (parts, q) { if (parts[1] === 'novo') return newEntry(); return orig(parts, q); }; })(V.diario);
   function newEntry() {
     var d = HN.draft = HN.draft || draftNew(), nums = HN.numerosOk(), tot = C.totais(d.items);
-    var h = U.title('📝', T('Registrar refeição', 'Log a meal')) + '<div class="card"><label class="f">' + T('Qual refeição?', 'Which meal?') + '</label>' + U.chips('dm', U.MEALS.map(function (m) { return [m[0], m[1], m[2], m[3]]; }), d.meal, false) + '</div>';
+    var h = U.title('📝', T('Registrar refeição', 'Log a meal')) + (d.photo ? '<div class="card"><div class="row"><img src="' + d.photo + '" alt="' + T('Foto do prato', 'Plate photo') + '" style="width:5.5rem;height:5.5rem;object-fit:cover;border-radius:14px"><div class="grow small">' + (d.photoNote || T('Foto só para você conferir enquanto registra. Ela não é guardada.', 'Photo just for you to check while logging. It is not stored.')) + '</div><button class="ib" data-act="dm-photo-rm" aria-label="' + T('Tirar foto', 'Remove photo') + '">✕</button></div></div>' : '') + '<div class="card"><label class="f">' + T('Qual refeição?', 'Which meal?') + '</label>' + U.chips('dm', U.MEALS.map(function (m) { return [m[0], m[1], m[2], m[3]]; }), d.meal, false) + '</div>';
     h += '<div class="card"><h3>1. ' + T('Fome antes de comer', 'Hunger before eating') + '</h3>' + U.scale('dhb', d.hb, LO(), HI()) + (d.hb ? '<p class="small mt">' + SCALE_HINT(d.hb) + '</p>' : '') + '</div>';
     h += '<div class="card"><h3>2. ' + T('O que você comeu?', 'What did you eat?') + '</h3><input type="search" id="fq" data-in="fq" placeholder="' + T('Buscar alimento (ex.: arroz)', 'Search food (e.g. rice)') + '" autocomplete="off"><div id="fres" class="mt"></div>' +
       '<div class="row wrap mt"><button class="btn sec sm" data-act="dm-recipe">🍳 ' + T('Usar uma receita', 'Use a recipe') + '</button><button class="btn sec sm" data-act="dm-recent">🕘 ' + T('Recentes', 'Recent') + '</button><button class="btn sec sm" data-act="dm-again">🔁 ' + T('Repetir a última', 'Repeat the last one') + '</button><button class="btn sec sm" data-act="food-new">＋ ' + T('Novo alimento', 'New food') + '</button></div><div class="mt" id="ditems">' + itemsHtml(d, nums, tot) + '</div></div>';
@@ -250,6 +250,8 @@
   function stepG(foodId) { var f = HN.foods[foodId]; return f && f.measures[0] ? f.measures[0][2] : 25; }
   function refreshItems() { var d = HN.draft, box = HN.q('#ditems'); if (box) box.innerHTML = itemsHtml(d, HN.numerosOk(), C.totais(d.items)); }
   function addFood(id, g) { var d = HN.draft, ex = d.items.filter(function (i) { return i.food === id; })[0]; if (ex) ex.g += g || stepG(id); else d.items.push({ food: id, g: g || stepG(id) }); refreshItems(); }
+  A['dm-photo-rm'] = function () { if (HN.draft) { delete HN.draft.photo; delete HN.draft.photoNote; } HN.refresh(); };
+  HN.draftNew = draftNew;
   HN.chipFn.dm = function (v) { HN.draft.meal = v; HN.refresh(); };
   HN.chipFn.dhb = function (v) { HN.draft.hb = v; HN.refresh(); };
   HN.chipFn.dsa = function (v) { HN.draft.sa = v; HN.refresh(); };

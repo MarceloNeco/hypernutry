@@ -1,6 +1,6 @@
 /* HyperNutry — leitura de rótulos e laudos: pré-processamento, motor OCR (opcional) e PARSERS.
  * Os parsers recebem TEXTO e funcionam sem motor (colar texto, ditado, teclado).
- * O motor (Tesseract.js) NÃO vem embutido nesta versão: carrega só quando a pessoa pede, e só com
+ * O motor (Tesseract.js) fica hospedado em vendor/tesseract e carrega só quando a pessoa pede, e só com
  * confirmação (pacote pesado). Tudo que é lido passa por conferência humana antes de salvar.
  * Limiares de "alto em": ANVISA RDC 429/2020 + IN 75/2020 (sólidos por 100 g | líquidos por 100 ml):
  *   açúcar adicionado ≥ 15 g | ≥ 7,5 g · gordura saturada ≥ 6 g | ≥ 3 g · sódio ≥ 600 mg | ≥ 300 mg.
@@ -127,17 +127,23 @@
     return out;
   };
 
-  // ---------- Motor OCR (opcional) ----------
-  var CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-  O.motorLocal = 'vendor/tesseract/tesseract.min.js'; // se um dia o motor for hospedado aqui
+  // ---------- Motor OCR (hospedado aqui desde a v0.2.3) ----------
+  // Arquivos em vendor/tesseract (Tesseract.js 5.1.1 + núcleo LSTM + idiomas por/eng "best_int").
+  // Uma leitura baixa ≈5,5 MB (programa + núcleo + 1 idioma), uma vez só: depois fica no cache do aparelho.
+  // Se a pasta não existir (cópia antiga do site), cai sozinho para o CDN. A foto nunca sai do aparelho.
+  var CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  var BASE = 'vendor/tesseract/', local = false;
+  O.motorLocal = BASE + 'tesseract.min.js';
+  O.motorMB = 5.5;
   O.motorPronto = function () { return !!window.Tesseract; };
   function load(src) {
     return new Promise(function (ok, fail) { var s = document.createElement('script'); s.src = src; s.crossOrigin = 'anonymous'; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
   }
   O.carregarMotor = function () {
     if (window.Tesseract) return Promise.resolve();
-    return load(O.motorLocal).catch(function () { return load(CDN); });
+    return load(O.motorLocal).then(function () { local = true; }).catch(function () { return load(CDN); });
   };
+  function abs(p) { return new URL(p, location.href).href; }
   // Pré-processamento no aparelho: reduz, escala de cinza, contraste, binarização simples
   O.preprocessar = function (img, maxLado) {
     var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, esc = Math.min(1, (maxLado || 1600) / Math.max(w, h));
@@ -161,7 +167,9 @@
   };
   O.ler = function (canvasOuImg, lang, onProgress) {
     return O.carregarMotor().then(function () {
-      return window.Tesseract.recognize(canvasOuImg, lang || 'por', { logger: function (m) { if (onProgress && m.progress != null) onProgress(m); } });
+      var op = { logger: function (m) { if (onProgress && m.progress != null) onProgress(m); } };
+      if (local) { op.workerPath = abs(BASE + 'worker.min.js'); op.corePath = abs(BASE); op.langPath = abs(BASE + 'lang'); }
+      return window.Tesseract.recognize(canvasOuImg, lang || 'por', op);
     }).then(function (r) { return r.data.text; });
   };
 })(window.HN = window.HN || {});
