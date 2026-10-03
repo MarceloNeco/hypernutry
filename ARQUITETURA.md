@@ -7,7 +7,8 @@ PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`.
 - `js/data-taco.js` TACO completa (591 itens, micronutrientes); alérgenos estimados pelo nome.
 - `js/data-recipes.js` equipamentos e 16 receitas.
 - `js/calc.js` (`HN.calc`) fórmulas (Mifflin, Harris, Katch), faixas flexíveis, macros, substituição, cardápio, lista de compras, alertas de segurança.
-- `js/ocr.js` (`HN.ocr`) interpreta texto de rótulo e de bioimpedância; carrega Tesseract.js sob demanda (CDN) — não está embutido.
+- `js/ocr.js` (`HN.ocr`) interpreta texto de rótulo e de bioimpedância; motor Tesseract.js **hospedado** em `vendor/tesseract/` (v5.1.1, núcleo LSTM, idiomas por/eng best_int), carregado só quando a pessoa pede; cai para o CDN se a pasta faltar.
+- `js/v-scan.js` câmera em tela cheia (botão 📷): modos Rótulo, Código (BarcodeDetector + Open Food Facts, `HN.offBuscar`), Prato (foto de referência no diário; IA via `HN.iaVisao` quando existir) e Laudo. Câmera só ao tocar; desligada ao fechar.
 - `js/core.js` utilidades, armazenamento `HN.S`, perfil, menu, busca, camadas (botão Voltar), roteador, `HN.start()`.
 - `js/v-calc.js` PARTE A: calculadora de calorias, gostos e cozinha; liga TACO/restrições/gostos às telas existentes.
 - `js/ui.js` peças de tela (chips, escala, gráficos SVG).
@@ -45,3 +46,4 @@ Tudo em `css/style.css`, como variáveis no `:root` (claro) e repetidas para o e
 - **Anel adaptativo** (`HN.ui.ring`, v0.2.2): um anel por nutriente; círculo = 125% da referência; faixa 90–110% em violeta; dentro dela o anel fica violeta, acima fica sálvia (nunca vermelho). `HN.ui.ringUpdate` anima a mudança sem redesenhar. Parte A: referência = faixa calculada na visita (só memória) ou 2.000 kcal dos rótulos. Parte B: `HN.faixaHoje` + preset de macros das metas; sem anel quando `HN.numerosOk` é falso.
 - **Escala de fome deslizante** (`HN.ui.slider`/`sliderMove`): rosto e número mudam na hora com vibração média; salva ao soltar (agrupado em 600 ms).
 - **Carrossel por aparelho** (Parte A, `#carousel`): receitas compatíveis com restrições, filtradas pelos aparelhos escolhidos (começa com os de "Gostos e cozinha").
+- **Câmera** (v0.2.3): visor `.scan` com cantos de AR, laser esmeralda, selo de privacidade por modo e cartão de vidro com o resultado. Fotos de rótulo/laudo vão para `HN.scanImage(kind, canvas)` (em `v-body.js`), que abre a tela certa e já começa a ler. `sw.js` guarda `vendor/` num cache próprio (`hypernutry-motor-v1`), que não é apagado a cada versão.

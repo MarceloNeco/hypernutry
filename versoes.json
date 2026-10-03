@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.2.3",
+   "data": "03/Out/2026",
+   "hora": "13:41:09",
+   "pt": "📷 Câmera nova em tela cheia com 4 modos: Rótulo, Código de barras (busca o produto no Open Food Facts e põe na calculadora; no iPhone, digite o número), Prato (foto de referência no diário) e Laudo de bioimpedância. Leitor de rótulos agora hospedado no próprio app: ≈5,5 MB só na primeira vez, e a foto nunca sai do aparelho.",
+   "en": "📷 New full-screen camera with 4 modes: Label, Barcode (looks the product up on Open Food Facts and adds it to the calculator; on iPhone, type the number), Plate (reference photo in the diary) and Body composition report. The label reader is now hosted in the app itself: ≈5.5 MB only the first time, and the photo never leaves your device."
+  },
+  {
    "v": "0.2.2",
    "data": "03/Out/2026",
    "hora": "13:33:36",

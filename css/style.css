@@ -262,13 +262,6 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .scrim { background: rgba(15,23,42,.45); }
 .full .fh { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
 
-/* escolha do modo da câmera */
-.scanmodes { display: grid; gap: .5rem; }
-.scanmodes .li { border: 1px solid var(--line); border-radius: 16px; padding: .75rem .8rem; background: var(--card); }
-.scanmodes .li[aria-disabled="true"] { opacity: .55; cursor: default; }
-.lock-b { color: var(--violet-strong); }
-.privacy { display: inline-flex; align-items: center; gap: .35rem; font-size: .75rem; font-weight: 600; padding: .25rem .6rem; border-radius: 999px; background: var(--brand-soft); color: var(--ink); }
-
 /* vidro desligado: navegador sem suporte, alto contraste ou quem pede menos transparência — fundo sólido */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root { --glass: var(--glass-solid); --glass-bar: var(--glass-solid); }
@@ -330,3 +323,39 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .ring-wrap.compact .rg-legend { flex: 1 1 auto; gap: .15rem; }
 .ring-wrap.compact .rg-leg { font-size: .8rem; gap: .25rem; }
 .home-hero h1 { font-size: 1.4rem; }
+
+/* ===== Câmera (v0.2.3): visor em tela cheia, cantos de AR, laser esmeralda, cartão de vidro ===== */
+.full:has(.scan) { background: #000; }
+.scan { position: fixed; inset: 0; background: #000; color: #f8fafc; overflow: hidden; }
+.scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+.scan video.dim { filter: blur(8px) brightness(.5); }
+.scan-ui { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(.5rem + env(safe-area-inset-top)) .8rem calc(.8rem + env(safe-area-inset-bottom)); background: linear-gradient(rgba(0,0,0,.45), transparent 22%, transparent 60%, rgba(0,0,0,.65)); }
+.scan .ib { color: #fff; background: rgba(15,23,42,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 50%; }
+.scan-top { display: flex; align-items: center; gap: .5rem; }
+.scan-badge { font-size: .75rem; font-weight: 600; padding: .35rem .7rem; border-radius: 999px; background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.15); justify-self: start; width: fit-content; max-width: 100%; }
+.scan-frame { position: relative; width: min(78vw, 22rem); aspect-ratio: 3 / 4; margin: auto; }
+.scan-frame.wide { aspect-ratio: 16 / 9; }
+.scan-frame i { position: absolute; width: 2.2rem; height: 2.2rem; border: 4px solid var(--brand); }
+.scan-frame .c1 { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 18px; }
+.scan-frame .c2 { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 18px; }
+.scan-frame .c3 { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 18px; }
+.scan-frame .c4 { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 18px; }
+.scan-frame .laser { position: absolute; left: 6%; right: 6%; height: 2px; top: 10%; background: var(--brand); box-shadow: 0 0 12px 3px rgba(16,185,129,.8); border-radius: 2px; animation: laser 2.2s ease-in-out infinite alternate; }
+@keyframes laser { from { top: 8%; } to { top: 92%; } }
+.scan-frame { animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 50% { filter: drop-shadow(0 0 8px rgba(16,185,129,.6)); } }
+.scan-hint { text-align: center; font-size: .9rem; margin: .5rem auto; max-width: 26rem; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.scan-bottom { display: grid; gap: .7rem; }
+.scan-modes { display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 999px; background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.15); }
+.scan-modes button { min-height: 2.6rem; border: 0; border-radius: 999px; background: transparent; color: #e2e8f0; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; padding: 0 .2rem; }
+.scan-modes button.on { background: var(--brand); color: var(--brand-ink); animation: pop .22s var(--spring); }
+.shutter { width: 4.4rem; height: 4.4rem; border-radius: 50%; border: 4px solid #fff; background: rgba(255,255,255,.25); box-shadow: 0 0 0 3px rgba(16,185,129,.6); cursor: pointer; }
+.shutter:active { transform: scale(.92); background: var(--brand); }
+.scan-gal { width: 2.75rem; height: 2.75rem; cursor: pointer; }
+.scan-code input { flex: 1; min-width: 0; background: rgba(15,23,42,.6); color: #fff; border-color: rgba(255,255,255,.25); }
+.scan-card { position: absolute; left: .6rem; right: .6rem; bottom: calc(4.8rem + env(safe-area-inset-bottom)); max-width: 30rem; margin: 0 auto; padding: .9rem; border-radius: 22px; color: var(--ink); background: var(--glass-bar); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-border); box-shadow: var(--shadow-float); animation: cardup .35s var(--spring); max-height: 60vh; overflow: auto; }
+@keyframes cardup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.scan-card .stat div { background: var(--brand-soft); }
+:root[data-motion="reduzir"] .scan-frame, :root[data-motion="reduzir"] .laser { animation: none; }
+@media (prefers-reduced-motion: reduce) { .scan-frame, .laser { animation: none !important; } }
+.scan-ui.has-card .scan-hint, .scan-ui.has-card .scan-code, .scan-ui.has-card .scan-frame { visibility: hidden; }
