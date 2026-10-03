@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.2.0';
+  HN.version = '0.2.1';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -110,9 +110,11 @@
   var lastPart = 'A';
   HN.curPart = function () { var p = HN.partOf(cur.name); if (p !== 'C') lastPart = p; return lastPart; };
   HN.homeOf = function () { return HN.curPart() === 'B' ? '/acomp' : '/'; };
-  HN.defaultBars = { A: ['calc', 'planejar', 'receitas', 'compras', 'rotulos'], B: ['acomp', 'diario', 'intuitivo', 'corpo', 'metas'] };
-  HN.barIds = function (part) { part = part || HN.curPart(); var c = HN.cfg(), b = c.bars && c.bars[part]; return (b && b.length ? b : HN.defaultBars[part]).filter(function (i) { return HN.nav[i]; }).slice(0, 5); };
-  HN.setBar = function (part, list) { var c = HN.cfg(), o = c.bars || {}; o[part] = list ? list.slice(0, 5) : null; HN.setCfg({ bars: o }); };
+  // barra de baixo: até 4 favoritos (2 de cada lado) + câmera fixa no centro
+  HN.BAR_MAX = 4;
+  HN.defaultBars = { A: ['calc', 'planejar', 'receitas', 'compras'], B: ['acomp', 'diario', 'intuitivo', 'corpo'] };
+  HN.barIds = function (part) { part = part || HN.curPart(); var c = HN.cfg(), b = c.bars && c.bars[part]; return (b && b.length ? b : HN.defaultBars[part]).filter(function (i) { return HN.nav[i]; }).slice(0, HN.BAR_MAX); };
+  HN.setBar = function (part, list) { var c = HN.cfg(), o = c.bars || {}; o[part] = list ? list.slice(0, HN.BAR_MAX) : null; HN.setCfg({ bars: o }); };
 
   HN.searchIndex = function () {
     var out = [];
@@ -241,10 +243,14 @@
       '<button class="ib" data-act="home" aria-label="' + T('Início', 'Home') + '"' + (name === 'home' ? ' aria-current="page"' : '') + '>🏠</button>';
     var bn = HN.q('#bn');
     var pn = HN.q('#parts');
-    if (pn) { if (inWizard) pn.classList.add('hide'); else { pn.classList.remove('hide'); var cp = HN.curPart(), ok = !!HN.cfg().aceite; pn.innerHTML = '<button data-act="go" data-arg="/" class="' + (cp === 'A' ? 'on' : '') + '"' + (cp === 'A' ? ' aria-current="true"' : '') + '>🧮 ' + T('Calcular e cozinhar', 'Calculate & cook') + '</button><button data-act="go" data-arg="/acomp" class="' + (cp === 'B' ? 'on' : '') + '"' + (cp === 'B' ? ' aria-current="true"' : '') + '>🩺 ' + T('Meu acompanhamento', 'My follow-up') + (ok ? '' : ' 🔒') + '</button>'; } }
+    var cp = HN.curPart(); document.documentElement.setAttribute('data-part', cp);
+    if (pn) { if (inWizard) pn.classList.add('hide'); else { pn.classList.remove('hide'); var ok = !!HN.cfg().aceite; pn.innerHTML = '<div class="seg' + (cp === 'B' ? ' b' : '') + '"><i aria-hidden="true"></i><button data-act="go" data-arg="/" class="' + (cp === 'A' ? 'on' : '') + '"' + (cp === 'A' ? ' aria-current="true"' : '') + '>🧮 ' + T('Calcular e cozinhar', 'Calculate & cook') + '<span class="tag">' + T('sem cadastro', 'no sign-up') + '</span></button><button data-act="go" data-arg="/acomp" class="' + (cp === 'B' ? 'on' : '') + '"' + (cp === 'B' ? ' aria-current="true"' : '') + '>🩺 ' + T('Meu acompanhamento', 'My follow-up') + '<span class="tag">' + T('saúde · protegido', 'health · protected') + (ok ? '' : ' 🔒') + '</span></button></div>'; } }
     if (inWizard || !hasProfile) { bn.classList.add('hide'); } else {
       bn.classList.remove('hide');
-      bn.innerHTML = HN.barIds(HN.curPart()).map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '" class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt(HN.navShort[id] || [n.pt, n.en]) + '</span></button>'; }).join('');
+      var btns = HN.barIds(cp).map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '" class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt(HN.navShort[id] || [n.pt, n.en]) + '</span></button>'; });
+      while (btns.length < HN.BAR_MAX) btns.push('<span class="gap" aria-hidden="true"></span>'); // mantém a câmera no centro
+      var cam = '<button class="cam" data-act="scan" aria-label="' + T('Câmera: ler rótulo, código de barras, prato ou laudo', 'Camera: scan label, barcode, plate or report') + '"><span class="e">📷</span></button>';
+      bn.innerHTML = btns.slice(0, 2).join('') + cam + btns.slice(2).join('');
     }
   };
 
@@ -279,9 +285,33 @@
   A['search-term'] = function (w) { var i = HN.q('#q'); if (i) { i.value = w; HN.ins.busca(w); } };
   A['search-go'] = function (arg) { HN.go(arg); };
 
+  /* ---------- vibração curta (haptic) ----------
+   * leve = trocar aba/filtro · média = passo da escala de fome · sucesso = leitura reconhecida.
+   * navigator.vibrate só existe no Android; no iPhone o site não pode vibrar e nada acontece. */
+  var PULSO = { leve: 8, media: 18, sucesso: [12, 40, 18] };
+  HN.haptic = function (tipo) {
+    var c = HN.cfg(); if (c.semVibrar || c.reduzir || !navigator.vibrate) return;
+    try { navigator.vibrate(PULSO[tipo] || PULSO.leve); } catch (e) { /* sem vibração neste aparelho */ }
+  };
+
+  /* ---------- câmera (botão central da barra de baixo) ---------- */
+  A.scan = function () {
+    var T = HN.T, ok = !!HN.cfg().aceite;
+    var soon = '<span class="badge">' + T('chega na v0.3', 'coming in v0.3') + '</span>';
+    var item = function (o) { return '<button class="li"' + (o.r ? ' data-act="go" data-arg="' + o.r + '"' : ' aria-disabled="true"') + '><span class="e">' + o.e + '</span><span class="grow"><div class="t">' + o.t + (o.b ? ' <span class="lock-b">🔒</span>' : '') + '</div><div class="s">' + o.s + '</div></span>' + (o.r ? '' : soon) + '</button>'; };
+    HN.sheet('📷 ' + T('O que você quer ler?', 'What do you want to scan?'),
+      '<p><span class="privacy">🛡️ ' + T('Rótulo e código de barras são lidos no aparelho', 'Labels and barcodes are read on your device') + '</span></p><div class="scanmodes">' +
+      item({ e: '🏷️', t: T('Rótulo nutricional', 'Nutrition label'), s: T('Foto da tabela: macros e alérgenos', 'Photo of the table: macros and allergens'), r: '/rotulos' }) +
+      item({ e: '▮▯▮', t: T('Código de barras', 'Barcode'), s: T('Busca o produto no Open Food Facts', 'Looks the product up on Open Food Facts') }) +
+      item({ e: '🍽️', t: T('Prato ou refeição', 'Plate or meal'), s: T('Meu acompanhamento · usa a IA da sua chave, com aviso', 'My follow-up · uses your AI key, with a notice'), b: true }) +
+      item({ e: '📄', t: T('Laudo de bioimpedância', 'Body composition report'), s: T('Meu acompanhamento · massa magra, gordura, TMB', 'My follow-up · lean mass, fat, BMR'), b: true }) +
+      '</div>' + (ok ? '' : '<p class="small muted mt">🔒 ' + T('Os itens com cadeado ficam em Meu acompanhamento e pedem o aceite de privacidade (LGPD).', 'Items with a lock live in My follow-up and need the privacy consent (LGPD).') + '</p>'));
+  };
+
   /* ---------- delegação de eventos ---------- */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]'); if (!el) return;
+    if (el.matches('.chip, .tab, .bn button, .parts button, .cam')) HN.haptic('leve'); else if (el.closest('.scale')) HN.haptic('media');
     var f = A[el.getAttribute('data-act')]; if (f) { if (el.tagName === 'A') { /* link normal */ } f(el.getAttribute('data-arg'), el, e); }
   });
   function inHandler(e) {
