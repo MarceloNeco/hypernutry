@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.2.4",
+   "data": "03/Out/2026",
+   "hora": "13:43:06",
+   "pt": "🧑‍🍳 Modo cozinheiro com “Visão da cozinha”: cartões de receita com letra grande para a bancada, porções 2 · 4 · 6 · outro que recalculam os ingredientes na hora, ajustes do aparelho (ex.: Airfryer 180 °C · 25 min) e botão 📤 para compartilhar a folha — sem nenhum dado de saúde. Receitas ganharam atalhos de 2 e 4 porções.",
+   "en": "🧑‍🍳 Cook mode with a “Kitchen view”: large-type recipe cards for the countertop, 2 · 4 · 6 · custom servings that recalculate ingredients instantly, appliance settings (e.g. Air fryer 180 °C · 25 min) and a 📤 button to share the sheet — with no health data at all. Recipes got 2- and 4-serving shortcuts."
+  },
+  {
    "v": "0.2.3",
    "data": "03/Out/2026",
    "hora": "13:41:09",

@@ -22,7 +22,7 @@ Leia antes de mexer: `ARQUITETURA.md` (código e design system) e `BENCHMARK.md`
 - Topo no padrão SolverONE (☰ · nome · PT · ❓ 🔍 ⚙ 🏠); saudação vai no primeiro cartão do Início.
 
 ## Escopo da v0.3 (em entregas separadas)
-1. Base visual (v0.2.1) ✔ 2. Inícios A/B com anéis e faixa de tolerância, carrossel por aparelho, escala de fome (v0.2.2) ✔ 3. Câmera: código de barras (Open Food Facts), OCR hospedado, laudo InBody, foto do prato (v0.2.3 ✔; reconhecimento do prato por IA depende do cofre de IA da entrega 6) 4. Modo cozinheiro 5. Medidas e conquistas sem balança 6. Diretrizes SolverONE (`diretrizes.js`), com lista item a item antes.
+1. Base visual (v0.2.1) ✔ 2. Inícios A/B com anéis e faixa de tolerância, carrossel por aparelho, escala de fome (v0.2.2) ✔ 3. Câmera: código de barras (Open Food Facts), OCR hospedado, laudo InBody, foto do prato (v0.2.3 ✔; reconhecimento do prato por IA depende do cofre de IA da entrega 6) 4. Modo cozinheiro (v0.2.4 ✔) 5. Medidas e conquistas sem balança 6. Diretrizes SolverONE (`diretrizes.js`), com lista item a item antes.
 
 ## A cada release
 Subir a versão em `js/core.js` (`HN.version`), `sw.js` (`V`), `versoes.json` (data e hora de Brasília). Testar em 390×844 e 320 px (sem rolagem lateral), claro e escuro, e abrir `TESTE-hypernutry.html`.

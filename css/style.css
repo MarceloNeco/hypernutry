@@ -359,3 +359,25 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 :root[data-motion="reduzir"] .scan-frame, :root[data-motion="reduzir"] .laser { animation: none; }
 @media (prefers-reduced-motion: reduce) { .scan-frame, .laser { animation: none !important; } }
 .scan-ui.has-card .scan-hint, .scan-ui.has-card .scan-code, .scan-ui.has-card .scan-frame { visibility: hidden; }
+
+/* ===== Modo cozinheiro (v0.2.4): visão da cozinha, alto contraste para a bancada ===== */
+.kitchen { padding: 1rem; }
+.kv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+.kv-por { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .8rem; flex-wrap: wrap; }
+.kv-seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(3rem, auto); padding: 4px; border-radius: 999px; background: var(--brand-soft); }
+.kv-seg button { min-height: 2.5rem; padding: 0 .9rem; border: 0; border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; font-variant-numeric: tabular-nums; }
+.kv-seg button.on { background: var(--brand); color: var(--brand-ink); animation: pop .22s var(--spring); }
+.kv-step { justify-content: flex-end; margin-top: .4rem; }
+.kv-cards { display: grid; gap: .8rem; margin-top: .9rem; }
+@media (min-width: 720px) { .kv-cards { grid-template-columns: 1fr 1fr; } }
+.kc { border: 2px solid var(--ink); border-radius: 18px; padding: .9rem; background: var(--card); color: var(--ink); font-size: 1.08rem; }
+.kc h3 { font-size: 1.3rem; margin: .3rem 0 .5rem; }
+.kc-h { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 700; color: var(--muted); }
+.kc-eq { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+.kc-ap { display: inline-flex; align-items: center; gap: .3rem; padding: .3rem .7rem; border-radius: 999px; background: var(--accent-soft); font-size: .9rem; font-weight: 600; }
+.kc-ing { list-style: none; padding: 0; margin: 0 0 .6rem; }
+.kc-ing li { display: flex; justify-content: space-between; gap: .6rem; padding: .4rem 0; border-bottom: 1px solid var(--line); }
+.kc-ing li b { text-align: right; }
+.kc-steps { margin: .2rem 0 .7rem; } .kc-steps summary { font-weight: 700; cursor: pointer; padding: .4rem 0; min-height: 2.75rem; display: flex; align-items: center; }
+.kc-steps ol { padding-left: 1.3rem; margin: .3rem 0; } .kc-steps li { margin-bottom: .45rem; line-height: 1.5; }
+.fab-share { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--brand-ink); font-size: 1.5rem; box-shadow: 0 8px 22px rgba(16,185,129,.45); }
