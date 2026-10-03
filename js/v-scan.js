@@ -107,7 +107,7 @@
     if (m === 'prato') {
       var k = Math.min(1, 480 / Math.max(canvas.width, canvas.height)), t = document.createElement('canvas'); t.width = Math.round(canvas.width * k); t.height = Math.round(canvas.height * k); t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height);
       HN.draft = HN.draft || (HN.draftNew ? HN.draftNew() : { items: [] }); HN.draft.photo = t.toDataURL('image/jpeg', .7);
-      if (HN.iaVisao && HN.iaVisao.pronta()) { HN.draft.photoNote = T('Reconhecendo com a IA…', 'Recognising with AI…'); HN.go('/diario/novo'); HN.iaVisao.prato(canvas); }
+      if (HN.iaVisao && HN.iaVisao.pronta()) { HN.draft.photoNote = T('Reconhecendo com a IA…', 'Recognising with AI…'); HN.go('/diario/novo'); var n = 0; (function quandoAbrir() { if (HN.route().name === 'diario' && !HN.layer.count()) HN.iaVisao.prato(canvas); else if (n++ < 40) setTimeout(quandoAbrir, 100); })(); } // espera o visor fechar e o diário abrir antes de pedir confirmação
       else { HN.draft.photoNote = T('Foto de referência (não é guardada). Para reconhecer os alimentos sozinho, configure a IA em ⚙ Configurações.', 'Reference photo (not stored). To recognise foods automatically, set up AI in ⚙ Settings.'); HN.go('/diario/novo'); }
     }
   }

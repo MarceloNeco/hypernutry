@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.3.0",
+   "data": "03/Out/2026",
+   "hora": "13:52:28",
+   "pt": "✨ Módulo comum SolverONE instalado: cofre de chaves de IA (o mesmo de todos os apps, com guia passo a passo) e regra de rede Wi-Fi/dados em ⚙ Configurações. Com uma chave (Gemini grátis lê fotos), o 📷 Prato reconhece os alimentos e já preenche o diário para você conferir — só depois de você autorizar o envio da foto.",
+   "en": "✨ SolverONE shared module installed: AI key vault (the same in every app, with a step-by-step guide) and Wi-Fi/mobile-data rule in ⚙ Settings. With a key (free Gemini reads photos), 📷 Plate recognises the foods and pre-fills the diary for you to check — only after you allow sending the photo."
+  },
+  {
    "v": "0.2.5",
    "data": "03/Out/2026",
    "hora": "13:45:17",
