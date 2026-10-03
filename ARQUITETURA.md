@@ -13,6 +13,8 @@ PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`.
 - `js/v-calc.js` PARTE A: calculadora de calorias, gostos e cozinha; liga TACO/restrições/gostos às telas existentes.
 - `js/ui.js` peças de tela (chips, escala, gráficos SVG).
 - `js/v-*.js` telas: home (boas-vindas, assistente, diário, fome e emoções), food (alimentos, saciedade, metas), plan (cardápio, despensa, compras, receitas, família, cozinheiro), body (corpo, rótulos, telenutrição), meta (planos, config, ajuda, sobre).
+- `diretrizes.js` (módulo comum SolverONE, **idêntico em todos os apps — não editar aqui**, a cópia mestre é a do RootifyONE) + `diretrizes-config.js` (o único arquivo do módulo que é deste app). Ligados: cofre de IA (`DGO.ia`) e rede (`DGO.rede`). Desligados: PT/EN e datas do módulo, anúncios, login, níveis, OCR, PWA e notificações do módulo (o app tem os próprios).
+- `js/ia-visao.js` (`HN.iaVisao`): foto do prato → provedor de "visão" do cofre (Gemini, OpenAI, Mistral, Anthropic) → itens do diário para conferir; pede confirmação antes de enviar; `HN.acharAlimento(nome)` casa o nome dito pela IA com a base.
 - `sw.js` offline (rede primeiro). `manifest.json`, `img/`, `versoes.json`.
 
 ## Regras do projeto
