@@ -50,12 +50,12 @@
     return '🛡️ ' + T('Processado no aparelho (nada vai para a nuvem)', 'Processed on your device (nothing goes to the cloud)');
   }
   function hint(m) {
-    return { rot: T('Enquadre a tabela nutricional e toque no botão.', 'Frame the nutrition table and tap the button.'), cod: T('Aponte para o código de barras. A leitura é automática.', 'Point at the barcode. It reads automatically.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
+    return { rot: T('Enquadre a tabela ou os ingredientes, sem chegar perto demais. Toque na imagem para focar e depois no botão.', 'Frame the table or ingredients, not too close. Tap the image to focus, then the button.'), cod: T('Aponte para o código de barras, a uns 15 cm. Embaçou? Toque na imagem para focar ou em 🔄 para trocar de câmera.', 'Point at the barcode, about 15 cm away. Blurry? Tap the image to focus or 🔄 to switch camera.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
   }
   function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return md.b && !HN.cfg().aceite; }
   function body() {
     var m = st.mode, lk = locked(m), canDetect = 'BarcodeDetector' in window;
-    var h = '<div class="scan-top"><button class="ib" data-act="layer-close" aria-label="' + T('Fechar câmera', 'Close camera') + '">✕</button><div class="grow scan-badge" id="scbadge">' + badge(m) + '</div></div>' +
+    var h = '<div class="scan-top"><button class="ib" data-act="layer-close" aria-label="' + T('Fechar câmera', 'Close camera') + '">✕</button><div class="grow scan-badge" id="scbadge">' + badge(m) + '</div><span id="sccam" class="scan-tools"></span></div>' +
       '<div class="scan-frame' + (m === 'cod' ? ' wide' : '') + '" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><b class="laser"></b></div>' +
       '<p class="scan-hint" id="schint">' + (lk ? '🔒 ' + T('Este modo fica no Meu acompanhamento e pede o aceite de privacidade (LGPD).', 'This mode lives in My follow-up and needs the privacy consent (LGPD).') : hint(m)) + '</p>' +
       '<div id="scard"></div>' +
@@ -66,7 +66,7 @@
       '<div class="seg scan-modes" role="tablist">' + MODES.map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
     return h;
   }
-  function paint() { var el = HN.q('#scanui'); if (el) el.innerHTML = body(); var v = HN.q('#scvideo'); if (v) v.classList.toggle('dim', locked(st.mode)); startLoop(); }
+  function paint() { var el = HN.q('#scanui'); if (el) el.innerHTML = body(); ferramentas(); var v = HN.q('#scvideo'); if (v) v.classList.toggle('dim', locked(st.mode)); startLoop(); }
   function stop() { clearInterval(st.loop); st.loop = null; if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; } }
   function startLoop() {
     clearInterval(st.loop); st.loop = null;
@@ -137,11 +137,79 @@
     img.onerror = function () { HN.toast(T('Não consegui abrir essa imagem.', 'Could not open that image.')); };
     img.src = url;
   };
-  A['scan-mode'] = function (m) { st.mode = m; st.busy = false; paint(); };
+  A['scan-mode'] = function (m) { st.mode = m; st.busy = false; paint(); var tr = st.stream && st.stream.getVideoTracks()[0]; if (tr) ajustarFoco(tr); };
   A['scan-again'] = function () { st.busy = false; card(''); };
   A['scan-code'] = function () { var i = HN.q('#sccode'); if (i) lookup(i.value); };
   A['scan-add'] = function () { if (!st.last && st.lastId && A['prod-calc']) { A['prod-calc'](st.lastId); return; } var o = st.last; if (!o) return; var p = salvarProduto(o); if (HN.calcAdd) HN.calcAdd(p.id); HN.toast(T('Adicionado à calculadora ✓', 'Added to calculator ✓')); HN.go('/'); };
   document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.id === 'sccode') { e.preventDefault(); A['scan-code'](); } });
+
+
+  /* ---------- câmera: escolher a lente certa, foco automático, tocar para focar, lanterna ----------
+   * Celular com várias câmeras atrás (Samsung, Motorola…) às vezes abre a grande-angular ou a macro, que não
+   * focam de perto: a imagem fica embaçada para sempre. Por isso: escolhemos a câmera principal pelo nome,
+   * ligamos o foco contínuo quando o aparelho oferece, tocar na imagem pede foco naquele ponto, e o 🔄 troca
+   * de câmera (a escolha fica guardada). Abaixo de ~10 cm nenhuma câmera foca: a dica pede para afastar. */
+  var cams = [], caps = {};
+  function traseiras() { return cams.filter(function (d) { return !/front|frontal|user|selfie|facing front/i.test(d.label); }); }
+  function principal(l) {
+    var boas = l.filter(function (d) { return !/wide|ultra|grande|tele|macro|depth|profund|infra|ir\b/i.test(d.label); });
+    var n = function (d) { var m = /(\d+)/.exec(d.label); return m ? +m[1] : 99; };
+    return (boas.length ? boas : l).slice().sort(function (a, b) { return n(a) - n(b); })[0] || null;
+  }
+  function abrirCamera(id, primeira) {
+    if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; }
+    var v = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+    if (id) v.deviceId = { exact: id }; else v.facingMode = { ideal: 'environment' };
+    navigator.mediaDevices.getUserMedia({ video: v, audio: false }).then(function (s) {
+      if (!HN.q('#scvideo')) { s.getTracks().forEach(function (t) { t.stop(); }); return; } // visor já fechado
+      st.stream = s; var vid = HN.q('#scvideo'); vid.srcObject = s; vid.play().catch(function () { /* autoplay bloqueado: o toque seguinte libera */ });
+      var tr = s.getVideoTracks()[0];
+      return navigator.mediaDevices.enumerateDevices().then(function (ds) {
+        cams = ds.filter(function (d) { return d.kind === 'videoinput'; });
+        // primeira vez sem câmera escolhida: se o navegador abriu uma lente secundária, troca pela principal
+        var atual = (tr.getSettings && tr.getSettings().deviceId) || '', p = principal(traseiras());
+        if (primeira && !id && p && p.deviceId && atual && p.deviceId !== atual && traseiras().length > 1) { abrirCamera(p.deviceId, false); return; }
+        st.camId = atual; ajustarFoco(tr); ferramentas(); startLoop();
+      });
+    }).catch(function (e) {
+      if (id) { HN.setCfg({ camId: '' }); abrirCamera(null, true); return; } // câmera guardada sumiu: volta ao padrão
+      var hh = HN.q('#schint'); if (!hh) return;
+      hh.textContent = e && e.name === 'NotAllowedError' ? T('A câmera foi bloqueada. Toque no cadeado 🔒 ao lado do endereço → Câmera → Permitir. Enquanto isso, use 🖼️ ou digite o código.', 'Camera is blocked. Tap the lock 🔒 next to the address → Camera → Allow. Meanwhile, use 🖼️ or type the code.') : T('Não achei uma câmera. Use 🖼️ (galeria) ou digite o código.', 'No camera found. Use 🖼️ (gallery) or type the code.');
+    });
+  }
+  function aplicar(tr, c) { try { return tr.applyConstraints({ advanced: [c] }).catch(function () { /* o aparelho recusou: segue como está */ }); } catch (e) { return Promise.resolve(); } }
+  function ajustarFoco(tr) {
+    caps = (tr && tr.getCapabilities) ? tr.getCapabilities() : {};
+    var fm = caps.focusMode || [];
+    if (fm.indexOf('continuous') >= 0) aplicar(tr, { focusMode: 'continuous' });
+    // um pouco de zoom deixa segurar o celular mais longe (a 15–20 cm a câmera foca); só onde existe zoom
+    if (caps.zoom && caps.zoom.max >= 1.5 && (st.mode === 'cod' || st.mode === 'rot')) aplicar(tr, { zoom: Math.min(st.mode === 'cod' ? 2 : 1.5, caps.zoom.max) });
+  }
+  // toque na imagem: foco naquele ponto (onde o aparelho deixa) e volta ao contínuo depois
+  function focarEm(ev) {
+    var tr = st.stream && st.stream.getVideoTracks()[0], vid = HN.q('#scvideo'); if (!tr || !vid || !vid.videoWidth) return;
+    var r = vid.getBoundingClientRect(), k = Math.max(r.width / vid.videoWidth, r.height / vid.videoHeight), dw = vid.videoWidth * k, dh = vid.videoHeight * k;
+    var x = HN.clamp((ev.clientX - r.left - (r.width - dw) / 2) / dw, 0, 1), y = HN.clamp((ev.clientY - r.top - (r.height - dh) / 2) / dh, 0, 1);
+    var anel = document.createElement('span'); anel.className = 'scan-foco'; anel.style.left = (ev.clientX - r.left) + 'px'; anel.style.top = (ev.clientY - r.top) + 'px';
+    var ui = HN.q('#scanui'); if (ui) { ui.appendChild(anel); setTimeout(function () { anel.remove(); }, 900); }
+    var fm = caps.focusMode || [], c = {};
+    if (caps.pointsOfInterest) c.pointsOfInterest = [{ x: x, y: y }];
+    if (fm.indexOf('single-shot') >= 0) c.focusMode = 'single-shot'; else if (fm.indexOf('manual') >= 0 && fm.indexOf('continuous') >= 0) c.focusMode = 'manual';
+    aplicar(tr, c).then(function () { setTimeout(function () { if (fm.indexOf('continuous') >= 0) aplicar(tr, { focusMode: 'continuous' }); }, 1500); });
+  }
+  function ferramentas() {
+    var box = HN.q('#sccam'); if (!box) return;
+    box.innerHTML = (caps.torch ? '<button class="ib" data-act="scan-luz" aria-pressed="' + !!st.luz + '" aria-label="' + T('Lanterna', 'Torch') + '">' + (st.luz ? '💡' : '🔦') + '</button>' : '') +
+      (traseiras().length > 1 ? '<button class="ib" data-act="scan-trocar" aria-label="' + T('Trocar de câmera (se a imagem estiver embaçada)', 'Switch camera (if the image is blurry)') + '">🔄</button>' : '');
+  }
+  A['scan-luz'] = function () { var tr = st.stream && st.stream.getVideoTracks()[0]; if (!tr) return; st.luz = !st.luz; aplicar(tr, { torch: st.luz }); ferramentas(); };
+  A['scan-trocar'] = function () {
+    var l = traseiras(); if (l.length < 2) return; var i = l.map(function (d) { return d.deviceId; }).indexOf(st.camId), prox = l[(i + 1) % l.length];
+    HN.setCfg({ camId: prox.deviceId }); st.luz = false; abrirCamera(prox.deviceId, false);
+    HN.toast(T('Câmera ', 'Camera ') + ((i + 1) % l.length + 1) + T(' de ', ' of ') + l.length + T(' — fica guardada se a imagem ficar nítida.', ' — kept for next time if the image is sharp.'), 2600);
+  };
+  // toque na imagem (fora dos botões e campos) = focar ali
+  document.addEventListener('click', function (e) { if (!e.target.closest || !e.target.closest('.scan-ui')) return; if (e.target.closest('button, input, label, a, .scan-card, .scan-modes, .scan-bottom, .scan-top')) return; focarEm(e); });
 
   // o 📷 abre o visor; a parte atual decide o modo inicial
   A.scan = function () {
@@ -152,15 +220,7 @@
       after: function () {
         paint();
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { var hh = HN.q('#schint'); if (hh) hh.textContent = T('Este navegador não abre a câmera aqui. Use 🖼️ (galeria) ou digite o código.', 'This browser cannot open the camera here. Use 🖼️ (gallery) or type the code.'); return; }
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (s) {
-          if (!HN.q('#scvideo')) { s.getTracks().forEach(function (t) { t.stop(); }); return; } // visor já fechado
-          st.stream = s; var v = HN.q('#scvideo'); v.srcObject = s; v.play().catch(function () { /* autoplay bloqueado: o toque seguinte libera */ });
-          var tr = s.getVideoTracks()[0]; try { tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () { /* sem foco contínuo */ }); } catch (e) { /* idem */ }
-          startLoop();
-        }).catch(function (e) {
-          var hh = HN.q('#schint'); if (!hh) return;
-          hh.textContent = e && e.name === 'NotAllowedError' ? T('A câmera foi bloqueada. Toque no cadeado 🔒 ao lado do endereço → Câmera → Permitir. Enquanto isso, use 🖼️ ou digite o código.', 'Camera is blocked. Tap the lock 🔒 next to the address → Camera → Allow. Meanwhile, use 🖼️ or type the code.') : T('Não achei uma câmera. Use 🖼️ (galeria) ou digite o código.', 'No camera found. Use 🖼️ (gallery) or type the code.');
-        });
+        abrirCamera(HN.cfg().camId || null, true);
       } });
   };
 })(window.HN = window.HN || {});
