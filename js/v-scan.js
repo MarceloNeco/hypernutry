@@ -20,7 +20,7 @@
   var OFF_AL = { 'en:gluten': 'gluten', 'en:milk': 'leite', 'en:eggs': 'ovo', 'en:nuts': 'castanhas', 'en:peanuts': 'amendoim', 'en:soybeans': 'soja', 'en:fish': 'peixe', 'en:crustaceans': 'crustaceo' };
   function alerg(tags) { var o = []; (tags || []).forEach(function (t) { var k = OFF_AL[t]; if (k && o.indexOf(k) < 0) o.push(k); }); return o; }
   HN.offBuscar = function (code) {
-    var url = 'https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json?fields=code,product_name,product_name_pt,product_name_en,brands,quantity,nutriments,allergens_tags,traces_tags,serving_quantity,nova_group';
+    var url = 'https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json?fields=code,product_name,product_name_pt,product_name_en,brands,brand_owner,generic_name_pt,generic_name,categories,quantity,nutriments,allergens_tags,traces_tags,serving_quantity,nova_group,ingredients_text_pt,ingredients_text,additives_tags,image_front_small_url';
     var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
     return fetch(url, ctl ? { signal: ctl.signal } : {}).then(function (r) { clearTimeout(to); if (!r.ok && r.status !== 404) throw new Error('http ' + r.status); return r.json(); }).then(function (j) {
       if (!j || j.status !== 1 || !j.product) return null;
@@ -30,7 +30,9 @@
         code: code, nome: (HN.lang === 'en' ? p.product_name_en : p.product_name_pt) || p.product_name || p.product_name_pt || p.product_name_en || '', marca: (p.brands || '').split(',')[0].trim(), qtd: p.quantity || '',
         kcal: num('energy-kcal_100g') != null ? num('energy-kcal_100g') : (num('energy_100g') != null ? num('energy_100g') / 4.184 : null),
         p: num('proteins_100g'), c: num('carbohydrates_100g'), f: num('fat_100g'), fib: num('fiber_100g'), na: na == null ? null : na * 1000,
-        sat: num('saturated-fat_100g'), acu: num('sugars_100g'), alergenos: alerg(p.allergens_tags), tracos: alerg(p.traces_tags), porcao: +p.serving_quantity || 0, nova: +p.nova_group || 0
+        sat: num('saturated-fat_100g'), acu: num('sugars_100g'), alergenos: alerg(p.allergens_tags), tracos: alerg(p.traces_tags), porcao: +p.serving_quantity || 0, nova: +p.nova_group || 0,
+        ingredientes: (p.ingredients_text_pt || p.ingredients_text || '').trim(), offTags: p.additives_tags || [], dono: p.brand_owner || '', img: p.image_front_small_url || '',
+        tipo: (p.generic_name_pt || p.generic_name || String(p.categories || '').split(',').pop() || '').trim()
       };
     });
   };
@@ -76,22 +78,39 @@
     }, 280);
   }
   function card(html) { var c = HN.q('#scard'), ui = HN.q('#scanui'); if (c) { c.innerHTML = html ? '<div class="scan-card">' + html + '</div>' : ''; } if (ui) ui.classList.toggle('has-card', !!html); }
+  // cartão do produto lido: selo de aditivos, alertas, alergias e atalhos (o produto já fica no catálogo)
+  function cardProduto(p, o, offline) {
+    st.last = o; st.lastId = p.id;
+    var r = HN.cat.analise(p), alt = HN.alternativas(p), mine = HN.restrAll ? HN.restrAll() : [];
+    var cf = (o ? o.alergenos.concat(o.tracos) : p.alergenos || []).filter(function (a) { return mine.indexOf(a) >= 0; });
+    var n = p.nutri || {}, v = function (x, d) { return x == null ? '–' : HN.num(x, d || 0); };
+    card((cf.length ? '<div class="notice bad" role="alert">⚠️ <b>' + T('Conflita com suas restrições:', 'Conflicts with your restrictions:') + ' ' + cf.map(HN.alergName).join(', ') + '</b></div>' : '') +
+      '<div class="row" style="align-items:flex-start"><div class="grow"><div class="t-caption muted">' + esc(p.marca || '') + (p.tipo ? ' · ' + esc(p.tipo) : '') + '</div><h3 style="margin:.1rem 0">' + esc(HN.prodNome(p)) + '</h3></div><div class="right"><div class="t-display" style="font-size:1.5rem">' + v(n.kcal) + '</div><div class="t-caption muted">kcal/100 g</div></div></div>' +
+      '<p style="margin:.3rem 0">' + HN.seloHtml(r, true) + '</p>' + HN.aditivosHtml(r, true) +
+      (alt.length ? '<p class="small">✨ <b>' + alt.length + ' ' + T('opção(ões) com menos aditivos no seu catálogo', 'option(s) with fewer additives in your catalogue') + '</b> — ' + esc(HN.prodNome(alt[0].p)) + '</p>' : '') +
+      '<p class="t-caption muted">' + (offline ? '📴 ' + T('Sem internet: dados guardados no seu catálogo.', 'Offline: data saved in your catalogue.') : T('Dados do Open Food Facts (feito por voluntários): confira com a embalagem. Guardado no seu catálogo ✓', 'Open Food Facts data (made by volunteers): check the package. Saved in your catalogue ✓')) + '</p>' +
+      '<div class="row wrap"><button class="btn grow" data-act="scan-ficha">📋 ' + T('Ver ficha', 'See details') + '</button>' + (n.kcal != null ? '<button class="btn sec" data-act="scan-add">🧮</button>' : '') + '<button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>');
+  }
   function lookup(code) {
     code = String(code || '').replace(/\D/g, ''); if (code.length < 8) { HN.toast(T('Número incompleto (8 a 14 dígitos).', 'Incomplete number (8 to 14 digits).')); return; }
-    st.busy = true; HN.haptic('sucesso'); card('<p class="center">🔎 ' + T('Procurando', 'Looking up') + ' <b class="num">' + code + '</b>…</p>');
-    if (!navigator.onLine) { card('<p>📵 ' + T('Sem internet agora. O número é ', 'No internet right now. The number is ') + '<b class="num">' + code + '</b>. ' + T('Tente de novo com sinal, ou leia a foto do rótulo (funciona sem internet).', 'Try again with signal, or read the label photo (works offline).') + '</p><div class="row"><button class="btn sec sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return; }
+    st.busy = true; HN.haptic('sucesso');
+    var salvo = HN.cat && HN.cat.porEan(code);
+    if (!navigator.onLine) {
+      if (salvo) { cardProduto(salvo, null, true); return; }
+      card('<p>📵 ' + T('Sem internet e este produto ainda não está no seu catálogo. O número é ', 'Offline and this product is not in your catalogue yet. The number is ') + '<b class="num">' + code + '</b>. ' + T('Leia a foto do rótulo (funciona sem internet).', 'Read the label photo (works offline).') + '</p><div class="row"><button class="btn sec sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
+    }
+    card('<p class="center">🔎 ' + T('Procurando', 'Looking up') + ' <b class="num">' + code + '</b>…</p>');
     HN.offBuscar(code).then(function (o) {
-      if (!o) { card('<p>' + T('Não achei o código ', 'Could not find code ') + '<b class="num">' + code + '</b> ' + T('no Open Food Facts. Leia a tabela pela foto do rótulo.', 'on Open Food Facts. Read the table from a label photo.') + '</p><div class="row"><button class="btn sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return; }
-      st.last = o; var mine = HN.restrAll ? HN.restrAll() : [], cf = o.alergenos.concat(o.tracos).filter(function (a) { return mine.indexOf(a) >= 0; });
-      var v = function (x, d) { return x == null ? '–' : HN.num(x, d || 0); };
-      card((cf.length ? '<div class="notice bad" role="alert">⚠️ <b>' + T('Conflita com suas restrições:', 'Conflicts with your restrictions:') + ' ' + cf.map(HN.alergName).join(', ') + '</b></div>' : '') +
-        '<div class="row" style="align-items:flex-start"><div class="grow"><div class="t-caption muted">' + esc(o.marca) + (o.qtd ? ' · ' + esc(o.qtd) : '') + '</div><h3 style="margin:.1rem 0">' + esc(o.nome || T('Produto sem nome', 'Unnamed product')) + '</h3></div><div class="right"><div class="t-display" style="font-size:1.6rem">' + v(o.kcal) + '</div><div class="t-caption muted">kcal/100 g</div></div></div>' +
-        '<div class="stat"><div><b>' + v(o.p, 1) + ' g</b><span>' + T('proteína', 'protein') + '</span></div><div><b>' + v(o.c, 1) + ' g</b><span>' + T('carboidratos', 'carbs') + '</span></div><div><b>' + v(o.f, 1) + ' g</b><span>' + T('gorduras', 'fat') + '</span></div></div>' +
-        (o.alergenos.length || o.tracos.length ? '<div class="chips mt">' + o.alergenos.map(function (a) { return '<span class="badge warn">' + T('contém', 'contains') + ' ' + HN.alergName(a) + '</span>'; }).join('') + o.tracos.map(function (a) { return '<span class="badge">' + T('pode conter', 'may contain') + ' ' + HN.alergName(a) + '</span>'; }).join('') + '</div>' : '') +
-        '<p class="t-caption muted mt">' + T('Dados do Open Food Facts (colaborativo): confira com a embalagem.', 'Open Food Facts data (crowd-sourced): check the package.') + '</p>' +
-        '<div class="row wrap"><button class="btn grow" data-act="scan-add">🧮 ' + T('Adicionar à calculadora', 'Add to calculator') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>');
-    }).catch(function () { card('<p>⚠️ ' + T('Não consegui consultar agora. Tente de novo ou leia a foto do rótulo.', 'Could not look it up now. Try again or read the label photo.') + '</p><div class="row"><button class="btn sm grow" data-act="scan-again">' + T('Tentar de novo', 'Try again') + '</button></div>'); });
+      if (!o) {
+        if (salvo) { cardProduto(salvo, null, false); return; }
+        st.novoEan = code;
+        card('<p>' + T('O código ', 'Code ') + '<b class="num">' + code + '</b> ' + T('não está no Open Food Facts. Cadastre você mesmo: tire foto dos ingredientes ou digite.', 'is not on Open Food Facts. Add it yourself: photograph the ingredients or type them.') + '</p><div class="row wrap"><button class="btn sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Foto do rótulo', 'Label photo') + '</button><button class="btn sec sm" data-act="scan-novo">✏️ ' + T('Digitar', 'Type it') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
+      }
+      var p = HN.cat.put(HN.prodDeOff(o, salvo)); cardProduto(p, o, false);
+    }).catch(function () { if (salvo) { cardProduto(salvo, null, true); return; } card('<p>⚠️ ' + T('Não consegui consultar agora. Tente de novo ou leia a foto do rótulo.', 'Could not look it up now. Try again or read the label photo.') + '</p><div class="row"><button class="btn sm grow" data-act="scan-again">' + T('Tentar de novo', 'Try again') + '</button></div>'); });
   }
+  A['scan-ficha'] = function () { if (st.lastId) HN.go('/mercado/p/' + encodeURIComponent(st.lastId)); };
+  A['scan-novo'] = function () { var ean = st.novoEan; HN.layer.closeAllThen(function () { HN.catEditar({ ean: ean }); }); };
 
   function grab() {
     var v = HN.q('#scvideo'), track = st.stream && st.stream.getVideoTracks()[0];
@@ -121,12 +140,12 @@
   A['scan-mode'] = function (m) { st.mode = m; st.busy = false; paint(); };
   A['scan-again'] = function () { st.busy = false; card(''); };
   A['scan-code'] = function () { var i = HN.q('#sccode'); if (i) lookup(i.value); };
-  A['scan-add'] = function () { var o = st.last; if (!o) return; var p = salvarProduto(o); if (HN.calcAdd) HN.calcAdd(p.id); HN.toast(T('Adicionado à calculadora ✓', 'Added to calculator ✓')); HN.go('/'); };
+  A['scan-add'] = function () { if (!st.last && st.lastId && A['prod-calc']) { A['prod-calc'](st.lastId); return; } var o = st.last; if (!o) return; var p = salvarProduto(o); if (HN.calcAdd) HN.calcAdd(p.id); HN.toast(T('Adicionado à calculadora ✓', 'Added to calculator ✓')); HN.go('/'); };
   document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.id === 'sccode') { e.preventDefault(); A['scan-code'](); } });
 
   // o 📷 abre o visor; a parte atual decide o modo inicial
   A.scan = function () {
-    st.mode = st.mode || (HN.curPart() === 'B' ? 'prato' : 'cod'); st.busy = false;
+    st.mode = HN.scanModo || st.mode || (HN.curPart() === 'B' ? 'prato' : 'cod'); HN.scanModo = null; st.busy = false;
     HN.layer.open({ type: 'full', label: T('Câmera', 'Camera'), focus: false,
       html: '<div class="scan"><video id="scvideo" playsinline muted autoplay></video><div id="scanui" class="scan-ui"></div></div>',
       onClose: stop,
