@@ -73,9 +73,11 @@
     if (st.mode !== 'cod' || !st.stream) return;
     var det = null; try { if ('BarcodeDetector' in window) det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { det = null; }
     HN.barras.carregar().catch(function () { var hh = HN.q('#schint'); if (hh && !det) hh.textContent = T('Não consegui carregar o leitor de código. Confira a internet uma vez (depois funciona sem) ou digite o número.', 'Could not load the barcode reader. Check the internet once (it works offline afterwards) or type the number.'); });
-    var cv = document.createElement('canvas'), lendo = false;
+    var cv = document.createElement('canvas'), lendo = false, desde = Date.now(), avisou = false;
     st.loop = setInterval(function () {
       var v = HN.q('#scvideo'); if (!v || st.busy || lendo || v.readyState < 2) return;
+      // 5 s sem ler: quase sempre o código está cortado pela curva da embalagem ou por um reflexo
+      if (!avisou && Date.now() - desde > 5000) { avisou = true; var hh = HN.q('#schint'); if (hh) hh.innerHTML = '⏳ ' + T('Ainda não li. O código precisa aparecer <b>inteiro</b>, com margem branca dos dois lados: gire a embalagem até ele ficar de frente, no meio do quadro, sem reflexo. Ou toque em 📸, ou digite o número.', 'Not read yet. The code must be <b>fully</b> visible, with white margin on both sides: turn the package until it faces the camera, in the middle of the frame, without glare. Or tap 📸, or type the number.'); }
       var g = regiao(v, .12); if (!g) return;
       // pedaço do quadro em até ~1000 px de largura: rápido e com barras ainda grossas
       var k = Math.min(1, 1000 / g.w); cv.width = Math.round(g.w * k); cv.height = Math.round(g.h * k);
