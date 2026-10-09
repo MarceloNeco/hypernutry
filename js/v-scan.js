@@ -52,7 +52,7 @@
   function hint(m) {
     return { rot: T('Enquadre a tabela ou os ingredientes, sem chegar perto demais. Toque na imagem para focar e depois no botão.', 'Frame the table or ingredients, not too close. Tap the image to focus, then the button.'), cod: T('Aponte para o código de barras, a uns 15 cm. Embaçou? Toque na imagem para focar ou em 🔄 para trocar de câmera.', 'Point at the barcode, about 15 cm away. Blurry? Tap the image to focus or 🔄 to switch camera.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
   }
-  function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return md.b && !HN.cfg().aceite; }
+  function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return !!(md && md.b && !HN.cfg().aceite); } // sempre true/false: com undefined o toggle('dim') ficava alternando e borrava a câmera
   function body() {
     var m = st.mode, lk = locked(m), canDetect = 'BarcodeDetector' in window;
     var h = '<div class="scan-top"><button class="ib" data-act="layer-close" aria-label="' + T('Fechar câmera', 'Close camera') + '">✕</button><div class="grow scan-badge" id="scbadge">' + badge(m) + '</div><span id="sccam" class="scan-tools"></span></div>' +
@@ -182,8 +182,8 @@
     caps = (tr && tr.getCapabilities) ? tr.getCapabilities() : {};
     var fm = caps.focusMode || [];
     if (fm.indexOf('continuous') >= 0) aplicar(tr, { focusMode: 'continuous' });
-    // um pouco de zoom deixa segurar o celular mais longe (a 15–20 cm a câmera foca); só onde existe zoom
-    if (caps.zoom && caps.zoom.max >= 1.5 && (st.mode === 'cod' || st.mode === 'rot')) aplicar(tr, { zoom: Math.min(st.mode === 'cod' ? 2 : 1.5, caps.zoom.max) });
+    // sem zoom: em muitos celulares ele é digital (estica a imagem) e deixa tudo embaçado
+    if (caps.zoom && caps.zoom.min) aplicar(tr, { zoom: caps.zoom.min });
   }
   // toque na imagem: foco naquele ponto (onde o aparelho deixa) e volta ao contínuo depois
   function focarEm(ev) {
@@ -194,7 +194,8 @@
     var ui = HN.q('#scanui'); if (ui) { ui.appendChild(anel); setTimeout(function () { anel.remove(); }, 900); }
     var fm = caps.focusMode || [], c = {};
     if (caps.pointsOfInterest) c.pointsOfInterest = [{ x: x, y: y }];
-    if (fm.indexOf('single-shot') >= 0) c.focusMode = 'single-shot'; else if (fm.indexOf('manual') >= 0 && fm.indexOf('continuous') >= 0) c.focusMode = 'manual';
+    if (fm.indexOf('single-shot') >= 0) c.focusMode = 'single-shot'; // nunca 'manual': trava o foco na distância que estiver
+    if (!Object.keys(c).length) return;
     aplicar(tr, c).then(function () { setTimeout(function () { if (fm.indexOf('continuous') >= 0) aplicar(tr, { focusMode: 'continuous' }); }, 1500); });
   }
   function ferramentas() {
