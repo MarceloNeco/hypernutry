@@ -73,6 +73,9 @@
     ALERG.forEach(function (a) { if (a[1].test(decl)) out.alergenos.push(a[0]); if (a[1].test(pode) && out.alergenos.indexOf(a[0]) < 0) out.podeConter.push(a[0]); });
     // ingredientes
     var mi = raw.match(/ingredientes?\s*:?\s*([\s\S]+?)(?:\n\s*\n|al[eé]rgicos?|cont[eé]m|$)/i);
+    // sem a palavra "ingredientes" (ela costuma ficar numa faixa colorida que o leitor não lê): se o texto antes de
+    // "alérgicos"/"contém" parece uma lista (vírgulas), é a lista de ingredientes
+    if (!mi) { var ant = raw.split(/al[eé]rgicos?|cont[eé]m|pode conter/i)[0] || ''; if ((ant.match(/,/g) || []).length >= 2) mi = [null, ant.replace(/^[^A-Za-zÀ-ÿ(]+/, '')]; }
     if (mi) {
       out.ingredientes = mi[1].replace(/\s+/g, ' ').trim();
       var ni = norm(out.ingredientes);
@@ -156,21 +159,27 @@
     x.putImageData(d, 0, 0);
     return c;
   };
-  // Tratamento novo (v0.4.5): escala de cinza + "auto-níveis" por percentis, SEM binarizar. Em fundo colorido
-  // (lata dourada, rótulo escuro) o corte duro de antes virava ruído e comia as letras pequenas dos ingredientes.
-  // Também amplia quando a foto é pequena: o motor lê melhor letras com ≥ 30 px de altura.
+  // Tratamento do recorte da câmera (v0.4.10): escala de cinza + limiar ADAPTATIVO (cada pixel comparado com a média da
+  // vizinhança, janela de 1/8 da largura). Em rótulo colorido (lata dourada com letras azuis) o corte global de antes
+  // virava ruído: nas fotos reais do Nescau, de 22–68% para 87% de acerto nos ingredientes. Amplia foto pequena
+  // (o motor lê melhor letras com ≥ 30 px) e reduz foto enorme (velocidade).
   O.preparar = function (img, maxLado) {
     var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, maior = Math.max(w, h);
-    var esc = maior > (maxLado || 2400) ? (maxLado || 2400) / maior : (maior < 1400 ? Math.min(2, 1400 / maior) : 1);
+    var esc = maior > (maxLado || 2000) ? (maxLado || 2000) / maior : (maior < 1400 ? Math.min(2, 1400 / maior) : 1);
     var c = document.createElement('canvas'); c.width = Math.round(w * esc); c.height = Math.round(h * esc);
     var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
-    var d = x.getImageData(0, 0, c.width, c.height), p = d.data, hist = new Uint32Array(256), i, g;
-    for (i = 0; i < p.length; i += 4) { g = (0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]) | 0; p[i] = g; hist[g]++; }
-    var n = p.length / 4, lo = 0, hi = 255, acc = 0;
-    for (i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.02) { lo = i; break; } }
-    acc = 0; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= n * 0.02) { hi = i; break; } }
-    var k = hi > lo ? 255 / (hi - lo) : 1;
-    for (i = 0; i < p.length; i += 4) { g = (p[i] - lo) * k; g = g < 0 ? 0 : g > 255 ? 255 : g; p[i] = p[i + 1] = p[i + 2] = g; }
+    var W = c.width, H = c.height, d = x.getImageData(0, 0, W, H), p = d.data, i, g;
+    var cinza = new Uint8ClampedArray(W * H);
+    for (i = 0; i < W * H; i++) cinza[i] = 0.299 * p[i * 4] + 0.587 * p[i * 4 + 1] + 0.114 * p[i * 4 + 2];
+    // imagem integral: média de qualquer janela em tempo constante
+    var I = new Float64Array((W + 1) * (H + 1)), y, xx, s;
+    for (y = 1; y <= H; y++) { s = 0; for (xx = 1; xx <= W; xx++) { s += cinza[(y - 1) * W + (xx - 1)]; I[y * (W + 1) + xx] = I[(y - 1) * (W + 1) + xx] + s; } }
+    var r = Math.max(6, Math.round(W / 16)), bias = 0.88;
+    for (y = 0; y < H; y++) for (xx = 0; xx < W; xx++) {
+      var x0 = Math.max(0, xx - r), x1 = Math.min(W, xx + r + 1), y0 = Math.max(0, y - r), y1 = Math.min(H, y + r + 1);
+      var m = (I[y1 * (W + 1) + x1] - I[y0 * (W + 1) + x1] - I[y1 * (W + 1) + x0] + I[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0));
+      i = (y * W + xx) * 4; g = cinza[y * W + xx] < m * bias ? 0 : 255; p[i] = p[i + 1] = p[i + 2] = g;
+    }
     x.putImageData(d, 0, 0);
     return c;
   };

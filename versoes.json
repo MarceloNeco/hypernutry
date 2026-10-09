@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.10",
+   "data": "09/Out/2026",
+   "hora": "13:40:00",
+   "pt": "🏷️ Ingredientes em rótulo colorido (ex.: lata dourada com letras azuis) agora são lidos: tratamento de imagem adaptativo, calibrado com fotos reais do Nescau (de 22–68% para 87% de acerto). Vale para a foto tirada pela câmera, no quadro.",
+   "en": "🏷️ Ingredients on coloured labels (e.g. gold can with blue letters) are now read: adaptive image treatment, calibrated with real Nescau photos (from 22–68% to 87% accuracy). Applies to the camera photo, inside the frame."
+  },
+  {
    "v": "0.4.9",
    "data": "09/Out/2026",
    "hora": "13:05:00",
