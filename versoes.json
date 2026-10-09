@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.11",
+   "data": "09/Out/2026",
+   "hora": "14:20:00",
+   "pt": "📸 Modo Rótulo mais claro: a linha de varredura só aparece no modo Código (o único que lê sozinho); no Rótulo, o botão redondo sem nome virou um botão verde grande \"Tirar foto e ler\", e a dica avisa que ali nada é lido sozinho. No Código, depois de 4 s sem ler, o aviso fica em amarelo (código cortado ou não encontrado) e o botão 📸 pisca.",
+   "en": "📸 Clearer Label mode: the scanning line only shows in Barcode mode (the only one that reads by itself); in Label, the unnamed round button became a big green \"Take photo and read\" button, and the hint says nothing is read by itself there. In Barcode, after 4 s without a read, the warning turns yellow (code cut off or not found) and the 📸 button pulses."
+  },
+  {
    "v": "0.4.10",
    "data": "09/Out/2026",
    "hora": "13:40:00",

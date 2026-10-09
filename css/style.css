@@ -352,6 +352,12 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .shutter { width: 4.4rem; height: 4.4rem; border-radius: 50%; border: 4px solid #fff; background: rgba(255,255,255,.25); box-shadow: 0 0 0 3px rgba(16,185,129,.6); cursor: pointer; }
 .shutter:active { transform: scale(.92); background: var(--brand); }
 .scan-gal { width: 2.75rem; height: 2.75rem; cursor: pointer; }
+.scan-frame:not(.auto) .laser { display: none; } /* a varredura só no modo que lê sozinho (Código) */
+.scan-shot { min-height: 3.4rem; font-size: 1.05rem; padding: 0 1.4rem; border-radius: 999px; box-shadow: 0 0 0 4px rgba(16,185,129,.35), var(--shadow-float); }
+.scan-hint.alerta { background: rgba(251,191,36,.95); color: #451a03; text-shadow: none; border-radius: 14px; padding: .55rem .7rem; }
+.btn.pulse { animation: pulsebtn 1.2s ease-in-out infinite; }
+@keyframes pulsebtn { 50% { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(16,185,129,.35); } }
+:root[data-motion="reduzir"] .btn.pulse { animation: none; }
 .scan-code input { flex: 1; min-width: 0; background: rgba(15,23,42,.6); color: #fff; border-color: rgba(255,255,255,.25); }
 .scan-ok { position: absolute; left: .6rem; right: .6rem; bottom: calc(4.8rem + env(safe-area-inset-bottom)); max-width: 30rem; margin: 0 auto; padding: .7rem .8rem; border-radius: 18px; color: #052e16; background: #bbf7d0; border: 1px solid #4ade80; box-shadow: var(--shadow-float); animation: cardup .35s var(--spring); }
 .scan-ok.bad { color: #450a0a; background: #fecaca; border-color: #f87171; }
