@@ -1,6 +1,6 @@
 /* HyperNutry — câmera (botão 📷 do centro da barra): visor em tela cheia com 4 modos.
  *   rot   Rótulo nutricional → foto → OCR no aparelho (tela Ler rótulo)
- *   cod   Código de barras   → leitura no aparelho (BarcodeDetector) → só o número vai ao Open Food Facts
+ *   cod   Código de barras   → leitura no aparelho (ZXing hospedado, HN.barras; BarcodeDetector como apoio) → só o número vai ao Open Food Facts
  *   prato Prato/refeição 🔒  → foto de referência no diário (com IA configurada, reconhece os alimentos)
  *   bio   Laudo de bioimpedância 🔒 → foto → OCR no aparelho (Corpo › Laudos)
  * A câmera só é pedida quando a pessoa toca no 📷, e é desligada ao fechar o visor.
@@ -50,32 +50,42 @@
     return '🛡️ ' + T('Processado no aparelho (nada vai para a nuvem)', 'Processed on your device (nothing goes to the cloud)');
   }
   function hint(m) {
-    return { rot: T('Só o que está dentro do quadro é lido: encha o quadro com a tabela ou com os ingredientes. Toque na imagem para focar e depois no botão.', 'Only what is inside the frame is read: fill the frame with the table or the ingredients. Tap the image to focus, then the button.'), cod: T('Código de barras inteiro dentro do quadro, reto, a uns 15 cm. Não leu? Toque em 📸. Embaçou? Toque na imagem ou em 🔄.', 'Whole barcode inside the frame, straight, about 15 cm away. Not read? Tap 📸. Blurry? Tap the image or 🔄.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
+    return { rot: T('Só o que está dentro do quadro é lido: encha o quadro com a tabela ou com os ingredientes. Toque na imagem para focar e depois no botão.', 'Only what is inside the frame is read: fill the frame with the table or the ingredients. Tap the image to focus, then the button.'), cod: T('Código de barras inteiro dentro do quadro (deitado ou em pé), a uns 15 cm. Não leu? Toque em 📸. Embaçou? Toque na imagem ou em 🔄.', 'Whole barcode inside the frame (horizontal or vertical), about 15 cm away. Not read? Tap 📸. Blurry? Tap the image or 🔄.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
   }
   function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return !!(md && md.b && !HN.cfg().aceite); } // sempre true/false: com undefined o toggle('dim') ficava alternando e borrava a câmera
   function body() {
-    var m = st.mode, lk = locked(m), canDetect = 'BarcodeDetector' in window;
+    var m = st.mode, lk = locked(m), canDetect = true; // ZXing hospedado lê em qualquer navegador
     var h = '<div class="scan-top"><button class="ib" data-act="layer-close" aria-label="' + T('Fechar câmera', 'Close camera') + '">✕</button><div class="grow scan-badge" id="scbadge">' + badge(m) + '</div><span id="sccam" class="scan-tools"></span></div>' +
       '<div class="scan-frame' + (m === 'cod' ? ' wide' : '') + '" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><b class="laser"></b></div>' +
       '<p class="scan-hint" id="schint">' + (lk ? '🔒 ' + T('Este modo fica no Meu acompanhamento e pede o aceite de privacidade (LGPD).', 'This mode lives in My follow-up and needs the privacy consent (LGPD).') : hint(m)) + '</p>' +
       '<div id="scard"></div>' +
       '<div class="scan-bottom">' +
       (lk ? '<button class="btn block" data-act="go" data-arg="/acomp">🩺 ' + T('Entrar no Meu acompanhamento', 'Enter My follow-up') + '</button>' :
-        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Não leu? Tirar foto do código', 'Not read? Photograph the code') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
+        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row scan-code" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Não leu? Tirar foto do código', 'Not read? Photograph the code') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
         '<div class="row" style="justify-content:center;gap:1.2rem"><label class="ib scan-gal" for="scgal" title="' + T('Escolher da galeria', 'Choose from gallery') + '" aria-label="' + T('Escolher da galeria', 'Choose from gallery') + '">🖼️</label><input id="scgal" type="file" accept="image/*" class="sr" data-in="scan-gal"><button class="shutter" data-act="scan-shot" aria-label="' + T('Tirar foto', 'Take photo') + '"></button><span style="width:2.5rem"></span></div>') +
       '<div class="seg scan-modes" role="tablist">' + MODES.map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
     return h;
   }
-  function paint() { var el = HN.q('#scanui'); if (el) el.innerHTML = body(); ferramentas(); var v = HN.q('#scvideo'); if (v) v.classList.toggle('dim', locked(st.mode)); startLoop(); }
+  function paint() { var el = HN.q('#scanui'); if (el) { el.innerHTML = body(); el.classList.remove('has-card'); } ferramentas(); /* sem has-card: ao trocar de modo o quadro e a dica voltam */ var v = HN.q('#scvideo'); if (v) v.classList.toggle('dim', locked(st.mode)); startLoop(); }
   function stop() { clearInterval(st.loop); st.loop = null; if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; } }
   function startLoop() {
-    clearInterval(st.loop); st.loop = null;
-    if (st.mode !== 'cod' || !('BarcodeDetector' in window) || !st.stream) return;
-    var det; try { det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { return; }
+    clearInterval(st.loop); st.loop = null; st.ultimo = '';
+    if (st.mode !== 'cod' || !st.stream) return;
+    var det = null; try { if ('BarcodeDetector' in window) det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { det = null; }
+    HN.barras.carregar().catch(function () { var hh = HN.q('#schint'); if (hh && !det) hh.textContent = T('Não consegui carregar o leitor de código. Confira a internet uma vez (depois funciona sem) ou digite o número.', 'Could not load the barcode reader. Check the internet once (it works offline afterwards) or type the number.'); });
+    var cv = document.createElement('canvas'), lendo = false;
     st.loop = setInterval(function () {
-      var v = HN.q('#scvideo'); if (!v || st.busy || v.readyState < 2) return;
-      det.detect(v).then(function (r) { if (r && r.length && !st.busy) lookup(r[0].rawValue); }).catch(function () { /* quadro sem leitura */ });
-    }, 280);
+      var v = HN.q('#scvideo'); if (!v || st.busy || lendo || v.readyState < 2) return;
+      var g = regiao(v, .12); if (!g) return;
+      // pedaço do quadro em até ~1000 px de largura: rápido e com barras ainda grossas
+      var k = Math.min(1, 1000 / g.w); cv.width = Math.round(g.w * k); cv.height = Math.round(g.h * k);
+      cv.getContext('2d').drawImage(v, g.x, g.y, g.w, g.h, 0, 0, cv.width, cv.height);
+      lendo = true;
+      var t = HN.barras.pronto() ? HN.barras.ler(cv) : null;
+      if (t) { lendo = false; aceitar(t, true); return; }
+      if (!det) { lendo = false; return; }
+      det.detect(cv).then(function (r) { lendo = false; if (r && r.length && !st.busy) aceitar(r[0].rawValue, false); }).catch(function () { lendo = false; });
+    }, 320);
   }
   function card(html) { var c = HN.q('#scard'), ui = HN.q('#scanui'); if (c) { c.innerHTML = html ? '<div class="scan-card">' + html + '</div>' : ''; } if (ui) ui.classList.toggle('has-card', !!html); }
   // cartão do produto lido: selo de aditivos, alertas, alergias e atalhos (o produto já fica no catálogo)
@@ -122,28 +132,45 @@
   }
   /* Recorte no quadro: o vídeo cobre a tela inteira (object-fit: cover), então o que a pessoa enquadrou é um pedaço
      do quadro. Lemos só esse pedaço (com uma folga): as letras pequenas dos ingredientes ficam grandes para o motor. */
-  function recorte(canvas, folga) {
-    var v = HN.q('#scvideo'), fr = HN.q('.scan-frame'); if (!v || !fr || !v.videoWidth) return canvas;
-    var r = v.getBoundingClientRect(), f = fr.getBoundingClientRect(), k = Math.max(r.width / v.videoWidth, r.height / v.videoHeight);
+  // onde o quadro verde cai dentro do vídeo (o vídeo é mostrado inteiro, object-fit: contain, centrado)
+  function regiao(v, folga) {
+    var fr = HN.q('.scan-frame'); if (!v || !fr || !v.videoWidth) return null;
+    var r = v.getBoundingClientRect(), f = fr.getBoundingClientRect(), k = Math.min(r.width / v.videoWidth, r.height / v.videoHeight);
     var dw = v.videoWidth * k, dh = v.videoHeight * k, ox = r.left + (r.width - dw) / 2, oy = r.top + (r.height - dh) / 2;
-    var s = canvas.width / v.videoWidth, cy = (canvas.height - v.videoHeight * s) / 2; // foto 4:3 vs vídeo 16:9: mesma largura, centrada
     var mx = f.width * (folga || 0), my = f.height * (folga || 0);
-    var x0 = Math.max(0, Math.round((f.left - mx - ox) / k * s)), y0 = Math.max(0, Math.round((f.top - my - oy) / k * s + cy));
-    var x1 = Math.min(canvas.width, Math.round((f.right + mx - ox) / k * s)), y1 = Math.min(canvas.height, Math.round((f.bottom + my - oy) / k * s + cy));
+    var x0 = Math.max(0, (f.left - mx - ox) / k), y0 = Math.max(0, (f.top - my - oy) / k);
+    var x1 = Math.min(v.videoWidth, (f.right + mx - ox) / k), y1 = Math.min(v.videoHeight, (f.bottom + my - oy) / k);
+    if (x1 - x0 < 40 || y1 - y0 < 40) return null;
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+  function recorte(canvas, folga) {
+    var v = HN.q('#scvideo'), g = regiao(v, folga); if (!g) return canvas;
+    var s = canvas.width / v.videoWidth, cy = (canvas.height - v.videoHeight * s) / 2; // foto com outra proporção: mesma largura, centrada
+    var x0 = Math.max(0, Math.round(g.x * s)), y0 = Math.max(0, Math.round(g.y * s + cy)), x1 = Math.min(canvas.width, Math.round((g.x + g.w) * s)), y1 = Math.min(canvas.height, Math.round((g.y + g.h) * s + cy));
     if (x1 - x0 < 50 || y1 - y0 < 50) return canvas;
     var c = document.createElement('canvas'); c.width = x1 - x0; c.height = y1 - y0; c.getContext('2d').drawImage(canvas, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
     return c;
   }
+  // só aceita um número conferido: EAN-13 com dígito certo vale na hora; o resto (EAN-8, UPC-E, BarcodeDetector) precisa
+  // ser lido duas vezes igual, porque leitura ruim inventa número (ex.: um "16648207" numa lata de Nescau)
+  function aceitar(code, confiavel) {
+    code = String(code || '').replace(/\D/g, ''); if (!HN.barras.valido(code)) return;
+    if (confiavel && code.length === 13) { lookup(code); return; }
+    if (st.ultimo === code) { st.ultimo = ''; lookup(code); return; }
+    st.ultimo = code;
+  }
   // código de barras parado, em alta resolução: ajuda em lata curva ou quando o leitor ao vivo não pega
   A['scan-foto-cod'] = function () {
-    if (st.busy || !('BarcodeDetector' in window)) { if (!('BarcodeDetector' in window)) HN.toast(T('Este navegador não lê código de barras pela câmera. Digite o número.', 'This browser cannot read barcodes from the camera. Type the number.')); return; }
-    st.busy = true; var det; try { det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { st.busy = false; return; }
-    grab().then(function (c) {
-      var rc = recorte(c, .25);
-      return det.detect(rc).then(function (r) { return r && r.length ? r : det.detect(c); });
-    }).then(function (r) {
+    if (st.busy) return;
+    st.busy = true; var det = null; try { if ('BarcodeDetector' in window) det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { det = null; }
+    HN.barras.carregar().catch(function () {}).then(grab).then(function (c) {
+      var rc = recorte(c, .25), t = HN.barras.ler(rc, HN.barras.ANGULOS_FOTO) || HN.barras.ler(c, [0, 90]);
+      if (t || !det) return t;
+      // apoio do navegador: só vale EAN-13 com dígito certo (ele inventa números curtos)
+      return det.detect(rc).then(function (r) { return r && r.length ? r : det.detect(c); }).then(function (r) { var v = r && r.length ? String(r[0].rawValue).replace(/\D/g, '') : ''; return v.length === 13 && HN.barras.valido(v) ? v : null; }).catch(function () { return null; });
+    }).then(function (t) {
       st.busy = false;
-      if (r && r.length) lookup(r[0].rawValue);
+      if (t) lookup(t);
       else HN.toast(T('Não achei o código na foto. Deixe o código inteiro dentro do quadro, reto e sem reflexo, ou digite o número.', 'Could not find the code in the photo. Keep the whole code inside the frame, straight and without glare, or type the number.'), 4000);
     }).catch(function () { st.busy = false; HN.toast(T('Não consegui tirar a foto. Digite o número.', 'Could not take the photo. Type the number.')); });
   };
@@ -186,7 +213,7 @@
   }
   function abrirCamera(id, primeira) {
     if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; }
-    var v = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+    var v = { width: { ideal: 1920 }, height: { ideal: 1440 } }; // 4:3 = o campo inteiro do sensor (16:9 cortava em cima e embaixo, e a tela cortava dos lados: parecia zoom)
     if (id) v.deviceId = { exact: id }; else v.facingMode = { ideal: 'environment' };
     navigator.mediaDevices.getUserMedia({ video: v, audio: false }).then(function (s) {
       if (!HN.q('#scvideo')) { s.getTracks().forEach(function (t) { t.stop(); }); return; } // visor já fechado
@@ -211,12 +238,12 @@
     var fm = caps.focusMode || [];
     if (fm.indexOf('continuous') >= 0) aplicar(tr, { focusMode: 'continuous' });
     // sem zoom: em muitos celulares ele é digital (estica a imagem) e deixa tudo embaçado
-    if (caps.zoom && caps.zoom.min) aplicar(tr, { zoom: caps.zoom.min });
+    if (caps.zoom && caps.zoom.min != null) aplicar(tr, { zoom: Math.max(1, caps.zoom.min) });
   }
   // toque na imagem: foco naquele ponto (onde o aparelho deixa) e volta ao contínuo depois
   function focarEm(ev) {
     var tr = st.stream && st.stream.getVideoTracks()[0], vid = HN.q('#scvideo'); if (!tr || !vid || !vid.videoWidth) return;
-    var r = vid.getBoundingClientRect(), k = Math.max(r.width / vid.videoWidth, r.height / vid.videoHeight), dw = vid.videoWidth * k, dh = vid.videoHeight * k;
+    var r = vid.getBoundingClientRect(), k = Math.min(r.width / vid.videoWidth, r.height / vid.videoHeight), dw = vid.videoWidth * k, dh = vid.videoHeight * k;
     var x = HN.clamp((ev.clientX - r.left - (r.width - dw) / 2) / dw, 0, 1), y = HN.clamp((ev.clientY - r.top - (r.height - dh) / 2) / dh, 0, 1);
     var anel = document.createElement('span'); anel.className = 'scan-foco'; anel.style.left = (ev.clientX - r.left) + 'px'; anel.style.top = (ev.clientY - r.top) + 'px';
     var ui = HN.q('#scanui'); if (ui) { ui.appendChild(anel); setTimeout(function () { anel.remove(); }, 900); }

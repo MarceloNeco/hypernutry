@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.6",
+   "data": "09/Out/2026",
+   "hora": "11:20:00",
+   "pt": "📷 Leitor de código de barras novo (ZXing, hospedado no site, tudo no aparelho): lê em lata curva, deitado, em pé ou inclinado, e no iPhone também. Só aceita número com dígito verificador certo (antes o leitor do navegador inventava números de 8 dígitos). A câmera agora mostra o campo inteiro (antes cortava os lados e parecia zoom: dava para segurar mais perto). O quadro e a dica voltam ao trocar de modo depois de uma leitura.",
+   "en": "📷 New barcode reader (ZXing, hosted on the site, all on device): reads on curved cans, horizontal, vertical or tilted, and on iPhone too. Only accepts numbers with a valid check digit (the browser reader used to invent 8-digit numbers). The camera now shows the full field of view (it used to crop the sides and look zoomed in). Frame and hint come back when switching mode after a read."
+  },
+  {
    "v": "0.4.5",
    "data": "09/Out/2026",
    "hora": "10:40:00",

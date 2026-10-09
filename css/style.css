@@ -327,14 +327,14 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 /* ===== Câmera (v0.2.3): visor em tela cheia, cantos de AR, laser esmeralda, cartão de vidro ===== */
 .full:has(.scan) { background: #000; }
 .scan { position: fixed; inset: 0; background: #000; color: #f8fafc; overflow: hidden; }
-.scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+.scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: filter .3s; } /* contain: mostra o campo inteiro da câmera (cover cortava os lados e parecia zoom) */
 .scan video.dim { filter: blur(8px) brightness(.5); }
 .scan-ui { position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(.5rem + env(safe-area-inset-top)) .8rem calc(.8rem + env(safe-area-inset-bottom)); background: linear-gradient(rgba(0,0,0,.45), transparent 22%, transparent 60%, rgba(0,0,0,.65)); }
 .scan .ib { color: #fff; background: rgba(15,23,42,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 50%; }
 .scan-top { display: flex; align-items: center; gap: .5rem; }
 .scan-badge { font-size: .75rem; font-weight: 600; padding: .35rem .7rem; border-radius: 999px; background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.15); justify-self: start; width: fit-content; max-width: 100%; }
-.scan-frame { position: relative; width: min(78vw, 22rem); aspect-ratio: 3 / 4; margin: auto; }
-.scan-frame.wide { aspect-ratio: 16 / 9; }
+.scan-frame { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(78vw, 22rem, 31.5vh); aspect-ratio: 3 / 4; } /* centrado no vídeo, que é centrado na tela */
+.scan-frame.wide { width: min(78vw, 22rem); aspect-ratio: 16 / 9; }
 .scan-frame i { position: absolute; width: 2.2rem; height: 2.2rem; border: 4px solid var(--brand); }
 .scan-frame .c1 { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 18px; }
 .scan-frame .c2 { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 18px; }
@@ -344,7 +344,7 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 @keyframes laser { from { top: 8%; } to { top: 92%; } }
 .scan-frame { animation: pulse 2.4s ease-in-out infinite; }
 @keyframes pulse { 50% { filter: drop-shadow(0 0 8px rgba(16,185,129,.6)); } }
-.scan-hint { text-align: center; font-size: .9rem; margin: .5rem auto; max-width: 26rem; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.scan-hint { text-align: center; font-size: .9rem; margin: auto auto .5rem; max-width: 26rem; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
 .scan-bottom { display: grid; gap: .7rem; }
 .scan-modes { display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 999px; background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.15); }
 .scan-modes button { min-height: 2.6rem; border: 0; border-radius: 999px; background: transparent; color: #e2e8f0; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; padding: 0 .2rem; }

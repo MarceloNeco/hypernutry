@@ -1,4 +1,5 @@
 - Composição de alimentos: TACO — Tabela Brasileira de Composição de Alimentos (NEPA/UNICAMP), 4ª ed. ampliada, via conversão pública em JSON (github.com/isaquetdiniz/taco-api, MIT para o código). Valores por 100 g; conferir na fonte oficial. Alérgenos dos itens TACO são estimados pelo nome.
+- Código de barras: ZXing (`@zxing/library` 0.21.3, Apache-2.0), hospedado em `vendor/zxing/` (licença na mesma pasta). Carregado só ao abrir o modo Código; tudo roda no aparelho.
 - OCR: Tesseract.js 5.1.1 e tesseract.js-core 5.1.1 (Apache-2.0), hospedados em `vendor/tesseract/` (licenças na mesma pasta); dados de idioma `por` e `eng` (4.0.0_best_int) do projeto tessdata (Apache-2.0). Carregados só quando a pessoa pede.
 - Produtos por código de barras: Open Food Facts (dados sob ODbL 1.0; imagens CC BY-SA). Consulta ao vivo em world.openfoodfacts.org, só com o número do código.
 - Benchmark: avaliação editorial a partir de fontes públicas listadas em `js/data-bench.js` (aba Fontes do app). Marcas citadas pertencem aos donos.
