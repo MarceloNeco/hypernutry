@@ -400,3 +400,23 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 :root[data-ocultar] .sens, :root[data-ocultar] .sens-box .num, :root[data-ocultar] .sens-box .s, :root[data-ocultar] .sens-box svg, :root[data-ocultar] .sens-box .rg-c { filter: blur(7px); transition: filter .2s; cursor: pointer; }
 :root[data-ocultar] .sens.peek, :root[data-ocultar] .sens-box.peek .num, :root[data-ocultar] .sens-box.peek .s, :root[data-ocultar] .sens-box.peek svg, :root[data-ocultar] .sens-box.peek .rg-c { filter: none; }
 @media print { :root[data-ocultar] .sens, :root[data-ocultar] .sens-box * { filter: none !important; } }
+
+/* ===== Mercado (v0.4.0): selo de aditivos, catálogo e glossário ===== */
+.selo { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--line); color: var(--ink); white-space: normal; max-width: 100%; }
+.selo.ok { background: var(--ok-soft); } .selo.warn { background: var(--warn-soft); } .selo.bad { background: var(--bad-soft); }
+.selo.big { font-size: .95rem; padding: .35rem .85rem; }
+.adv-list { display: grid; gap: .35rem; }
+.adv { display: flex; align-items: flex-start; gap: .6rem; width: 100%; text-align: left; padding: .55rem .6rem; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); cursor: pointer; font: inherit; }
+.adv:active { transform: scale(.99); }
+.adv-n { font-size: 1.1rem; line-height: 1.3; }
+.adv-s { display: block; font-size: .8rem; color: var(--muted); line-height: 1.35; margin-top: .1rem; }
+.prods { display: grid; gap: .5rem; }
+@media (min-width: 720px) { .prods { grid-template-columns: 1fr 1fr; } }
+.prod { display: flex; align-items: center; gap: .7rem; padding: .6rem; border: 1px solid var(--line); border-radius: 18px; background: var(--card); cursor: pointer; box-shadow: var(--shadow); }
+.prod b { display: block; line-height: 1.25; }
+.prod-m { display: block; font-size: .8rem; color: var(--muted); margin: .1rem 0 .3rem; }
+.prod-f { width: 3.4rem; height: 3.4rem; flex: none; display: grid; place-items: center; border-radius: 14px; background: var(--brand-soft); font-size: 1.5rem; overflow: hidden; }
+.prod-f.big { width: 5.5rem; height: 5.5rem; font-size: 2.2rem; }
+.prod-f img { width: 100%; height: 100%; object-fit: cover; }
+.prod .star { font-size: 1.4rem; } .prod .star.on { filter: drop-shadow(0 0 4px rgba(245,158,11,.6)); }
+.prod .grow { min-width: 0; } .prod b { overflow-wrap: anywhere; }

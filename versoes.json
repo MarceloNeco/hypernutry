@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.0",
+   "data": "09/Out/2026",
+   "hora": "00:55:05",
+   "pt": "🏪 Produtos do mercado: leia o código de barras ou a foto do rótulo e veja na hora se o produto tem muitos aditivos (🟢 🟡 🔴), com o porquê de cada um. Catálogo com marca, tipo, versão (light, zero, integral…), tamanho e fabricante; ⭐ favoritos e ❤️ marcas favoritas; “opções melhores do mesmo tipo”; foto pequena (≈15 KB) ou nenhuma. 📖 Glossário com 79 aditivos e ingredientes de atenção. Tudo funciona sem internet; com sinal, “Atualizar” busca a lista nova e os dados novos dos produtos.",
+   "en": "🏪 Store products: scan the barcode or the label photo and instantly see whether a product has many additives (🟢 🟡 🔴), with the reason for each. Catalogue with brand, type, version (light, zero, wholegrain…), size and manufacturer; ⭐ favourites and ❤️ favourite brands; “better options of the same type”; small photo (≈15 KB) or none. 📖 Glossary with 79 additives and ingredients to watch. Everything works offline; with signal, “Update” fetches the new list and fresh product data."
+  },
+  {
    "v": "0.3.0",
    "data": "03/Out/2026",
    "hora": "13:52:28",

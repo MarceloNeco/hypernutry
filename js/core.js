@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.3.0';
+  HN.version = '0.4.0';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -91,6 +91,8 @@
     familia: { r: '/familia', e: '👨‍👩‍👧', pt: 'Família e perfis', en: 'Family & profiles', k: 'familia perfis dependentes filhos family profiles' },
     cozinheiro: { r: '/cozinheiro', e: '🧑‍🍳', pt: 'Modo cozinheiro', en: 'Cook mode', k: 'cozinheiro funcionario domestico delegar pdf cook employee' },
     corpo: { r: '/corpo', e: '📏', pt: 'Corpo e bem-estar', en: 'Body & well-being', k: 'peso medidas sono intestino bristol bem estar corpo bioimpedancia body' },
+    mercado: { r: '/mercado', e: '🏪', pt: 'Produtos do mercado', en: 'Store products', k: 'mercado produtos marcas aditivos conservantes corantes favoritos catalogo supermercado store products additives brands' },
+    aditivos: { r: '/mercado/aditivos', e: '📖', pt: 'Glossário de aditivos', en: 'Additive glossary', k: 'aditivos glossario ingredientes ruins conservante corante adocante ins additives glossary' },
     rotulos: { r: '/rotulos', e: '🏷️', pt: 'Ler rótulo', en: 'Read a label', k: 'rotulo ocr scanner tabela nutricional alergenos label scan allergens' },
     tele: { r: '/tele', e: '🩺', pt: 'Telenutrição', en: 'Telenutrition', k: 'consulta nutricionista teleconsulta documentos exames laudos' },
     planos: { r: '/planos', e: '💎', pt: 'Planos', en: 'Plans', k: 'planos assinatura premium vip gratis preco plans subscription' },
@@ -99,13 +101,13 @@
     sobre: { r: '/sobre', e: 'ℹ️', pt: 'Sobre e avisos legais', en: 'About & legal', k: 'sobre avisos legais lgpd termos cfn about legal privacy' }
   };
   HN.menuGroups = [
-    [['🧮 Calcular e cozinhar', '🧮 Calculate & cook'], ['calc', 'planejar', 'despensa', 'compras', 'receitas', 'alimentos', 'rotulos', 'saciedade', 'gostos', 'cozinheiro']],
+    [['🧮 Calcular e cozinhar', '🧮 Calculate & cook'], ['calc', 'planejar', 'despensa', 'compras', 'receitas', 'alimentos', 'mercado', 'aditivos', 'rotulos', 'saciedade', 'gostos', 'cozinheiro']],
     [['🩺 Meu acompanhamento (saúde 🔒)', '🩺 My follow-up (health 🔒)'], ['acomp', 'diario', 'intuitivo', 'metas', 'corpo', 'familia', 'tele']],
     [['App', 'App'], ['planos', 'ajuda', 'config', 'sobre']]
   ];
   // a que parte cada tela pertence: A = calcular/cozinhar · B = acompanhamento (exige aceite LGPD) · C = comum
-  HN.navShort = { calc: ['Calcular', 'Calculate'], planejar: ['Cardápio', 'Menu'], receitas: ['Receitas', 'Recipes'], compras: ['Compras', 'Shopping'], rotulos: ['Rótulo', 'Label'], acomp: ['Início', 'Home'], diario: ['Diário', 'Diary'], intuitivo: ['Fome', 'Hunger'], corpo: ['Corpo', 'Body'], metas: ['Metas', 'Goals'], despensa: ['Despensa', 'Pantry'], alimentos: ['Alimentos', 'Foods'], saciedade: ['Saciedade', 'Fullness'], tele: ['Consulta', 'Consult'], familia: ['Família', 'Family'], gostos: ['Gostos', 'Tastes'], cozinheiro: ['Cozinheiro', 'Cook'] };
-  HN.partMap = { home: 'A', planejar: 'A', receitas: 'A', receita: 'A', alimentos: 'A', alimento: 'A', rotulos: 'A', saciedade: 'A', gostos: 'A', cozinheiro: 'A', acomp: 'B', diario: 'B', intuitivo: 'B', metas: 'B', familia: 'B', corpo: 'B', tele: 'B', wizard: 'B', boasvindas: 'B' };
+  HN.navShort = { calc: ['Calcular', 'Calculate'], planejar: ['Cardápio', 'Menu'], receitas: ['Receitas', 'Recipes'], compras: ['Compras', 'Shopping'], rotulos: ['Rótulo', 'Label'], mercado: ['Mercado', 'Store'], aditivos: ['Aditivos', 'Additives'], acomp: ['Início', 'Home'], diario: ['Diário', 'Diary'], intuitivo: ['Fome', 'Hunger'], corpo: ['Corpo', 'Body'], metas: ['Metas', 'Goals'], despensa: ['Despensa', 'Pantry'], alimentos: ['Alimentos', 'Foods'], saciedade: ['Saciedade', 'Fullness'], tele: ['Consulta', 'Consult'], familia: ['Família', 'Family'], gostos: ['Gostos', 'Tastes'], cozinheiro: ['Cozinheiro', 'Cook'] };
+  HN.partMap = { home: 'A', planejar: 'A', receitas: 'A', receita: 'A', alimentos: 'A', alimento: 'A', rotulos: 'A', mercado: 'A', saciedade: 'A', gostos: 'A', cozinheiro: 'A', acomp: 'B', diario: 'B', intuitivo: 'B', metas: 'B', familia: 'B', corpo: 'B', tele: 'B', wizard: 'B', boasvindas: 'B' };
   HN.partOf = function (name) { return HN.partMap[name] || 'C'; };
   var lastPart = 'A';
   HN.curPart = function () { var p = HN.partOf(cur.name); if (p !== 'C') lastPart = p; return lastPart; };

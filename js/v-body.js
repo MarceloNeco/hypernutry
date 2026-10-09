@@ -64,8 +64,15 @@
       '<p class="small muted">' + T('Reconhecimento de texto pode errar: confira com a embalagem antes de salvar.', 'Text recognition can be wrong: check against the package before saving.') + '</p></div>';
     h += '<div class="card"><h3>' + T('Alérgenos', 'Allergens') + '</h3><div class="chips">' + (r.alergenos.length ? r.alergenos.map(function (x) { return '<span class="badge warn">' + T('contém', 'contains') + ' ' + HN.alergName(x) + '</span>'; }).join('') : '<span class="badge ok">' + T('nenhum declarado', 'none declared') + '</span>') + r.podeConter.map(function (x) { return '<span class="badge">' + T('pode conter', 'may contain') + ' ' + HN.alergName(x) + '</span>'; }).join('') + '</div><p class="small muted mt">* ' + T('encontrado nos ingredientes, sem declaração de alérgenos', 'found in ingredients, not declared as an allergen') + '</p>' +
       '<label class="f" for="n-nome">' + T('Nome do produto', 'Product name') + '</label><input id="n-nome" type="text" placeholder="' + T('Ex.: Biscoito recheado', 'E.g. Sandwich cookie') + '"><button class="btn block mt" data-act="rot-save">💾 ' + T('Salvar na minha base', 'Save to my base') + '</button></div>';
+    if (HN.analisar) { var ad = HN.analisar(r.ingredientes); h += '<div class="card"><h3>' + T('Aditivos', 'Additives') + ' ' + HN.seloHtml(ad) + '</h3>' + HN.aditivosHtml(ad) + '<button class="btn sec block mt" data-act="rot-cat">🏪 ' + T('Guardar no catálogo do mercado', 'Save to the store catalogue') + '</button></div>'; }
     box.innerHTML = h; box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  // leva o que foi lido no rótulo para o catálogo (ingredientes + tabela), para comparar marcas depois
+  A['rot-cat'] = function () {
+    var r = HN.rotResult; if (!r || !HN.catEditar) return; var g = function (k) { var e = HN.q('#n-' + k); return e && e.value !== '' ? +e.value : null; };
+    HN.catEditar({ nome: (HN.q('#n-nome') || {}).value || '', ingredientes: r.ingredientes || '', fonte: 'rotulo', porcao: +((HN.q('#n-por') || {}).value) || 0, alergenos: r.alergenos || [],
+      nutri: { kcal: g('kcal'), p: g('p'), c: g('c'), f: g('f'), fib: g('fib'), na: g('na'), sat: g('sat'), acu: g('sug') } });
+  };
   A['rot-save'] = function () {
     var r = HN.rotResult; if (!r) return; var g = function (k) { var v = HN.q('#n-' + k).value; return v === '' ? 0 : +v; }, nome = HN.q('#n-nome').value.trim();
     if (!nome) { HN.toast(T('Dê um nome ao produto.', 'Name the product.')); HN.q('#n-nome').focus(); return; }

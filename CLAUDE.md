@@ -24,6 +24,9 @@ Leia antes de mexer: `ARQUITETURA.md` (código e design system) e `BENCHMARK.md`
 ## Escopo da v0.3 (em entregas separadas) — concluído em 03/Out/2026
 1. Base visual (v0.2.1) ✔ 2. Inícios A/B com anéis e faixa de tolerância, carrossel por aparelho, escala de fome (v0.2.2) ✔ 3. Câmera: código de barras (Open Food Facts), OCR hospedado, laudo InBody, foto do prato (v0.2.3 ✔; reconhecimento do prato por IA depende do cofre de IA da entrega 6) 4. Modo cozinheiro (v0.2.4 ✔) 5. Medidas e conquistas sem balança (v0.2.5 ✔) 6. Diretrizes SolverONE: módulo comum instalado (v0.3.0 ✔) com cofre de IA e rede; reconhecimento do prato por IA ligado.
 
+## v0.4.0 (09/Out/2026)
+- 🏪 Produtos do mercado: análise de aditivos, catálogo com favoritos e marcas favoritas, glossário, offline com atualização online. Administração dos aditivos: RootifyONE → Conteúdo dos apps → HyperNutry → Aditivos (publica `conteudo/hypernutry/aditivos.json`).
+
 ## Diretrizes SolverONE ainda NÃO aplicadas (regra zero: confirmar com ele antes)
 - 🔐 Cifrar dados de saúde no aparelho (AES-GCM com senha/PIN) — a diretriz pede "dado sensível cifrado sempre"; hoje é localStorage simples. **Prioridade.**
 - 👤 Conta e login (apelido + e-mail + senha, biometria), sessão que não cai no F5, voltar ao mesmo lugar após entrar.
