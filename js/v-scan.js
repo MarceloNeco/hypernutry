@@ -50,7 +50,7 @@
     return '🛡️ ' + T('Processado no aparelho (nada vai para a nuvem)', 'Processed on your device (nothing goes to the cloud)');
   }
   function hint(m) {
-    return { rot: T('Enquadre a tabela ou os ingredientes, sem chegar perto demais. Toque na imagem para focar e depois no botão.', 'Frame the table or ingredients, not too close. Tap the image to focus, then the button.'), cod: T('Aponte para o código de barras, a uns 15 cm. Embaçou? Toque na imagem para focar ou em 🔄 para trocar de câmera.', 'Point at the barcode, about 15 cm away. Blurry? Tap the image to focus or 🔄 to switch camera.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
+    return { rot: T('Só o que está dentro do quadro é lido: encha o quadro com a tabela ou com os ingredientes. Toque na imagem para focar e depois no botão.', 'Only what is inside the frame is read: fill the frame with the table or the ingredients. Tap the image to focus, then the button.'), cod: T('Código de barras inteiro dentro do quadro, reto, a uns 15 cm. Não leu? Toque em 📸. Embaçou? Toque na imagem ou em 🔄.', 'Whole barcode inside the frame, straight, about 15 cm away. Not read? Tap 📸. Blurry? Tap the image or 🔄.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
   }
   function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return !!(md && md.b && !HN.cfg().aceite); } // sempre true/false: com undefined o toggle('dim') ficava alternando e borrava a câmera
   function body() {
@@ -61,7 +61,7 @@
       '<div id="scard"></div>' +
       '<div class="scan-bottom">' +
       (lk ? '<button class="btn block" data-act="go" data-arg="/acomp">🩺 ' + T('Entrar no Meu acompanhamento', 'Enter My follow-up') + '</button>' :
-        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
+        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Não leu? Tirar foto do código', 'Not read? Photograph the code') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
         '<div class="row" style="justify-content:center;gap:1.2rem"><label class="ib scan-gal" for="scgal" title="' + T('Escolher da galeria', 'Choose from gallery') + '" aria-label="' + T('Escolher da galeria', 'Choose from gallery') + '">🖼️</label><input id="scgal" type="file" accept="image/*" class="sr" data-in="scan-gal"><button class="shutter" data-act="scan-shot" aria-label="' + T('Tirar foto', 'Take photo') + '"></button><span style="width:2.5rem"></span></div>') +
       '<div class="seg scan-modes" role="tablist">' + MODES.map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
     return h;
@@ -120,9 +120,37 @@
     if (track && window.ImageCapture) { try { return new window.ImageCapture(track).takePhoto().then(function (b) { return createImageBitmap(b); }).then(function (bm) { var c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; c.getContext('2d').drawImage(bm, 0, 0); return c; }).catch(fromVideo); } catch (e) { /* cai para o quadro */ } }
     return fromVideo();
   }
+  /* Recorte no quadro: o vídeo cobre a tela inteira (object-fit: cover), então o que a pessoa enquadrou é um pedaço
+     do quadro. Lemos só esse pedaço (com uma folga): as letras pequenas dos ingredientes ficam grandes para o motor. */
+  function recorte(canvas, folga) {
+    var v = HN.q('#scvideo'), fr = HN.q('.scan-frame'); if (!v || !fr || !v.videoWidth) return canvas;
+    var r = v.getBoundingClientRect(), f = fr.getBoundingClientRect(), k = Math.max(r.width / v.videoWidth, r.height / v.videoHeight);
+    var dw = v.videoWidth * k, dh = v.videoHeight * k, ox = r.left + (r.width - dw) / 2, oy = r.top + (r.height - dh) / 2;
+    var s = canvas.width / v.videoWidth, cy = (canvas.height - v.videoHeight * s) / 2; // foto 4:3 vs vídeo 16:9: mesma largura, centrada
+    var mx = f.width * (folga || 0), my = f.height * (folga || 0);
+    var x0 = Math.max(0, Math.round((f.left - mx - ox) / k * s)), y0 = Math.max(0, Math.round((f.top - my - oy) / k * s + cy));
+    var x1 = Math.min(canvas.width, Math.round((f.right + mx - ox) / k * s)), y1 = Math.min(canvas.height, Math.round((f.bottom + my - oy) / k * s + cy));
+    if (x1 - x0 < 50 || y1 - y0 < 50) return canvas;
+    var c = document.createElement('canvas'); c.width = x1 - x0; c.height = y1 - y0; c.getContext('2d').drawImage(canvas, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+    return c;
+  }
+  // código de barras parado, em alta resolução: ajuda em lata curva ou quando o leitor ao vivo não pega
+  A['scan-foto-cod'] = function () {
+    if (st.busy || !('BarcodeDetector' in window)) { if (!('BarcodeDetector' in window)) HN.toast(T('Este navegador não lê código de barras pela câmera. Digite o número.', 'This browser cannot read barcodes from the camera. Type the number.')); return; }
+    st.busy = true; var det; try { det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { st.busy = false; return; }
+    grab().then(function (c) {
+      var rc = recorte(c, .25);
+      return det.detect(rc).then(function (r) { return r && r.length ? r : det.detect(c); });
+    }).then(function (r) {
+      st.busy = false;
+      if (r && r.length) lookup(r[0].rawValue);
+      else HN.toast(T('Não achei o código na foto. Deixe o código inteiro dentro do quadro, reto e sem reflexo, ou digite o número.', 'Could not find the code in the photo. Keep the whole code inside the frame, straight and without glare, or type the number.'), 4000);
+    }).catch(function () { st.busy = false; HN.toast(T('Não consegui tirar a foto. Digite o número.', 'Could not take the photo. Type the number.')); });
+  };
   function usePhoto(canvas) {
     var m = st.mode; HN.haptic('sucesso');
-    if (m === 'rot' || m === 'bio') { HN.scanImage(m === 'bio' ? 'bio' : 'rot', canvas); return; }
+    if (m === 'rot') { HN.scanImage('rot', recorte(canvas, .06), { recortado: true }); return; }
+    if (m === 'bio') { HN.scanImage('bio', canvas); return; }
     if (m === 'prato') {
       var k = Math.min(1, 480 / Math.max(canvas.width, canvas.height)), t = document.createElement('canvas'); t.width = Math.round(canvas.width * k); t.height = Math.round(canvas.height * k); t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height);
       HN.draft = HN.draft || (HN.draftNew ? HN.draftNew() : { items: [] }); HN.draft.photo = t.toDataURL('image/jpeg', .7);

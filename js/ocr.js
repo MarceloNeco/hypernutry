@@ -156,6 +156,24 @@
     x.putImageData(d, 0, 0);
     return c;
   };
+  // Tratamento novo (v0.4.5): escala de cinza + "auto-níveis" por percentis, SEM binarizar. Em fundo colorido
+  // (lata dourada, rótulo escuro) o corte duro de antes virava ruído e comia as letras pequenas dos ingredientes.
+  // Também amplia quando a foto é pequena: o motor lê melhor letras com ≥ 30 px de altura.
+  O.preparar = function (img, maxLado) {
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, maior = Math.max(w, h);
+    var esc = maior > (maxLado || 2400) ? (maxLado || 2400) / maior : (maior < 1400 ? Math.min(2, 1400 / maior) : 1);
+    var c = document.createElement('canvas'); c.width = Math.round(w * esc); c.height = Math.round(h * esc);
+    var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
+    var d = x.getImageData(0, 0, c.width, c.height), p = d.data, hist = new Uint32Array(256), i, g;
+    for (i = 0; i < p.length; i += 4) { g = (0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]) | 0; p[i] = g; hist[g]++; }
+    var n = p.length / 4, lo = 0, hi = 255, acc = 0;
+    for (i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.02) { lo = i; break; } }
+    acc = 0; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= n * 0.02) { hi = i; break; } }
+    var k = hi > lo ? 255 / (hi - lo) : 1;
+    for (i = 0; i < p.length; i += 4) { g = (p[i] - lo) * k; g = g < 0 ? 0 : g > 255 ? 255 : g; p[i] = p[i + 1] = p[i + 2] = g; }
+    x.putImageData(d, 0, 0);
+    return c;
+  };
   // Nitidez (variância do Laplaciano) — pede nova foto se estiver borrada
   O.nitidez = function (canvas) {
     var w = canvas.width, h = canvas.height, d = canvas.getContext('2d').getImageData(0, 0, w, h).data, s = 0, s2 = 0, n = 0;

@@ -17,9 +17,9 @@
   }
   HN.ins['sc-text'] = function (v) { SC.text = v; };
   // foto (arquivo ou câmera) → confere nitidez → trata para leitura → mostra a prévia
-  function useImage(img) {
+  function useImage(img, opts) {
     try { var small = document.createElement('canvas'), w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height, k = Math.min(1, 900 / Math.max(w, hh)); small.width = Math.round(w * k); small.height = Math.round(hh * k); var x = small.getContext('2d'); x.drawImage(img, 0, 0, small.width, small.height); var d = x.getImageData(0, 0, small.width, small.height), p = d.data; for (var i = 0; i < p.length; i += 4) { var g = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2]; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); SC.blur = O.nitidez(small) < 60; } catch (e) { SC.blur = false; }
-    SC.canvas = O.preprocessar(img, 1600);
+    SC.canvas = (opts && opts.recortado) ? O.preparar(img) : O.preprocessar(img, 1600); // recorte da câmera: tratamento suave; foto inteira: o antigo
     var pv = HN.q('#scprev'); if (pv) { pv.innerHTML = '<img src="' + SC.canvas.toDataURL('image/jpeg', .5) + '" alt="' + T('Prévia da foto tratada', 'Preview of processed photo') + '" style="border-radius:12px;border:1px solid var(--line)">' + (SC.blur ? U.notice('warn', T('A foto parece desfocada. Tente de novo com mais luz e o celular firme, ou escolha outra.', 'The photo looks blurry. Try again with more light and a steady phone, or choose another.')) : '<p class="small muted">' + T('Foto pronta. Toque em “Ler a foto”.', 'Photo ready. Tap “Read the photo”.') + '</p>'); }
   }
   HN.ins['sc-file'] = function (v, el) {
@@ -30,8 +30,8 @@
   };
   // foto tirada na tela da câmera (📷): abre a tela certa já com a foto e começa a ler
   var pending = null;
-  HN.scanImage = function (kind, canvas) { pending = { kind: kind, canvas: canvas }; HN.go(kind === 'bio' ? '/corpo/exame' : '/rotulos'); };
-  function runPending() { if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas); A['sc-ocr'](); }
+  HN.scanImage = function (kind, canvas, opts) { pending = { kind: kind, canvas: canvas, opts: opts }; HN.go(kind === 'bio' ? '/corpo/exame' : '/rotulos'); };
+  function runPending() { if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas, p.opts); A['sc-ocr'](); }
   ['rotulos', 'corpo'].forEach(function (n) { var old = HN.after[n]; HN.after[n] = function (a, b) { if (old) old(a, b); runPending(); }; });
   A['sc-sample'] = function (k) { SC.text = k === 'bio' ? SAMPLE_BIO : SAMPLE_LABEL; var t = HN.q('#sctext'); if (t) t.value = SC.text; };
   A['sc-ocr'] = function () {

@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.5",
+   "data": "09/Out/2026",
+   "hora": "10:40:00",
+   "pt": "🏷️ Leitura do rótulo muito melhor: só o que está dentro do quadro é lido, com um tratamento de imagem novo que não come as letras pequenas dos ingredientes em fundo colorido (no teste, de 55% para 100% de acerto). 📸 No código de barras, novo botão \"Não leu? Tirar foto do código\": lê o código parado em alta resolução, o que ajuda em lata curva ou quando o leitor ao vivo não pega. Dicas na tela explicam que o código precisa estar inteiro dentro do quadro.",
+   "en": "🏷️ Much better label reading: only what is inside the frame is read, with a new image treatment that does not eat the small ingredient letters on coloured backgrounds (in the test, from 55% to 100% accuracy). 📸 For barcodes, a new \"Not read? Photograph the code\" button reads the still code at full resolution, which helps on curved cans or when the live reader misses. On-screen hints explain the code must be entirely inside the frame."
+  },
+  {
    "v": "0.4.4",
    "data": "09/Out/2026",
    "hora": "08:30:00",
