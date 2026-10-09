@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.5.0",
+   "data": "09/Out/2026",
+   "hora": "14:50:00",
+   "pt": "🚦 O scanner agora é, antes de tudo, o leitor de rótulo: a câmera abre no modo Rótulo, você tira a foto dos ingredientes e o app mostra direto o farol (🟢 sem sinais de ultraprocessado · 🟡 processado com aditivos · 🔴 ultraprocessado provável), com os aditivos e os motivos logo abaixo, sem precisar tocar em Interpretar. A tabela nutricional entra no farol quando a foto tem os números. O código de barras continua como atalho.",
+   "en": "🚦 The scanner is now, first of all, the label reader: the camera opens in Label mode, you photograph the ingredients and the app shows the traffic light right away (🟢 no signs of ultra-processing · 🟡 processed with additives · 🔴 likely ultra-processed), with the additives and the reasons just below, no need to tap Interpret. The nutrition table joins the traffic light when the photo has the numbers. The barcode remains a shortcut."
+  },
+  {
    "v": "0.4.11",
    "data": "09/Out/2026",
    "hora": "14:20:00",

@@ -8,7 +8,7 @@ PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`.
 - `js/data-recipes.js` equipamentos e 16 receitas.
 - `js/calc.js` (`HN.calc`) fórmulas (Mifflin, Harris, Katch), faixas flexíveis, macros, substituição, cardápio, lista de compras, alertas de segurança.
 - `js/ocr.js` (`HN.ocr`) interpreta texto de rótulo e de bioimpedância; motor Tesseract.js **hospedado** em `vendor/tesseract/` (v5.1.1, núcleo LSTM, idiomas por/eng best_int), carregado só quando a pessoa pede; cai para o CDN se a pasta faltar.
-- `js/v-scan.js` câmera em tela cheia (botão 📷): modos Rótulo, Código (ZXing hospedado via `js/barras.js` + Open Food Facts, `HN.offBuscar`), Prato (foto de referência no diário; IA via `HN.iaVisao` quando existir) e Laudo. Câmera só ao tocar; desligada ao fechar.
+- `js/v-scan.js` câmera em tela cheia (botão 📷): **abre no Rótulo** (v0.5.0: ingredientes → farol de ultraprocessado em `v-body.js` `farol()`, interpretado sozinho após o OCR); modos Rótulo, Código (ZXing hospedado via `js/barras.js` + Open Food Facts, `HN.offBuscar`), Prato (foto de referência no diário; IA via `HN.iaVisao` quando existir) e Laudo. Câmera só ao tocar; desligada ao fechar.
 - `js/core.js` utilidades, armazenamento `HN.S`, perfil, menu, busca, camadas (botão Voltar), roteador, `HN.start()`.
 - `js/v-calc.js` PARTE A: calculadora de calorias, gostos e cozinha; liga TACO/restrições/gostos às telas existentes.
 - `js/ui.js` peças de tela (chips, escala, gráficos SVG).
