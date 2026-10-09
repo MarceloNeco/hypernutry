@@ -89,19 +89,17 @@
       det.detect(cv).then(function (r) { lendo = false; if (r && r.length && !st.busy) aceitar(r[0].rawValue, false); }).catch(function () { lendo = false; });
     }, 320);
   }
-  function card(html) { var c = HN.q('#scard'), ui = HN.q('#scanui'); if (c) { c.innerHTML = html ? '<div class="scan-card">' + html + '</div>' : ''; } if (ui) ui.classList.toggle('has-card', !!html); }
+  function card(html, compacto) { var c = HN.q('#scard'), ui = HN.q('#scanui'); if (c) { c.innerHTML = html ? (compacto ? html : '<div class="scan-card">' + html + '</div>') : ''; } if (ui) ui.classList.toggle('has-card', !!html); }
   // cartão do produto lido: selo de aditivos, alertas, alergias e atalhos (o produto já fica no catálogo)
+  // leitura concluída: faixa pequena "✅ Lido" (não cobre a câmera). OK abre a ficha com tudo; conflito de restrição vem em vermelho antes.
   function cardProduto(p, o, offline) {
     st.last = o; st.lastId = p.id;
-    var r = HN.cat.analise(p), alt = HN.alternativas(p), mine = HN.restrAll ? HN.restrAll() : [];
+    var r = HN.cat.analise(p), mine = HN.restrAll ? HN.restrAll() : [];
     var cf = (o ? o.alergenos.concat(o.tracos) : p.alergenos || []).filter(function (a) { return mine.indexOf(a) >= 0; });
-    var n = p.nutri || {}, v = function (x, d) { return x == null ? '–' : HN.num(x, d || 0); };
-    card((cf.length ? '<div class="notice bad" role="alert">⚠️ <b>' + T('Conflita com suas restrições:', 'Conflicts with your restrictions:') + ' ' + cf.map(HN.alergName).join(', ') + '</b></div>' : '') +
-      '<div class="row" style="align-items:flex-start"><div class="grow"><div class="t-caption muted">' + esc(p.marca || '') + (p.tipo ? ' · ' + esc(p.tipo) : '') + '</div><h3 style="margin:.1rem 0">' + esc(HN.prodNome(p)) + '</h3></div><div class="right"><div class="t-display" style="font-size:1.5rem">' + v(n.kcal) + '</div><div class="t-caption muted">kcal/100 g</div></div></div>' +
-      '<p style="margin:.3rem 0">' + HN.seloHtml(r, true) + '</p>' + HN.aditivosHtml(r, true) +
-      (alt.length ? '<p class="small">✨ <b>' + alt.length + ' ' + T('opção(ões) com menos aditivos no seu catálogo', 'option(s) with fewer additives in your catalogue') + '</b> — ' + esc(HN.prodNome(alt[0].p)) + '</p>' : '') +
-      '<p class="t-caption muted">' + (offline ? '📴 ' + T('Sem internet: dados guardados no seu catálogo.', 'Offline: data saved in your catalogue.') : T('Dados do Open Food Facts (feito por voluntários): confira com a embalagem. Guardado no seu catálogo ✓', 'Open Food Facts data (made by volunteers): check the package. Saved in your catalogue ✓')) + '</p>' +
-      '<div class="row wrap"><button class="btn grow" data-act="scan-ficha">📋 ' + T('Ver ficha', 'See details') + '</button>' + (n.kcal != null ? '<button class="btn sec" data-act="scan-add">🧮</button>' : '') + '<button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>');
+    card('<div class="scan-ok' + (cf.length ? ' bad' : '') + '" role="status">' +
+      '<div class="row" style="align-items:center"><span class="scan-ok-ico">' + (cf.length ? '⚠️' : '✅') + '</span><div class="grow"><b>' + (cf.length ? T('Lido · conflita com suas restrições:', 'Read · conflicts with your restrictions:') + ' ' + cf.map(HN.alergName).join(', ') : T('Lido!', 'Read!')) + '</b><div class="small">' + esc(HN.prodNome(p)) + (p.marca ? ' · ' + esc(p.marca) : '') + ' ' + HN.seloHtml(r, true) + '</div></div></div>' +
+      '<div class="row" style="margin-top:.5rem"><button class="btn grow" data-act="scan-ficha">OK ✓ ' + T('ver tudo', 'see everything') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>' +
+      (offline ? '<p class="t-caption muted" style="margin:.4rem 0 0">📴 ' + T('Sem internet: dados guardados no seu catálogo.', 'Offline: data saved in your catalogue.') + '</p>' : '') + '</div>', true);
   }
   function lookup(code) {
     code = String(code || '').replace(/\D/g, ''); if (code.length < 8) { HN.toast(T('Número incompleto (8 a 14 dígitos).', 'Incomplete number (8 to 14 digits).')); return; }

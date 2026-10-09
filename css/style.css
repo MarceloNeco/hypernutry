@@ -353,6 +353,10 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .shutter:active { transform: scale(.92); background: var(--brand); }
 .scan-gal { width: 2.75rem; height: 2.75rem; cursor: pointer; }
 .scan-code input { flex: 1; min-width: 0; background: rgba(15,23,42,.6); color: #fff; border-color: rgba(255,255,255,.25); }
+.scan-ok { position: absolute; left: .6rem; right: .6rem; bottom: calc(4.8rem + env(safe-area-inset-bottom)); max-width: 30rem; margin: 0 auto; padding: .7rem .8rem; border-radius: 18px; color: #052e16; background: #bbf7d0; border: 1px solid #4ade80; box-shadow: var(--shadow-float); animation: cardup .35s var(--spring); }
+.scan-ok.bad { color: #450a0a; background: #fecaca; border-color: #f87171; }
+.scan-ok .scan-ok-ico { font-size: 1.6rem; line-height: 1; }
+.scan-ok .small { opacity: .9; }
 .scan-card { position: absolute; left: .6rem; right: .6rem; bottom: calc(4.8rem + env(safe-area-inset-bottom)); max-width: 30rem; margin: 0 auto; padding: .9rem; border-radius: 22px; color: var(--ink); background: var(--glass-bar); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-border); box-shadow: var(--shadow-float); animation: cardup .35s var(--spring); max-height: 60vh; overflow: auto; }
 @keyframes cardup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 .scan-card .stat div { background: var(--brand-soft); }
