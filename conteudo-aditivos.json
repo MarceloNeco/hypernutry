@@ -1,0 +1,2045 @@
+{
+ "formato": 1,
+ "versao": "2026.10.09",
+ "geradoEm": "2026-10-09",
+ "categorias": {
+  "conservante": [
+   "Conservantes",
+   "Preservatives",
+   "🧪",
+   "Seguram bactérias e bolor para o produto durar mais.",
+   "Hold back bacteria and mould so the product lasts longer."
+  ],
+  "acidulante": [
+   "Acidulantes e reguladores de acidez",
+   "Acids and acidity regulators",
+   "🍋",
+   "Controlam o azedinho e a estabilidade.",
+   "Control sourness and stability."
+  ],
+  "antioxidante": [
+   "Antioxidantes",
+   "Antioxidants",
+   "🛡️",
+   "Evitam que gorduras e cores estraguem com o ar.",
+   "Stop fats and colours spoiling in the air."
+  ],
+  "espessante": [
+   "Espessantes, estabilizantes e gelificantes",
+   "Thickeners, stabilisers and gelling agents",
+   "🥣",
+   "Dão textura e corpo e evitam que o produto separe.",
+   "Give texture and body and stop separation."
+  ],
+  "emulsificante": [
+   "Emulsificantes",
+   "Emulsifiers",
+   "🫗",
+   "Misturam o que normalmente separa, como óleo e água.",
+   "Mix what normally separates, like oil and water."
+  ],
+  "realcador": [
+   "Realçadores de sabor",
+   "Flavour enhancers",
+   "🧂",
+   "Deixam o gosto mais forte.",
+   "Make the taste stronger."
+  ],
+  "corante": [
+   "Corantes",
+   "Colours",
+   "🎨",
+   "Dão ou devolvem cor.",
+   "Add or restore colour."
+  ],
+  "edulcorante": [
+   "Adoçantes",
+   "Sweeteners",
+   "🍬",
+   "Adoçam com pouca ou nenhuma caloria.",
+   "Sweeten with few or no calories."
+  ],
+  "antiumectante": [
+   "Antiumectantes",
+   "Anti-caking agents",
+   "🧂",
+   "Evitam que pós empelotem.",
+   "Stop powders clumping."
+  ],
+  "fermento": [
+   "Fermentos químicos",
+   "Raising agents",
+   "🍞",
+   "Soltam gás para a massa crescer.",
+   "Release gas so dough rises."
+  ],
+  "atencao": [
+   "Ingredientes de atenção",
+   "Ingredients to watch",
+   "⚠️",
+   "Não são aditivos com número, mas mostram que o alimento é muito processado.",
+   "Not numbered additives, but signs of a highly processed food."
+  ]
+ },
+ "aditivos": [
+  {
+   "id": "benzoato",
+   "ins": [
+    "211",
+    "210",
+    "212",
+    "213"
+   ],
+   "cat": "conservante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Benzoato de sódio",
+    "en": "Sodium benzoate"
+   },
+   "outros": [
+    "acido benzoico",
+    "benzoato de potassio",
+    "benzoato de calcio"
+   ],
+   "porque": {
+    "pt": "Com vitamina C (ácido ascórbico) pode formar benzeno em bebidas; a EFSA pede pouco uso em crianças.",
+    "en": "With vitamin C it can form benzene in drinks; EFSA advises low intake for children."
+   },
+   "onde": {
+    "pt": "refrigerantes, sucos, molhos",
+    "en": "soft drinks, juices, sauces"
+   }
+  },
+  {
+   "id": "sorbato",
+   "ins": [
+    "202",
+    "200",
+    "203"
+   ],
+   "cat": "conservante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Sorbato de potássio",
+    "en": "Potassium sorbate"
+   },
+   "outros": [
+    "acido sorbico",
+    "sorbato de calcio"
+   ],
+   "porque": {
+    "pt": "Considerado seguro, mas é conservante: produto com ele é mais processado.",
+    "en": "Considered safe, but it is a preservative: the product is more processed."
+   },
+   "onde": {
+    "pt": "queijos, margarinas, pães, bolos",
+    "en": "cheese, margarine, bread, cakes"
+   }
+  },
+  {
+   "id": "nitrito",
+   "ins": [
+    "250",
+    "249"
+   ],
+   "cat": "conservante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Nitrito de sódio",
+    "en": "Sodium nitrite"
+   },
+   "outros": [
+    "nitrito de potassio"
+   ],
+   "porque": {
+    "pt": "Em carnes processadas pode formar nitrosaminas; a OMS (IARC) classifica carne processada como cancerígena.",
+    "en": "In processed meat it can form nitrosamines; WHO (IARC) classes processed meat as carcinogenic."
+   },
+   "onde": {
+    "pt": "presunto, salsicha, mortadela, bacon",
+    "en": "ham, sausages, bologna, bacon"
+   }
+  },
+  {
+   "id": "nitrato",
+   "ins": [
+    "251",
+    "252"
+   ],
+   "cat": "conservante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Nitrato de sódio",
+    "en": "Sodium nitrate"
+   },
+   "outros": [
+    "nitrato de potassio",
+    "salitre"
+   ],
+   "porque": {
+    "pt": "Vira nitrito no alimento e no corpo; mesmo cuidado das carnes processadas.",
+    "en": "Turns into nitrite; same caution as processed meat."
+   },
+   "onde": {
+    "pt": "embutidos, queijos curados",
+    "en": "cured meats, aged cheese"
+   }
+  },
+  {
+   "id": "propionato",
+   "ins": [
+    "282",
+    "280",
+    "281",
+    "283"
+   ],
+   "cat": "conservante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Propionato de cálcio",
+    "en": "Calcium propionate"
+   },
+   "outros": [
+    "acido propionico",
+    "propionato de sodio"
+   ],
+   "porque": {
+    "pt": "Evita bolor; é sinal de pão industrial de longa validade.",
+    "en": "Prevents mould; a sign of long-life industrial bread."
+   },
+   "onde": {
+    "pt": "pão de forma, bisnaguinha",
+    "en": "sliced bread, buns"
+   }
+  },
+  {
+   "id": "sulfito",
+   "ins": [
+    "220",
+    "221",
+    "222",
+    "223",
+    "224",
+    "225",
+    "226",
+    "227",
+    "228"
+   ],
+   "cat": "conservante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Dióxido de enxofre e sulfitos",
+    "en": "Sulphur dioxide and sulphites"
+   },
+   "outros": [
+    "dioxido de enxofre",
+    "metabissulfito de sodio",
+    "metabissulfito de potassio",
+    "bissulfito de sodio",
+    "sulfito de sodio"
+   ],
+   "porque": {
+    "pt": "Pode causar crise em quem tem asma ou sensibilidade; o rótulo é obrigado a avisar.",
+    "en": "Can trigger asthma or sensitivity reactions; labels must warn."
+   },
+   "onde": {
+    "pt": "frutas secas, vinhos, vinagres, sucos",
+    "en": "dried fruit, wine, vinegar, juices"
+   }
+  },
+  {
+   "id": "natamicina",
+   "ins": [
+    "235"
+   ],
+   "cat": "conservante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Natamicina",
+    "en": "Natamycin"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Antifúngico usado na casca de queijos e embutidos.",
+    "en": "Antifungal used on cheese and sausage rinds."
+   },
+   "onde": {
+    "pt": "casca de queijos, salames",
+    "en": "cheese rinds, salami"
+   }
+  },
+  {
+   "id": "citrico",
+   "ins": [
+    "330"
+   ],
+   "cat": "acidulante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ácido cítrico",
+    "en": "Citric acid"
+   },
+   "outros": [
+    "acidulante acido citrico"
+   ],
+   "porque": {
+    "pt": "O ácido do limão; uso muito comum e seguro.",
+    "en": "The acid in lemons; very common and safe."
+   },
+   "onde": {
+    "pt": "balas, refrigerantes, sucos, geleias",
+    "en": "sweets, soft drinks, juices, jams"
+   }
+  },
+  {
+   "id": "fosforico",
+   "ins": [
+    "338"
+   ],
+   "cat": "acidulante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Ácido fosfórico",
+    "en": "Phosphoric acid"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Comum em refrigerante de cola; excesso de fósforo e acidez fazem mal aos dentes e aos ossos.",
+    "en": "Common in cola; too much phosphorus and acidity harm teeth and bones."
+   },
+   "onde": {
+    "pt": "refrigerantes de cola",
+    "en": "cola drinks"
+   }
+  },
+  {
+   "id": "malico",
+   "ins": [
+    "296"
+   ],
+   "cat": "acidulante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ácido málico",
+    "en": "Malic acid"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Ácido natural da maçã.",
+    "en": "Natural acid from apples."
+   },
+   "onde": {
+    "pt": "doces, bebidas de fruta",
+    "en": "sweets, fruit drinks"
+   }
+  },
+  {
+   "id": "acetico",
+   "ins": [
+    "260"
+   ],
+   "cat": "acidulante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ácido acético",
+    "en": "Acetic acid"
+   },
+   "outros": [
+    "vinagre"
+   ],
+   "porque": {
+    "pt": "É o vinagre.",
+    "en": "It is vinegar."
+   },
+   "onde": {
+    "pt": "conservas, molhos",
+    "en": "pickles, sauces"
+   }
+  },
+  {
+   "id": "citratosodio",
+   "ins": [
+    "331"
+   ],
+   "cat": "acidulante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Citrato de sódio",
+    "en": "Sodium citrate"
+   },
+   "outros": [
+    "citrato trissodico"
+   ],
+   "porque": {
+    "pt": "Regulador de acidez; soma um pouco de sódio.",
+    "en": "Acidity regulator; adds a little sodium."
+   },
+   "onde": {
+    "pt": "queijos processados, bebidas lácteas",
+    "en": "processed cheese, dairy drinks"
+   }
+  },
+  {
+   "id": "latico",
+   "ins": [
+    "270"
+   ],
+   "cat": "acidulante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ácido lático",
+    "en": "Lactic acid"
+   },
+   "outros": [
+    "acido latico"
+   ],
+   "porque": {
+    "pt": "Ácido da fermentação, como no iogurte.",
+    "en": "Fermentation acid, as in yogurt."
+   },
+   "onde": {
+    "pt": "conservas, bebidas",
+    "en": "pickles, drinks"
+   }
+  },
+  {
+   "id": "ascorbico",
+   "ins": [
+    "300",
+    "301",
+    "302"
+   ],
+   "cat": "antioxidante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ácido ascórbico (vitamina C)",
+    "en": "Ascorbic acid (vitamin C)"
+   },
+   "outros": [
+    "ascorbato de sodio",
+    "vitamina c"
+   ],
+   "porque": {
+    "pt": "É vitamina C.",
+    "en": "It is vitamin C."
+   },
+   "onde": {
+    "pt": "sucos, embutidos, massas",
+    "en": "juices, cured meats, pasta"
+   }
+  },
+  {
+   "id": "eritorbato",
+   "ins": [
+    "316",
+    "315"
+   ],
+   "cat": "antioxidante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Eritorbato de sódio",
+    "en": "Sodium erythorbate"
+   },
+   "outros": [
+    "acido eritorbico",
+    "isoascorbato de sodio"
+   ],
+   "porque": {
+    "pt": "Parecido com a vitamina C; aparece junto com nitrito em embutidos.",
+    "en": "Similar to vitamin C; used with nitrite in cured meats."
+   },
+   "onde": {
+    "pt": "salsicha, presunto",
+    "en": "sausages, ham"
+   }
+  },
+  {
+   "id": "tocoferol",
+   "ins": [
+    "307",
+    "306",
+    "308",
+    "309"
+   ],
+   "cat": "antioxidante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Tocoferóis (vitamina E)",
+    "en": "Tocopherols (vitamin E)"
+   },
+   "outros": [
+    "vitamina e",
+    "tocoferol"
+   ],
+   "porque": {
+    "pt": "É vitamina E.",
+    "en": "It is vitamin E."
+   },
+   "onde": {
+    "pt": "óleos, margarinas",
+    "en": "oils, margarine"
+   }
+  },
+  {
+   "id": "bha",
+   "ins": [
+    "320"
+   ],
+   "cat": "antioxidante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "BHA (butil-hidroxianisol)",
+    "en": "BHA (butylated hydroxyanisole)"
+   },
+   "outros": [
+    "butilhidroxianisol",
+    "butil hidroxianisol"
+   ],
+   "porque": {
+    "pt": "Sintético; a IARC o classifica como possivelmente cancerígeno (grupo 2B).",
+    "en": "Synthetic; IARC classes it as possibly carcinogenic (group 2B)."
+   },
+   "onde": {
+    "pt": "salgadinhos, gorduras de fritura",
+    "en": "snacks, frying fats"
+   }
+  },
+  {
+   "id": "bht",
+   "ins": [
+    "321"
+   ],
+   "cat": "antioxidante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "BHT (butil-hidroxitolueno)",
+    "en": "BHT (butylated hydroxytoluene)"
+   },
+   "outros": [
+    "butilhidroxitolueno",
+    "butil hidroxitolueno"
+   ],
+   "porque": {
+    "pt": "Sintético; há estudos pedindo cautela e alguns países limitam o uso.",
+    "en": "Synthetic; studies urge caution and some countries limit it."
+   },
+   "onde": {
+    "pt": "salgadinhos, cereais, gorduras",
+    "en": "snacks, cereals, fats"
+   }
+  },
+  {
+   "id": "tbhq",
+   "ins": [
+    "319"
+   ],
+   "cat": "antioxidante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "TBHQ (terc-butil-hidroquinona)",
+    "en": "TBHQ"
+   },
+   "outros": [
+    "terc butil hidroquinona",
+    "tercbutil hidroquinona"
+   ],
+   "porque": {
+    "pt": "Sintético, para óleos de fritura; limite diário baixo.",
+    "en": "Synthetic, for frying oils; low daily limit."
+   },
+   "onde": {
+    "pt": "óleos, salgadinhos, macarrão instantâneo",
+    "en": "oils, snacks, instant noodles"
+   }
+  },
+  {
+   "id": "lecitina",
+   "ins": [
+    "322"
+   ],
+   "cat": "emulsificante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Lecitina (de soja ou girassol)",
+    "en": "Lecithin (soy or sunflower)"
+   },
+   "outros": [
+    "lecitina de soja",
+    "lecitina de girassol"
+   ],
+   "porque": {
+    "pt": "Natural; antioxidante e emulsificante. Atenção só para quem tem alergia a soja.",
+    "en": "Natural; antioxidant and emulsifier. Only a concern for soy allergy."
+   },
+   "onde": {
+    "pt": "chocolates, margarinas",
+    "en": "chocolate, margarine"
+   }
+  },
+  {
+   "id": "xantana",
+   "ins": [
+    "415"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Goma xantana",
+    "en": "Xanthan gum"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Espessante feito por fermentação; considerado seguro.",
+    "en": "Thickener made by fermentation; considered safe."
+   },
+   "onde": {
+    "pt": "molhos, sopas, produtos sem glúten",
+    "en": "sauces, soups, gluten-free products"
+   }
+  },
+  {
+   "id": "guar",
+   "ins": [
+    "412"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Goma guar",
+    "en": "Guar gum"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Fibra de semente; segura.",
+    "en": "Seed fibre; safe."
+   },
+   "onde": {
+    "pt": "sorvetes, iogurtes, massas",
+    "en": "ice cream, yogurt, pasta"
+   }
+  },
+  {
+   "id": "jatai",
+   "ins": [
+    "410"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Goma jataí (alfarroba)",
+    "en": "Locust bean gum"
+   },
+   "outros": [
+    "goma de alfarroba",
+    "goma jatai"
+   ],
+   "porque": {
+    "pt": "Fibra de semente; segura.",
+    "en": "Seed fibre; safe."
+   },
+   "onde": {
+    "pt": "sorvetes, requeijão",
+    "en": "ice cream, cream cheese"
+   }
+  },
+  {
+   "id": "cmc",
+   "ins": [
+    "466"
+   ],
+   "cat": "espessante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Carboximetilcelulose (CMC)",
+    "en": "Carboxymethylcellulose (CMC)"
+   },
+   "outros": [
+    "carboximetilcelulose sodica",
+    "carboximetil celulose",
+    "cmc"
+   ],
+   "porque": {
+    "pt": "Estudos em pessoas e animais sugerem efeito na flora do intestino.",
+    "en": "Human and animal studies suggest effects on gut bacteria."
+   },
+   "onde": {
+    "pt": "produtos diet, sorvetes, molhos",
+    "en": "diet products, ice cream, sauces"
+   }
+  },
+  {
+   "id": "pectina",
+   "ins": [
+    "440"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Pectina",
+    "en": "Pectin"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Fibra natural das frutas.",
+    "en": "Natural fruit fibre."
+   },
+   "onde": {
+    "pt": "geleias, iogurtes",
+    "en": "jams, yogurt"
+   }
+  },
+  {
+   "id": "agar",
+   "ins": [
+    "406"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ágar-ágar",
+    "en": "Agar"
+   },
+   "outros": [
+    "agar agar",
+    "agar"
+   ],
+   "porque": {
+    "pt": "Gelificante de algas.",
+    "en": "Gelling agent from seaweed."
+   },
+   "onde": {
+    "pt": "doces, gelatinas veganas",
+    "en": "sweets, vegan jellies"
+   }
+  },
+  {
+   "id": "carragena",
+   "ins": [
+    "407",
+    "407a"
+   ],
+   "cat": "espessante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Carragena",
+    "en": "Carrageenan"
+   },
+   "outros": [
+    "carragenina",
+    "carragenana"
+   ],
+   "porque": {
+    "pt": "De algas; estudos pedem cautela para o intestino sensível.",
+    "en": "From seaweed; studies urge caution for sensitive guts."
+   },
+   "onde": {
+    "pt": "achocolatados, leites vegetais, presunto",
+    "en": "chocolate milk, plant milks, ham"
+   }
+  },
+  {
+   "id": "amidomod",
+   "ins": [
+    "1404",
+    "1410",
+    "1412",
+    "1413",
+    "1414",
+    "1420",
+    "1422",
+    "1440",
+    "1442",
+    "1450"
+   ],
+   "cat": "espessante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Amido modificado",
+    "en": "Modified starch"
+   },
+   "outros": [
+    "amido modificado",
+    "amido de milho modificado",
+    "amido de mandioca modificado"
+   ],
+   "porque": {
+    "pt": "Mudado na indústria para aguentar calor e frio; marca de produto ultraprocessado.",
+    "en": "Industrially altered to withstand heat and cold; a sign of ultra-processing."
+   },
+   "onde": {
+    "pt": "molhos, requeijão, sobremesas",
+    "en": "sauces, cream cheese, desserts"
+   }
+  },
+  {
+   "id": "celulose",
+   "ins": [
+    "460",
+    "461",
+    "464"
+   ],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Celulose",
+    "en": "Cellulose"
+   },
+   "outros": [
+    "celulose microcristalina",
+    "metilcelulose"
+   ],
+   "porque": {
+    "pt": "Fibra vegetal usada para dar corpo.",
+    "en": "Plant fibre used for body."
+   },
+   "onde": {
+    "pt": "queijo ralado, produtos light",
+    "en": "grated cheese, light products"
+   }
+  },
+  {
+   "id": "gelatina",
+   "ins": [],
+   "cat": "espessante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Gelatina",
+    "en": "Gelatine"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Proteína animal; atenção só para vegetarianos.",
+    "en": "Animal protein; only a concern for vegetarians."
+   },
+   "onde": {
+    "pt": "sobremesas, iogurtes",
+    "en": "desserts, yogurt"
+   }
+  },
+  {
+   "id": "mono471",
+   "ins": [
+    "471",
+    "472e",
+    "472"
+   ],
+   "cat": "emulsificante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Mono e diglicerídeos de ácidos graxos",
+    "en": "Mono- and diglycerides of fatty acids"
+   },
+   "outros": [
+    "mono e digliceridios",
+    "mono e digliceridos",
+    "monodiglicerideos",
+    "esteres de mono"
+   ],
+   "porque": {
+    "pt": "Marca de produto ultraprocessado; muito comum em pães e sorvetes.",
+    "en": "Sign of ultra-processing; very common in bread and ice cream."
+   },
+   "onde": {
+    "pt": "pães, bolos, sorvetes",
+    "en": "bread, cakes, ice cream"
+   }
+  },
+  {
+   "id": "polissorbato",
+   "ins": [
+    "432",
+    "433",
+    "434",
+    "435",
+    "436"
+   ],
+   "cat": "emulsificante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Polissorbatos",
+    "en": "Polysorbates"
+   },
+   "outros": [
+    "polissorbato 80",
+    "polisorbato",
+    "polissorbato 60"
+   ],
+   "porque": {
+    "pt": "Estudos em animais sugerem efeito na flora do intestino.",
+    "en": "Animal studies suggest effects on gut bacteria."
+   },
+   "onde": {
+    "pt": "sorvetes, molhos cremosos",
+    "en": "ice cream, creamy sauces"
+   }
+  },
+  {
+   "id": "estearoil",
+   "ins": [
+    "481",
+    "482"
+   ],
+   "cat": "emulsificante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Estearoil lactilato de sódio",
+    "en": "Sodium stearoyl lactylate"
+   },
+   "outros": [
+    "estearoil 2 lactil lactato de sodio",
+    "estearoil lactato"
+   ],
+   "porque": {
+    "pt": "Melhorador de pão industrial.",
+    "en": "Industrial bread improver."
+   },
+   "onde": {
+    "pt": "pães, bolos",
+    "en": "bread, cakes"
+   }
+  },
+  {
+   "id": "pgpr",
+   "ins": [
+    "476"
+   ],
+   "cat": "emulsificante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Poliglicerol polirricinoleato (PGPR)",
+    "en": "Polyglycerol polyricinoleate (PGPR)"
+   },
+   "outros": [
+    "poliglicerol polirricinoleato",
+    "pgpr"
+   ],
+   "porque": {
+    "pt": "Substitui parte da manteiga de cacau em chocolates baratos.",
+    "en": "Replaces some cocoa butter in cheap chocolate."
+   },
+   "onde": {
+    "pt": "chocolates",
+    "en": "chocolate"
+   }
+  },
+  {
+   "id": "glutamato",
+   "ins": [
+    "621",
+    "620",
+    "622",
+    "623",
+    "625"
+   ],
+   "cat": "realcador",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Glutamato monossódico",
+    "en": "Monosodium glutamate (MSG)"
+   },
+   "outros": [
+    "glutamato monossodico",
+    "realcador de sabor glutamato",
+    "msg"
+   ],
+   "porque": {
+    "pt": "Seguro em pequenas doses, mas indica comida de pacote salgada; algumas pessoas sentem mal-estar.",
+    "en": "Safe in small doses, but signals salty packaged food; some people feel unwell."
+   },
+   "onde": {
+    "pt": "caldos, salgadinhos, sopas",
+    "en": "stock cubes, snacks, soups"
+   }
+  },
+  {
+   "id": "inosinato",
+   "ins": [
+    "631",
+    "630",
+    "632",
+    "633"
+   ],
+   "cat": "realcador",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Inosinato dissódico",
+    "en": "Disodium inosinate"
+   },
+   "outros": [
+    "inosinato dissodico"
+   ],
+   "porque": {
+    "pt": "Usado junto com glutamato para reforçar o sabor.",
+    "en": "Used with MSG to boost taste."
+   },
+   "onde": {
+    "pt": "caldos, macarrão instantâneo",
+    "en": "stock cubes, instant noodles"
+   }
+  },
+  {
+   "id": "guanilato",
+   "ins": [
+    "627",
+    "626",
+    "628",
+    "629",
+    "635"
+   ],
+   "cat": "realcador",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Guanilato dissódico",
+    "en": "Disodium guanylate"
+   },
+   "outros": [
+    "guanilato dissodico",
+    "ribonucleotideos dissodicos"
+   ],
+   "porque": {
+    "pt": "Usado junto com glutamato; quem tem gota deve evitar.",
+    "en": "Used with MSG; people with gout should avoid it."
+   },
+   "onde": {
+    "pt": "caldos, salgadinhos",
+    "en": "stock cubes, snacks"
+   }
+  },
+  {
+   "id": "caramelo1",
+   "ins": [
+    "150a"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Caramelo simples (I)",
+    "en": "Plain caramel (I)"
+   },
+   "outros": [
+    "caramelo i",
+    "corante caramelo i"
+   ],
+   "porque": {
+    "pt": "Açúcar queimado, sem amônia.",
+    "en": "Burnt sugar, no ammonia."
+   },
+   "onde": {
+    "pt": "molhos, bebidas",
+    "en": "sauces, drinks"
+   }
+  },
+  {
+   "id": "caramelo",
+   "ins": [
+    "150",
+    "150b",
+    "150c",
+    "150d"
+   ],
+   "cat": "corante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Caramelo (II, III e IV)",
+    "en": "Caramel colour (II, III, IV)"
+   },
+   "outros": [
+    "caramelo iv",
+    "caramelo iii",
+    "caramelo ii",
+    "corante caramelo",
+    "caramelo amonia",
+    "caramelo sulfito amonia"
+   ],
+   "porque": {
+    "pt": "Os tipos III e IV podem ter 4-MEI, que a IARC classifica como possivelmente cancerígeno.",
+    "en": "Types III and IV may contain 4-MEI, which IARC classes as possibly carcinogenic."
+   },
+   "onde": {
+    "pt": "refrigerantes de cola, molho shoyu, cervejas",
+    "en": "cola, soy sauce, beer"
+   }
+  },
+  {
+   "id": "urucum",
+   "ins": [
+    "160b"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Urucum (colorau)",
+    "en": "Annatto"
+   },
+   "outros": [
+    "colorau",
+    "annatto",
+    "bixina",
+    "norbixina"
+   ],
+   "porque": {
+    "pt": "Natural, de semente.",
+    "en": "Natural, from seeds."
+   },
+   "onde": {
+    "pt": "queijos, salgadinhos",
+    "en": "cheese, snacks"
+   }
+  },
+  {
+   "id": "curcuma",
+   "ins": [
+    "100",
+    "100i"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Cúrcuma (açafrão-da-terra)",
+    "en": "Turmeric"
+   },
+   "outros": [
+    "curcumina",
+    "acafrao da terra",
+    "acafrao"
+   ],
+   "porque": {
+    "pt": "Natural, da raiz.",
+    "en": "Natural, from the root."
+   },
+   "onde": {
+    "pt": "mostarda, massas, temperos",
+    "en": "mustard, pasta, seasonings"
+   }
+  },
+  {
+   "id": "clorofila",
+   "ins": [
+    "140",
+    "141"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Clorofila",
+    "en": "Chlorophyll"
+   },
+   "outros": [
+    "clorofilina"
+   ],
+   "porque": {
+    "pt": "Natural, das folhas.",
+    "en": "Natural, from leaves."
+   },
+   "onde": {
+    "pt": "balas, doces verdes",
+    "en": "green sweets"
+   }
+  },
+  {
+   "id": "carmim",
+   "ins": [
+    "120"
+   ],
+   "cat": "corante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Carmim (cochonilha)",
+    "en": "Carmine (cochineal)"
+   },
+   "outros": [
+    "cochonilha",
+    "acido carminico"
+   ],
+   "porque": {
+    "pt": "Vem de inseto: pode dar alergia e não serve para veganos.",
+    "en": "Made from insects: can cause allergy, not vegan."
+   },
+   "onde": {
+    "pt": "iogurtes de morango, embutidos",
+    "en": "strawberry yogurt, sausages"
+   }
+  },
+  {
+   "id": "betacaroteno",
+   "ins": [
+    "160a"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Betacaroteno",
+    "en": "Beta-carotene"
+   },
+   "outros": [
+    "beta caroteno"
+   ],
+   "porque": {
+    "pt": "Pigmento da cenoura (vira vitamina A).",
+    "en": "Carrot pigment (becomes vitamin A)."
+   },
+   "onde": {
+    "pt": "margarinas, sucos",
+    "en": "margarine, juices"
+   }
+  },
+  {
+   "id": "beterraba",
+   "ins": [
+    "162"
+   ],
+   "cat": "corante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Vermelho de beterraba",
+    "en": "Beetroot red"
+   },
+   "outros": [
+    "betanina"
+   ],
+   "porque": {
+    "pt": "Natural, da beterraba.",
+    "en": "Natural, from beetroot."
+   },
+   "onde": {
+    "pt": "iogurtes, sorvetes",
+    "en": "yogurt, ice cream"
+   }
+  },
+  {
+   "id": "tartrazina",
+   "ins": [
+    "102"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Tartrazina (amarelo)",
+    "en": "Tartrazine (yellow)"
+   },
+   "outros": [
+    "amarelo tartrazina",
+    "tartrazina"
+   ],
+   "porque": {
+    "pt": "A ANVISA obriga o aviso \"pode causar reações alérgicas\"; na Europa leva aviso sobre atenção em crianças.",
+    "en": "ANVISA requires an allergy warning; in Europe it carries a warning about attention in children."
+   },
+   "onde": {
+    "pt": "refrescos em pó, balas, salgadinhos",
+    "en": "powdered drinks, sweets, snacks"
+   }
+  },
+  {
+   "id": "amarelocrep",
+   "ins": [
+    "110"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Amarelo crepúsculo",
+    "en": "Sunset yellow"
+   },
+   "outros": [
+    "amarelo crepusculo fcf",
+    "amarelo crepusculo"
+   ],
+   "porque": {
+    "pt": "Corante artificial com aviso na Europa sobre atenção e hiperatividade em crianças.",
+    "en": "Artificial colour with a European warning on attention in children."
+   },
+   "onde": {
+    "pt": "refrescos, gelatinas, balas",
+    "en": "drinks, jellies, sweets"
+   }
+  },
+  {
+   "id": "vermelho40",
+   "ins": [
+    "129"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Vermelho allura (vermelho 40)",
+    "en": "Allura red (red 40)"
+   },
+   "outros": [
+    "vermelho allura",
+    "vermelho 40",
+    "allura red"
+   ],
+   "porque": {
+    "pt": "Corante artificial com aviso na Europa sobre atenção em crianças.",
+    "en": "Artificial colour with a European warning on attention in children."
+   },
+   "onde": {
+    "pt": "balas, refrescos, gelatinas",
+    "en": "sweets, drinks, jellies"
+   }
+  },
+  {
+   "id": "ponceau",
+   "ins": [
+    "124"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Ponceau 4R (vermelho)",
+    "en": "Ponceau 4R (red)"
+   },
+   "outros": [
+    "ponceau 4r",
+    "ponceau"
+   ],
+   "porque": {
+    "pt": "Corante artificial com aviso na Europa sobre atenção em crianças.",
+    "en": "Artificial colour with a European warning on attention in children."
+   },
+   "onde": {
+    "pt": "embutidos, doces",
+    "en": "cured meats, sweets"
+   }
+  },
+  {
+   "id": "azorrubina",
+   "ins": [
+    "122"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Azorrubina (vermelho)",
+    "en": "Carmoisine (red)"
+   },
+   "outros": [
+    "azorrubina",
+    "carmoisina"
+   ],
+   "porque": {
+    "pt": "Corante artificial com aviso na Europa sobre atenção em crianças.",
+    "en": "Artificial colour with a European warning on attention in children."
+   },
+   "onde": {
+    "pt": "doces, refrescos",
+    "en": "sweets, drinks"
+   }
+  },
+  {
+   "id": "amarquinolina",
+   "ins": [
+    "104"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Amarelo de quinolina",
+    "en": "Quinoline yellow"
+   },
+   "outros": [
+    "amarelo quinolina"
+   ],
+   "porque": {
+    "pt": "Corante artificial com aviso na Europa sobre atenção em crianças.",
+    "en": "Artificial colour with a European warning on attention in children."
+   },
+   "onde": {
+    "pt": "balas, refrescos",
+    "en": "sweets, drinks"
+   }
+  },
+  {
+   "id": "azulbrilhante",
+   "ins": [
+    "133"
+   ],
+   "cat": "corante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Azul brilhante",
+    "en": "Brilliant blue"
+   },
+   "outros": [
+    "azul brilhante fcf",
+    "azul brilhante"
+   ],
+   "porque": {
+    "pt": "Corante artificial; sem a cor, o produto seria diferente do que parece.",
+    "en": "Artificial colour; without it the product would look different."
+   },
+   "onde": {
+    "pt": "balas, refrescos, sorvetes",
+    "en": "sweets, drinks, ice cream"
+   }
+  },
+  {
+   "id": "indigotina",
+   "ins": [
+    "132"
+   ],
+   "cat": "corante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Indigotina (azul)",
+    "en": "Indigo carmine (blue)"
+   },
+   "outros": [
+    "indigotina",
+    "azul indigotina"
+   ],
+   "porque": {
+    "pt": "Corante artificial.",
+    "en": "Artificial colour."
+   },
+   "onde": {
+    "pt": "balas, doces",
+    "en": "sweets"
+   }
+  },
+  {
+   "id": "eritrosina",
+   "ins": [
+    "127"
+   ],
+   "cat": "corante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Eritrosina (vermelho)",
+    "en": "Erythrosine (red)"
+   },
+   "outros": [
+    "eritrosina"
+   ],
+   "porque": {
+    "pt": "Corante artificial; os EUA anunciaram a retirada dele de alimentos.",
+    "en": "Artificial colour; the US announced its removal from food."
+   },
+   "onde": {
+    "pt": "cerejas em calda, doces",
+    "en": "cocktail cherries, sweets"
+   }
+  },
+  {
+   "id": "dioxtitanio",
+   "ins": [
+    "171"
+   ],
+   "cat": "corante",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Dióxido de titânio (branco)",
+    "en": "Titanium dioxide (white)"
+   },
+   "outros": [
+    "dioxido de titanio"
+   ],
+   "porque": {
+    "pt": "Proibido em alimentos na União Europeia desde 2022.",
+    "en": "Banned as a food additive in the EU since 2022."
+   },
+   "onde": {
+    "pt": "balas, confeitos, coberturas",
+    "en": "sweets, coated candy, frostings"
+   }
+  },
+  {
+   "id": "aspartame",
+   "ins": [
+    "951"
+   ],
+   "cat": "edulcorante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Aspartame",
+    "en": "Aspartame"
+   },
+   "outros": [
+    "aspartamo"
+   ],
+   "porque": {
+    "pt": "A IARC (OMS, 2023) classificou como possivelmente cancerígeno (2B); quem tem fenilcetonúria não pode.",
+    "en": "IARC (WHO, 2023) classed it as possibly carcinogenic (2B); not for people with PKU."
+   },
+   "onde": {
+    "pt": "refrigerantes zero, adoçantes, iogurtes diet",
+    "en": "diet sodas, sweeteners, diet yogurt"
+   }
+  },
+  {
+   "id": "sucralose",
+   "ins": [
+    "955"
+   ],
+   "cat": "edulcorante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Sucralose",
+    "en": "Sucralose"
+   },
+   "outros": [],
+   "porque": {
+    "pt": "Adoçante artificial; a OMS (2023) não recomenda adoçantes para emagrecer.",
+    "en": "Artificial sweetener; WHO (2023) does not recommend sweeteners for weight loss."
+   },
+   "onde": {
+    "pt": "produtos zero e diet",
+    "en": "zero and diet products"
+   }
+  },
+  {
+   "id": "estevia",
+   "ins": [
+    "960",
+    "960a"
+   ],
+   "cat": "edulcorante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Estévia (glicosídeos de esteviol)",
+    "en": "Stevia (steviol glycosides)"
+   },
+   "outros": [
+    "estevia",
+    "stevia",
+    "glicosideos de esteviol"
+   ],
+   "porque": {
+    "pt": "Adoçante de origem vegetal.",
+    "en": "Plant-based sweetener."
+   },
+   "onde": {
+    "pt": "adoçantes, bebidas",
+    "en": "sweeteners, drinks"
+   }
+  },
+  {
+   "id": "acesulfame",
+   "ins": [
+    "950"
+   ],
+   "cat": "edulcorante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Acesulfame de potássio",
+    "en": "Acesulfame K"
+   },
+   "outros": [
+    "acesulfame k",
+    "acessulfame de potassio",
+    "acesulfame potassio",
+    "acessulfame"
+   ],
+   "porque": {
+    "pt": "Adoçante artificial; a OMS (2023) não recomenda adoçantes para emagrecer.",
+    "en": "Artificial sweetener; WHO (2023) does not recommend sweeteners for weight loss."
+   },
+   "onde": {
+    "pt": "refrigerantes zero, gomas",
+    "en": "diet sodas, gum"
+   }
+  },
+  {
+   "id": "ciclamato",
+   "ins": [
+    "952"
+   ],
+   "cat": "edulcorante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Ciclamato de sódio",
+    "en": "Sodium cyclamate"
+   },
+   "outros": [
+    "ciclamato",
+    "acido ciclamico"
+   ],
+   "porque": {
+    "pt": "Adoçante artificial proibido nos EUA; aqui é permitido.",
+    "en": "Artificial sweetener banned in the US; allowed in Brazil."
+   },
+   "onde": {
+    "pt": "adoçantes de mesa, refrescos",
+    "en": "table sweeteners, drinks"
+   }
+  },
+  {
+   "id": "sacarina",
+   "ins": [
+    "954"
+   ],
+   "cat": "edulcorante",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Sacarina",
+    "en": "Saccharin"
+   },
+   "outros": [
+    "sacarina sodica"
+   ],
+   "porque": {
+    "pt": "Adoçante artificial antigo.",
+    "en": "Old artificial sweetener."
+   },
+   "onde": {
+    "pt": "adoçantes de mesa",
+    "en": "table sweeteners"
+   }
+  },
+  {
+   "id": "poliois",
+   "ins": [
+    "420",
+    "421",
+    "965",
+    "966",
+    "967",
+    "968"
+   ],
+   "cat": "edulcorante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Polióis (sorbitol, maltitol, xilitol, eritritol)",
+    "en": "Polyols (sorbitol, maltitol, xylitol, erythritol)"
+   },
+   "outros": [
+    "sorbitol",
+    "maltitol",
+    "xilitol",
+    "eritritol",
+    "manitol"
+   ],
+   "porque": {
+    "pt": "Em quantidade, soltam o intestino.",
+    "en": "In large amounts they have a laxative effect."
+   },
+   "onde": {
+    "pt": "gomas, chocolates sem açúcar",
+    "en": "gum, sugar-free chocolate"
+   }
+  },
+  {
+   "id": "silicio",
+   "ins": [
+    "551"
+   ],
+   "cat": "antiumectante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Dióxido de silício",
+    "en": "Silicon dioxide"
+   },
+   "outros": [
+    "dioxido de silicio",
+    "silica"
+   ],
+   "porque": {
+    "pt": "Evita empelotar; uso em pouca quantidade.",
+    "en": "Prevents clumping; used in small amounts."
+   },
+   "onde": {
+    "pt": "sal, açúcar em pó, café solúvel",
+    "en": "salt, icing sugar, instant coffee"
+   }
+  },
+  {
+   "id": "silicatocalcio",
+   "ins": [
+    "552"
+   ],
+   "cat": "antiumectante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Silicato de cálcio",
+    "en": "Calcium silicate"
+   },
+   "outros": [
+    "silicato de calcio"
+   ],
+   "porque": {
+    "pt": "Evita empelotar.",
+    "en": "Prevents clumping."
+   },
+   "onde": {
+    "pt": "sal, temperos em pó",
+    "en": "salt, powdered seasoning"
+   }
+  },
+  {
+   "id": "estearatomg",
+   "ins": [
+    "470",
+    "470i",
+    "470ii",
+    "470b"
+   ],
+   "cat": "antiumectante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Estearato de magnésio",
+    "en": "Magnesium stearate"
+   },
+   "outros": [
+    "estearato de magnesio",
+    "sais de acidos graxos"
+   ],
+   "porque": {
+    "pt": "Evita grudar; uso em pouca quantidade.",
+    "en": "Prevents sticking; small amounts."
+   },
+   "onde": {
+    "pt": "pós, balas, suplementos",
+    "en": "powders, sweets, supplements"
+   }
+  },
+  {
+   "id": "ferrocianeto",
+   "ins": [
+    "535",
+    "536",
+    "538"
+   ],
+   "cat": "antiumectante",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Ferrocianeto de sódio",
+    "en": "Sodium ferrocyanide"
+   },
+   "outros": [
+    "ferrocianeto de sodio",
+    "ferrocianeto de potassio"
+   ],
+   "porque": {
+    "pt": "Antiumectante do sal, em quantidade mínima.",
+    "en": "Salt anti-caking agent, in tiny amounts."
+   },
+   "onde": {
+    "pt": "sal refinado",
+    "en": "table salt"
+   }
+  },
+  {
+   "id": "bicarbonato",
+   "ins": [
+    "500",
+    "500ii",
+    "500i"
+   ],
+   "cat": "fermento",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Bicarbonato de sódio",
+    "en": "Sodium bicarbonate"
+   },
+   "outros": [
+    "bicarbonato de sodio",
+    "carbonato acido de sodio"
+   ],
+   "porque": {
+    "pt": "Fermento de cozinha; soma sódio.",
+    "en": "Kitchen raising agent; adds sodium."
+   },
+   "onde": {
+    "pt": "bolos, biscoitos",
+    "en": "cakes, biscuits"
+   }
+  },
+  {
+   "id": "bicamonio",
+   "ins": [
+    "503",
+    "503ii"
+   ],
+   "cat": "fermento",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Bicarbonato de amônio",
+    "en": "Ammonium bicarbonate"
+   },
+   "outros": [
+    "bicarbonato de amonio"
+   ],
+   "porque": {
+    "pt": "Fermento de biscoito; some no forno.",
+    "en": "Biscuit raising agent; disappears when baked."
+   },
+   "onde": {
+    "pt": "biscoitos",
+    "en": "biscuits"
+   }
+  },
+  {
+   "id": "pirofosfato",
+   "ins": [
+    "450",
+    "450i"
+   ],
+   "cat": "fermento",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Pirofosfato ácido de sódio",
+    "en": "Sodium acid pyrophosphate"
+   },
+   "outros": [
+    "pirofosfato acido de sodio",
+    "pirofosfato dissodico",
+    "difosfato"
+   ],
+   "porque": {
+    "pt": "Fosfato: excesso de fósforo de aditivos é ligado a problemas nos rins e no coração.",
+    "en": "Phosphate: excess additive phosphorus is linked to kidney and heart problems."
+   },
+   "onde": {
+    "pt": "fermento em pó, bolos prontos",
+    "en": "baking powder, cake mixes"
+   }
+  },
+  {
+   "id": "fosfatocalcio",
+   "ins": [
+    "341",
+    "341i",
+    "341ii",
+    "341iii"
+   ],
+   "cat": "fermento",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Fosfato monocálcico",
+    "en": "Monocalcium phosphate"
+   },
+   "outros": [
+    "fosfato monocalcico",
+    "fosfato de calcio"
+   ],
+   "porque": {
+    "pt": "Fermento químico; também dá cálcio.",
+    "en": "Raising agent; also adds calcium."
+   },
+   "onde": {
+    "pt": "fermento em pó",
+    "en": "baking powder"
+   }
+  },
+  {
+   "id": "fosfatos",
+   "ins": [
+    "339",
+    "340",
+    "451",
+    "452"
+   ],
+   "cat": "fermento",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Fosfatos e polifosfatos",
+    "en": "Phosphates and polyphosphates"
+   },
+   "outros": [
+    "tripolifosfato de sodio",
+    "polifosfato de sodio",
+    "fosfato dissodico",
+    "fosfato trissodico",
+    "hexametafosfato de sodio",
+    "tripolifosfato"
+   ],
+   "porque": {
+    "pt": "Retém água em carnes e queijos; excesso de fósforo de aditivos é ligado a problemas nos rins e no coração.",
+    "en": "Hold water in meat and cheese; excess additive phosphorus is linked to kidney and heart problems."
+   },
+   "onde": {
+    "pt": "embutidos, queijos processados, frango temperado",
+    "en": "cured meats, processed cheese, marinated chicken"
+   }
+  },
+  {
+   "id": "hidrogenada",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "alto",
+   "nome": {
+    "pt": "Gordura vegetal hidrogenada",
+    "en": "Hydrogenated vegetable fat"
+   },
+   "outros": [
+    "gordura vegetal hidrogenada",
+    "gordura hidrogenada",
+    "oleo vegetal hidrogenado",
+    "parcialmente hidrogenada"
+   ],
+   "porque": {
+    "pt": "Fonte de gordura trans; a ANVISA proibiu a parcialmente hidrogenada desde 2023 — se aparecer, confira a data do rótulo.",
+    "en": "Source of trans fat; ANVISA banned partially hydrogenated fat in 2023 — check the label date."
+   },
+   "onde": {
+    "pt": "biscoitos, sorvetes, salgadinhos antigos",
+    "en": "biscuits, ice cream, older snacks"
+   }
+  },
+  {
+   "id": "interesterificada",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Gordura interesterificada",
+    "en": "Interesterified fat"
+   },
+   "outros": [
+    "gordura interesterificada",
+    "oleo interesterificado",
+    "gordura vegetal interesterificada"
+   ],
+   "porque": {
+    "pt": "Substituta da hidrogenada; ainda há poucos estudos sobre ela.",
+    "en": "Replacement for hydrogenated fat; still little studied."
+   },
+   "onde": {
+    "pt": "biscoitos, recheios, margarinas",
+    "en": "biscuits, fillings, margarine"
+   }
+  },
+  {
+   "id": "xarope",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Xarope de glicose, de milho ou de frutose",
+    "en": "Glucose, corn or fructose syrup"
+   },
+   "outros": [
+    "xarope de glicose",
+    "xarope de milho",
+    "xarope de frutose",
+    "xarope de milho rico em frutose",
+    "xarope de agave",
+    "glicose de milho"
+   ],
+   "porque": {
+    "pt": "Açúcar adicionado em forma de xarope.",
+    "en": "Added sugar as syrup."
+   },
+   "onde": {
+    "pt": "biscoitos, balas, molhos, cereais",
+    "en": "biscuits, sweets, sauces, cereals"
+   }
+  },
+  {
+   "id": "maltodextrina",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Maltodextrina",
+    "en": "Maltodextrin"
+   },
+   "outros": [
+    "maltodextrina",
+    "dextrose"
+   ],
+   "porque": {
+    "pt": "Carboidrato de absorção rápida; marca de ultraprocessado.",
+    "en": "Fast-absorbing carbohydrate; sign of ultra-processing."
+   },
+   "onde": {
+    "pt": "achocolatados, sopas prontas, suplementos",
+    "en": "chocolate drinks, instant soups, supplements"
+   }
+  },
+  {
+   "id": "acucarinvertido",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Açúcar invertido",
+    "en": "Invert sugar"
+   },
+   "outros": [
+    "acucar invertido",
+    "xarope de acucar invertido"
+   ],
+   "porque": {
+    "pt": "Açúcar adicionado em forma líquida.",
+    "en": "Added sugar in liquid form."
+   },
+   "onde": {
+    "pt": "balas, bebidas, bolos prontos",
+    "en": "sweets, drinks, packaged cakes"
+   }
+  },
+  {
+   "id": "aromaartificial",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Aromatizante (aroma artificial ou idêntico ao natural)",
+    "en": "Flavouring (artificial or nature-identical)"
+   },
+   "outros": [
+    "aromatizante",
+    "aroma artificial",
+    "aroma identico ao natural",
+    "aromatizantes",
+    "aroma sintetico"
+   ],
+   "porque": {
+    "pt": "O sabor vem do laboratório, não do alimento; marca de ultraprocessado.",
+    "en": "The flavour comes from the lab, not the food; sign of ultra-processing."
+   },
+   "onde": {
+    "pt": "iogurtes, biscoitos, refrescos",
+    "en": "yogurt, biscuits, drinks"
+   }
+  },
+  {
+   "id": "aromanatural",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "baixo",
+   "nome": {
+    "pt": "Aroma natural",
+    "en": "Natural flavouring"
+   },
+   "outros": [
+    "aroma natural",
+    "aromas naturais"
+   ],
+   "porque": {
+    "pt": "Vem de fonte natural, mas é extraído na indústria.",
+    "en": "From a natural source, but industrially extracted."
+   },
+   "onde": {
+    "pt": "iogurtes, bebidas",
+    "en": "yogurt, drinks"
+   }
+  },
+  {
+   "id": "proteinahidro",
+   "ins": [],
+   "cat": "atencao",
+   "nivel": "medio",
+   "nome": {
+    "pt": "Proteína hidrolisada ou isolada",
+    "en": "Hydrolysed or isolated protein"
+   },
+   "outros": [
+    "proteina hidrolisada",
+    "proteina vegetal hidrolisada",
+    "proteina isolada de soja",
+    "proteina texturizada"
+   ],
+   "porque": {
+    "pt": "Ingrediente de indústria; a hidrolisada também realça o sabor como o glutamato.",
+    "en": "Industrial ingredient; hydrolysed protein also boosts taste like MSG."
+   },
+   "onde": {
+    "pt": "caldos, embutidos, salgadinhos",
+    "en": "stock cubes, cured meats, snacks"
+   }
+  }
+ ]
+}

@@ -28,7 +28,9 @@
   var idx = null;
   function usar() {
     var c = S.get('aditivosCentral'), b = HN.aditivosBase;
-    return c && c.formato === 1 && Array.isArray(c.aditivos) && String(c.versao) > String(b.versao) ? c : b;
+    if (!(c && c.formato === 1 && Array.isArray(c.aditivos) && c.aditivos.length && String(c.versao) > String(b.versao))) return b;
+    if (!c.categorias) c.categorias = b.categorias; // lista central sem categorias: usa as do app
+    return c;
   }
   HN.adv = function () { if (!idx) indexar(); return idx.g; };
   function nrm(s) { return HN.nrm(s).replace(/[^a-z0-9]+/g, ' ').trim(); }

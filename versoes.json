@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.1",
+   "data": "09/Out/2026",
+   "hora": "01:05:47",
+   "pt": "Os aditivos e seus alertas agora podem ser ajustados pela equipe no RootifyONE; o app recebe a lista nova sozinho, com internet, e continua com a própria lista quando está sem sinal.",
+   "en": "Additives and their alerts can now be adjusted by the team in RootifyONE; the app gets the new list by itself when online and keeps its own list when offline."
+  },
+  {
    "v": "0.4.0",
    "data": "09/Out/2026",
    "hora": "00:55:05",
