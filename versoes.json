@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.8",
+   "data": "09/Out/2026",
+   "hora": "12:40:00",
+   "pt": "✅ Código de barras lido: em vez de um cartão cobrindo a câmera, aparece uma faixa verde pequena \"Lido!\" com o nome do produto e um botão OK ✓ ver tudo, que abre a ficha completa (aditivos, tabela, favoritos). Se o produto conflita com as suas restrições, a faixa fica vermelha e avisa antes.",
+   "en": "✅ Barcode read: instead of a card covering the camera, a small green \"Read!\" strip shows the product name and an OK ✓ see everything button that opens the full details (additives, table, favourites). If the product conflicts with your restrictions, the strip turns red and warns first."
+  },
+  {
    "v": "0.4.7",
    "data": "09/Out/2026",
    "hora": "12:10:00",
