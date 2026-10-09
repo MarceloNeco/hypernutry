@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.7",
+   "data": "09/Out/2026",
+   "hora": "12:10:00",
+   "pt": "📷 Código de barras: depois de 5 segundos sem ler, a dica explica o que costuma faltar (o código inteiro, com margem branca dos dois lados, de frente para a câmera: em lata, a curva esconde o fim do código). O quadro verde subiu um pouco para não ficar atrás da dica e dos botões.",
+   "en": "📷 Barcode: after 5 seconds without a read, the hint explains what is usually missing (the whole code, with white margin on both sides, facing the camera: on cans, the curve hides the end of the code). The green frame moved up a little so it no longer sits behind the hint and buttons."
+  },
+  {
    "v": "0.4.6",
    "data": "09/Out/2026",
    "hora": "11:20:00",

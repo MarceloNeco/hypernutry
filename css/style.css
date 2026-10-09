@@ -333,7 +333,7 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 .scan .ib { color: #fff; background: rgba(15,23,42,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 50%; }
 .scan-top { display: flex; align-items: center; gap: .5rem; }
 .scan-badge { font-size: .75rem; font-weight: 600; padding: .35rem .7rem; border-radius: 999px; background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.15); justify-self: start; width: fit-content; max-width: 100%; }
-.scan-frame { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(78vw, 22rem, 31.5vh); aspect-ratio: 3 / 4; } /* centrado no vídeo, que é centrado na tela */
+.scan-frame { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: min(78vw, 22rem, 27vh); aspect-ratio: 3 / 4; } /* um pouco acima do centro: a dica e os botões ocupam o terço de baixo */ /* centrado no vídeo, que é centrado na tela */
 .scan-frame.wide { width: min(78vw, 22rem); aspect-ratio: 16 / 9; }
 .scan-frame i { position: absolute; width: 2.2rem; height: 2.2rem; border: 4px solid var(--brand); }
 .scan-frame .c1 { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 18px; }
