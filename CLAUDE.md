@@ -11,7 +11,7 @@ Leia antes de mexer: `ARQUITETURA.md` (código e design system) e `BENCHMARK.md`
 
 ## Produto
 - PWA de nutrição fácil: "sem passar fome", **Saciedade Raiz** (nunca "mounjaro raiz": sem alegação de medicamento).
-- **Parte A · 🧮 Calcular e cozinhar** (sem cadastro, sem LGPD): calculadora, cardápio, receitas, despensa, compras, rótulo, código de barras, modo cozinheiro, vídeos e organização da cozinha.
+- **Parte A · 🧮 Calcular e cozinhar** (sem cadastro, sem LGPD): calculadora, cardápio, receitas, despensa, compras, rótulo (função principal do scanner, v0.5.0: foto dos ingredientes → farol 🟢🟡🔴 de ultraprocessado e aditivos; o código de barras é atalho), modo cozinheiro, vídeos e organização da cozinha.
 - **Parte B · 🩺 Meu acompanhamento 🔒** (exige aceite LGPD): diário, fome/saciedade e humor, medidas, metas, foto do prato, laudo de bioimpedância.
 - Segurança: números ocultos para menor de 18, histórico de transtorno alimentar ou gestação. Sem antes/depois, sem promessa de resultado, sem streaks.
 

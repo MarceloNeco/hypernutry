@@ -273,7 +273,7 @@
 
   // o 📷 abre o visor; a parte atual decide o modo inicial
   A.scan = function () {
-    st.mode = HN.scanModo || st.mode || (HN.curPart() === 'B' ? 'prato' : 'cod'); HN.scanModo = null; st.busy = false;
+    st.mode = HN.scanModo || st.mode || (HN.curPart() === 'B' ? 'prato' : 'rot'); // Rótulo é o padrão: ingredientes → farol de ultraprocessado; o código é atalho HN.scanModo = null; st.busy = false;
     HN.layer.open({ type: 'full', label: T('Câmera', 'Camera'), focus: false,
       html: '<div class="scan"><video id="scvideo" playsinline muted autoplay></video><div id="scanui" class="scan-ui"></div></div>',
       onClose: stop,

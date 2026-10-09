@@ -32,7 +32,7 @@
     ['ovo', /\b(ovo|ovos|albumina|gema)\b/], ['castanhas', /\b(castanha|castanhas|amendoa|amendoas|nozes|noz|avela|pistache|macadamia|caju)\b/],
     ['amendoim', /\bamendoim\b/], ['soja', /\b(soja|lecitina de soja)\b/], ['peixe', /\bpeixe|\bpescado/], ['crustaceo', /\b(camarao|crustaceo|crustaceos)\b/]
   ];
-  var NOVA4 = /(aroma|corante|maltodextrina|xarope de (glicose|milho)|gordura vegetal hidrogenada|emulsificante|estabilizante|realcador de sabor|glutamato|aspartame|sucralose|acesulfame|ciclamato|inulina isolada|proteina isolada|amido modificado|conservador|antioxidante|acidulante|espessante|lecitina|ins ?\d{3}|e ?\d{3})/g;
+  var NOVA4 = /(aroma|corante|maltodextrina|xarope de (glicose|milho)|gordura vegetal hidrogenada|emulsificante|estabilizante|realcador de sabor|glutamato|aspartame|sucralose|acesulfame|ciclamato|inulina isolada|proteina isolada|amido modificado|conservador|antioxidante|acidulante|espessante|ins ?\d{3}|e ?\d{3})/g; // sem 'lecitina': já conta como 'emulsificante' (era contada duas vezes)
 
   O.parseRotulo = function (texto) {
     var raw = String(texto || ''), lines = raw.split(/\r?\n/), n = norm(raw);
