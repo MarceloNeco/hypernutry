@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.4",
+   "data": "09/Out/2026",
+   "hora": "08:30:00",
+   "pt": "📷 Câmera embaçada no HyperNutry, resolvido de verdade: o borrão de tela que só deveria aparecer nos modos trancados (Prato/Laudo) ficava ligando e desligando no Código e no Rótulo. O leitor lia o código, mas você via tudo borrado e trocar de câmera não adiantava. Também saiu o zoom automático (digital em muitos aparelhos) e tocar na tela nunca mais trava o foco.",
+   "en": "📷 Blurry camera in HyperNutry, really fixed: the screen blur meant only for locked modes (Plate/Report) kept toggling on Barcode and Label. The reader could read the code, but you saw everything blurred and switching camera did not help. Automatic zoom (digital on many devices) is gone too, and tapping the screen never locks focus any more."
+  },
+  {
    "v": "0.4.3",
    "data": "09/Out/2026",
    "hora": "08:12:00",
