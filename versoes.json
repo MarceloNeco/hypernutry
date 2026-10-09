@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.2",
+   "data": "09/Out/2026",
+   "hora": "01:16:10",
+   "pt": "📷 Câmera mais nítida: o app escolhe a câmera principal (antes podia abrir a grande-angular, que não foca de perto), liga o foco automático, foca onde você tocar na imagem e dá um pouco de zoom para você segurar o celular a uns 15 cm. Novos botões 🔦 lanterna e 🔄 trocar de câmera (a escolhida fica guardada).",
+   "en": "📷 Sharper camera: the app picks the main camera (it could open the ultra-wide, which can't focus up close), turns on autofocus, focuses where you tap the image and zooms a little so you can hold the phone about 15 cm away. New 🔦 torch and 🔄 switch-camera buttons (your choice is remembered)."
+  },
+  {
    "v": "0.4.1",
    "data": "09/Out/2026",
    "hora": "01:05:47",
