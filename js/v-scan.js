@@ -50,7 +50,7 @@
     return '🛡️ ' + T('Processado no aparelho (nada vai para a nuvem)', 'Processed on your device (nothing goes to the cloud)');
   }
   function hint(m) {
-    return { rot: T('Só o que está dentro do quadro é lido: encha o quadro com a tabela ou com os ingredientes. Toque na imagem para focar e depois no botão.', 'Only what is inside the frame is read: fill the frame with the table or the ingredients. Tap the image to focus, then the button.'), cod: T('Código de barras inteiro dentro do quadro (deitado ou em pé), a uns 15 cm. Não leu? Toque em 📸. Embaçou? Toque na imagem ou em 🔄.', 'Whole barcode inside the frame (horizontal or vertical), about 15 cm away. Not read? Tap 📸. Blurry? Tap the image or 🔄.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
+    return { rot: T('Só o que está dentro do quadro é lido: encha o quadro com a tabela ou com os ingredientes. Toque na imagem para focar e depois no botão.', 'Only what is inside the frame is read: fill the frame with the table or the ingredients. Tap the image to focus, then the button.'), cod: T('Código de barras inteiro dentro do quadro (deitado ou em pé), a uns 15 cm. O 📸 lê o quadro: o código ou, se não houver, os ingredientes. Embaçou? Toque na imagem ou em 🔄.', 'Whole barcode inside the frame (horizontal or vertical), about 15 cm away. 📸 reads the frame: the code or, if there is none, the ingredients. Blurry? Tap the image or 🔄.'), prato: T('Enquadre o prato de cima e toque no botão.', 'Frame the plate from above and tap the button.'), bio: T('Enquadre a folha do laudo inteira e toque no botão.', 'Frame the whole report sheet and tap the button.') }[m];
   }
   function locked(m) { var md = MODES.filter(function (x) { return x.id === m; })[0]; return !!(md && md.b && !HN.cfg().aceite); } // sempre true/false: com undefined o toggle('dim') ficava alternando e borrava a câmera
   function body() {
@@ -61,7 +61,7 @@
       '<div id="scard"></div>' +
       '<div class="scan-bottom">' +
       (lk ? '<button class="btn block" data-act="go" data-arg="/acomp">🩺 ' + T('Entrar no Meu acompanhamento', 'Enter My follow-up') + '</button>' :
-        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row scan-code" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Não leu? Tirar foto do código', 'Not read? Photograph the code') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
+        m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row scan-code" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Ler o que está no quadro (código ou ingredientes)', 'Read what is in the frame (code or ingredients)') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
         '<div class="row" style="justify-content:center;gap:1.2rem"><label class="ib scan-gal" for="scgal" title="' + T('Escolher da galeria', 'Choose from gallery') + '" aria-label="' + T('Escolher da galeria', 'Choose from gallery') + '">🖼️</label><input id="scgal" type="file" accept="image/*" class="sr" data-in="scan-gal"><button class="shutter" data-act="scan-shot" aria-label="' + T('Tirar foto', 'Take photo') + '"></button><span style="width:2.5rem"></span></div>') +
       '<div class="seg scan-modes" role="tablist">' + MODES.map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
     return h;
@@ -77,7 +77,7 @@
     st.loop = setInterval(function () {
       var v = HN.q('#scvideo'); if (!v || st.busy || lendo || v.readyState < 2) return;
       // 5 s sem ler: quase sempre o código está cortado pela curva da embalagem ou por um reflexo
-      if (!avisou && Date.now() - desde > 5000) { avisou = true; var hh = HN.q('#schint'); if (hh) hh.innerHTML = '⏳ ' + T('Ainda não li. O código precisa aparecer <b>inteiro</b>, com margem branca dos dois lados: gire a embalagem até ele ficar de frente, no meio do quadro, sem reflexo. Ou toque em 📸, ou digite o número.', 'Not read yet. The code must be <b>fully</b> visible, with white margin on both sides: turn the package until it faces the camera, in the middle of the frame, without glare. Or tap 📸, or type the number.'); }
+      if (!avisou && Date.now() - desde > 5000) { avisou = true; var hh = HN.q('#schint'); if (hh) hh.innerHTML = '⏳ ' + T('Ainda não li. O código precisa aparecer <b>inteiro</b>, com margem branca dos dois lados: gire a embalagem até ele ficar de frente, no meio do quadro, sem reflexo. Ou toque em 📸 (lê o código ou os ingredientes do quadro), ou digite o número.', 'Not read yet. The code must be <b>fully</b> visible, with white margin on both sides: turn the package until it faces the camera, in the middle of the frame, without glare. Or tap 📸 (reads the code or the ingredients in the frame), or type the number.'); }
       var g = regiao(v, .12); if (!g) return;
       // pedaço do quadro em até ~1000 px de largura: rápido e com barras ainda grossas
       var k = Math.min(1, 1000 / g.w); cv.width = Math.round(g.w * k); cv.height = Math.round(g.h * k);
@@ -163,15 +163,19 @@
   A['scan-foto-cod'] = function () {
     if (st.busy) return;
     st.busy = true; var det = null; try { if ('BarcodeDetector' in window) det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] }); } catch (e) { det = null; }
+    var foto = null;
     HN.barras.carregar().catch(function () {}).then(grab).then(function (c) {
+      foto = c;
       var rc = recorte(c, .25), t = HN.barras.ler(rc, HN.barras.ANGULOS_FOTO) || HN.barras.ler(c, [0, 90]);
       if (t || !det) return t;
       // apoio do navegador: só vale EAN-13 com dígito certo (ele inventa números curtos)
       return det.detect(rc).then(function (r) { return r && r.length ? r : det.detect(c); }).then(function (r) { var v = r && r.length ? String(r[0].rawValue).replace(/\D/g, '') : ''; return v.length === 13 && HN.barras.valido(v) ? v : null; }).catch(function () { return null; });
     }).then(function (t) {
       st.busy = false;
-      if (t) lookup(t);
-      else HN.toast(T('Não achei o código na foto. Deixe o código inteiro dentro do quadro, reto e sem reflexo, ou digite o número.', 'Could not find the code in the photo. Keep the whole code inside the frame, straight and without glare, or type the number.'), 4000);
+      if (t) { lookup(t); return; }
+      // sem código na foto: lê o texto do que está no quadro (ingredientes/tabela), como no modo Rótulo
+      if (foto && foto.width) { HN.toast(T('Sem código de barras na foto: lendo o texto do quadro…', 'No barcode in the photo: reading the text in the frame…'), 2500); HN.haptic('sucesso'); HN.scanImage('rot', recorte(foto, .06), { recortado: true }); return; }
+      HN.toast(T('Não achei o código na foto. Deixe o código inteiro dentro do quadro, reto e sem reflexo, ou digite o número.', 'Could not find the code in the photo. Keep the whole code inside the frame, straight and without glare, or type the number.'), 4000);
     }).catch(function () { st.busy = false; HN.toast(T('Não consegui tirar a foto. Digite o número.', 'Could not take the photo. Type the number.')); });
   };
   function usePhoto(canvas) {

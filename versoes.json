@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.9",
+   "data": "09/Out/2026",
+   "hora": "13:05:00",
+   "pt": "📸 No modo Código, o botão de foto agora lê o que estiver no quadro: se achar o código de barras, usa o código; se não houver, lê o texto (ingredientes ou tabela) e abre o resultado com os aditivos, como no modo Rótulo.",
+   "en": "📸 In Barcode mode, the photo button now reads whatever is in the frame: if it finds a barcode it uses it; if there is none, it reads the text (ingredients or table) and opens the result with the additives, like Label mode."
+  },
+  {
    "v": "0.4.8",
    "data": "09/Out/2026",
    "hora": "12:40:00",
