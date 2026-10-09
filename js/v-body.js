@@ -31,15 +31,29 @@
   // foto tirada na tela da câmera (📷): abre a tela certa já com a foto e começa a ler
   var pending = null;
   HN.scanImage = function (kind, canvas, opts) { pending = { kind: kind, canvas: canvas, opts: opts }; HN.go(kind === 'bio' ? '/corpo/exame' : '/rotulos'); };
-  function runPending() { if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas, p.opts); A['sc-ocr'](); }
+  function runPending() {
+    if (SC.pronto && HN.q('#sctext')) { var pr = SC.pronto; SC.pronto = null; SC.text = pr.txt; HN.q('#sctext').value = pr.txt; if (pr.txt.trim()) A['sc-parse'](pr.kind); return; }
+    if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas, p.opts); A['sc-ocr']();
+  }
   ['rotulos', 'corpo'].forEach(function (n) { var old = HN.after[n]; HN.after[n] = function (a, b) { if (old) old(a, b); runPending(); }; });
   A['sc-sample'] = function (k) { SC.text = k === 'bio' ? SAMPLE_BIO : SAMPLE_LABEL; var t = HN.q('#sctext'); if (t) t.value = SC.text; };
   A['sc-ocr'] = function () {
     if (!SC.canvas) { HN.toast(T('Escolha uma foto primeiro.', 'Choose a photo first.')); return; }
     var go = function () {
       var pv = HN.q('#scprev'), note = document.createElement('p'); note.className = 'small'; note.id = 'scprog'; note.textContent = T('Preparando o leitor…', 'Preparing the reader…'); if (pv) pv.appendChild(note);
-      O.ler(SC.canvas, HN.lang === 'pt' ? 'por' : 'eng', function (m) { var n = HN.q('#scprog'); if (n) n.textContent = (m.status || '') + ' ' + Math.round((m.progress || 0) * 100) + '%'; }).then(function (txt) { SC.text = txt; var t = HN.q('#sctext'); if (t) t.value = txt; var n = HN.q('#scprog'); if (n) n.textContent = txt.trim() ? T('Leitura concluída: resultado abaixo. Se algo saiu errado, corrija o texto e toque em Interpretar.', 'Reading complete: result below. If something came out wrong, fix the text and tap Interpret.') : T('Não achei texto na foto. Aproxime mais, com luz, e tente de novo.', 'No text found in the photo. Get closer, with light, and try again.');
-        if (txt.trim()) A['sc-parse'](HN.q('#rotres') ? 'rot' : 'bio'); } /* interpreta sozinho: a pessoa quer o farol, não um botão a mais */, function () { var n = HN.q('#scprog'); if (n) n.textContent = T('Não consegui carregar o leitor (sem internet?). Cole ou digite o texto.', 'Could not load the reader (offline?). Paste or type the text.'); });
+      var kind = HN.q('#rotres') ? 'rot' : 'bio', rota = kind === 'bio' ? '/corpo/exame' : '/rotulos';
+      var ler = function (andamento) { return O.ler(SC.canvas, HN.lang === 'pt' ? 'por' : 'eng', function (m) { var n = HN.q('#scprog'); if (n) n.textContent = (m.status === 'recognizing text' ? T('Lendo', 'Reading') : T('Preparando', 'Preparing')) + ' ' + Math.round((m.progress || 0) * 100) + '%'; if (andamento) andamento(m.progress || 0); }); };
+      // mostra o resultado na tela certa; se a pessoa foi para outra tela, guarda e a tela mostra ao abrir (HN.after)
+      var mostrar = function (txt) {
+        SC.text = txt; var t = HN.q('#sctext'), n = HN.q('#scprog');
+        if (!t) { SC.pronto = { kind: kind, txt: txt }; HN.go(rota); return; }
+        t.value = txt; if (n) n.textContent = txt.trim() ? T('Leitura concluída: resultado abaixo. Se algo saiu errado, corrija o texto e toque em Interpretar.', 'Reading complete: result below. If something came out wrong, fix the text and tap Interpret.') : T('Não achei texto na foto. Aproxime mais, com luz, e tente de novo.', 'No text found in the photo. Get closer, with light, and try again.');
+        if (txt.trim()) A['sc-parse'](kind); /* interpreta sozinho: a pessoa quer o farol, não um botão a mais */
+      };
+      var falhou = function () { var n = HN.q('#scprog'); if (n) n.textContent = T('Não consegui carregar o leitor (sem internet?). Cole ou digite o texto.', 'Could not load the reader (offline?). Paste or type the text.'); };
+      if (window.DGO && DGO.tarefa) { // diretriz "tarefas longas": tela acesa, pílula, continua ao navegar, "✅ toque para ver" volta aqui
+        DGO.tarefa.iniciar({ id: 'leitura-' + kind, titulo: kind === 'bio' ? T('Lendo o laudo', 'Reading the report') : T('Lendo o rótulo', 'Reading the label'), executar: ler, aindaNaTela: function () { return !!HN.q('#sctext'); }, aoAbrir: mostrar }).catch(falhou);
+      } else ler(null).then(mostrar, falhou);
     };
     if (O.motorPronto()) go(); else HN.confirm(T('Para ler a imagem preciso baixar o motor de leitura (≈5,5 MB só na primeira vez). Baixar agora? Em dados móveis isso consome sua franquia.', 'To read the image I need to download the OCR engine (≈5.5 MB only the first time). Download now? On mobile data this uses your allowance.'), T('Baixar e ler', 'Download and read')).then(function (ok) { if (ok) setTimeout(go, 50); });
   };

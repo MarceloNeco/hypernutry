@@ -21,7 +21,7 @@
 (function (raiz) {
   'use strict';
 
-  var VERSAO = '1.3.1';
+  var VERSAO = '1.4.0';
   if (raiz.DGO && raiz.DGO.__carregado) { return; }
 
   /* ------------------------------------------------------------------
@@ -467,6 +467,16 @@
       '.dgo-linha>*{flex:1;min-width:120px;}',
       '.dgo-fechar{position:absolute;top:10px;right:12px;}',
       '.dgo-video,.dgo-foto{width:100%;border-radius:12px;background:#000;display:block;max-height:48vh;object-fit:contain;}',
+      '.dgo-tarefas{position:fixed;left:.6rem;right:.6rem;bottom:calc(5.4rem + env(safe-area-inset-bottom));z-index:2147483000;display:flex;flex-direction:column;gap:.4rem;pointer-events:none;max-width:30rem;margin:0 auto;}',
+      '.dgo-tarefa{pointer-events:auto;display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:14px;background:#0f172a;color:#f8fafc;border:1px solid rgba(255,255,255,.18);box-shadow:0 8px 24px rgba(0,0,0,.35);font:600 .9rem/1.3 system-ui,sans-serif;cursor:default;}',
+      '.dgo-tarefa i{font-style:normal;font-size:1.3rem;line-height:1;}',
+      '.dgo-tarefa small{display:block;font-weight:500;opacity:.85;font-size:.78rem;}',
+      '.dgo-tarefa b{display:block;}',
+      '.dgo-tarefa .dgo-tarefa-barra{height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin-top:.35rem;overflow:hidden;}',
+      '.dgo-tarefa .dgo-tarefa-barra span{display:block;height:100%;width:0;background:#10b981;transition:width .3s;}',
+      '.dgo-tarefa.pronta{background:#bbf7d0;color:#052e16;border-color:#4ade80;cursor:pointer;}',
+      '.dgo-tarefa.erro{background:#fecaca;color:#450a0a;border-color:#f87171;cursor:pointer;}',
+      '@media (prefers-reduced-motion:reduce){.dgo-tarefa .dgo-tarefa-barra span{transition:none;}}',
       '.dgo-video{cursor:crosshair;}',
       '.dgo-anel{position:fixed;width:60px;height:60px;margin:-30px 0 0 -30px;border:2px solid #fff;border-radius:50%;pointer-events:none;z-index:2147483647;box-shadow:0 0 0 2px rgba(0,0,0,.35);transition:opacity .9s,transform .9s;}',
       '.dgo-barra{height:7px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0;}',
@@ -512,6 +522,11 @@
 
   /* Textos da propria interface deste modulo */
   var UI = {
+    tarefaNaoFeche: ['Não feche o app nem apague a tela. Pode usar outras telas.', 'Do not close the app or turn the screen off. You can use other screens.'],
+    tarefaPronta: ['Pronto · toque para ver', 'Done · tap to see'],
+    tarefaErro: ['Não deu certo · toque para fechar', 'Failed · tap to close'],
+    tarefaProcessando: ['Processando…', 'Processing…'],
+    tarefaSair: ['Uma leitura ainda está em andamento. Se sair agora, ela é perdida.', 'A reading is still in progress. If you leave now, it is lost.'],
     entrar: ['Entrar', 'Sign in'],
     sair: ['Sair', 'Sign out'],
     visitante: ['Visitante', 'Guest'],
@@ -3190,12 +3205,18 @@
 
     function lerFonte(fonte) {
       progresso(0.02, '');
-      OCR.ler(fonte, progresso).then(mostrarResultado).catch(function (e) {
+      Tarefa.iniciar({ id: 'dgo-ocr', titulo: t('lendo'),
+        executar: function (andamento) { return OCR.ler(fonte, function (m) { if (caixa.isConnected) progresso(m.progress, m.status); andamento(m.progress); }); },
+        aindaNaTela: function () { return caixa.isConnected; },
+        aoAbrir: function (r) { if (caixa.isConnected) mostrarResultado(r); else abrirOCR(Object.assign({}, opcoes, { resultadoInicial: r })); }
+      }).catch(function (e) {
+        if (!caixa.isConnected) return;
         estado.innerHTML = '';
         estado.appendChild(aviso(String(e && e.message) === 'so-wifi' ? t('redeSoWifi') : t('semCamera'), 'erro'));
         barra.style.display = 'none';
       });
     }
+    if (opcoes.resultadoInicial) setTimeout(function () { mostrarResultado(opcoes.resultadoInicial); }, 0);
 
     function usarCamera() {
       limpar();
@@ -5310,8 +5331,72 @@
     texto: function (v) { if (!v) return ''; if (typeof v === 'string') return v; return v[Idioma.atual] || v.pt || v.en || ''; }
   };
 
+  /* ------------------------------------------------------------------
+     Tarefas longas (DIRETRIZ-TAREFAS-LONGAS.md): ler foto/OCR, IA, envio de arquivo.
+     Uso: DGO.tarefa.iniciar({ id, titulo, executar: function (andamento) { return Promise }, aoAbrir: function (resultado) {} })
+       → devolve a Promise do resultado.
+     - mantém a tela acesa (Wake Lock) enquanto roda e avisa se a pessoa tentar fechar/recarregar a aba
+     - pílula flutuante "⏳ título — não feche o app"; a pessoa pode navegar nas outras telas, a tarefa continua
+     - ao terminar: "✅ título · toque para ver" → aoAbrir(resultado); erro: pílula vermelha, toque fecha
+     - marca em sessionStorage: se a página for fechada no meio, DGO.tarefa.interrompida() devolve {id, titulo}
+       na próxima abertura, para o app oferecer refazer. Num app de loja o mesmo código continua valendo.
+     ------------------------------------------------------------------ */
+  var Tarefa = (function () {
+    var ativas = {}, wake = null, caixa = null, interrompidaAntes = null, CHAVE = 'dgo:tarefa:ativa';
+    try { var m = raiz.sessionStorage.getItem(CHAVE); if (m) { interrompidaAntes = JSON.parse(m); raiz.sessionStorage.removeItem(CHAVE); } } catch (e) {}
+    function marcar() { try { var ids = Object.keys(ativas); if (ids.length) raiz.sessionStorage.setItem(CHAVE, JSON.stringify({ id: ids[0], titulo: ativas[ids[0]].titulo, quando: Date.now() })); else raiz.sessionStorage.removeItem(CHAVE); } catch (e) {} }
+    function container() { if (!caixa || !caixa.parentNode) { caixa = el('div', { class: 'dgo-tarefas' }); caixa.setAttribute('data-dgo-ui', '1'); caixa.setAttribute('aria-live', 'polite'); d.body.appendChild(caixa); } return caixa; }
+    function aoSair(e) { e.preventDefault(); e.returnValue = t('tarefaSair'); return e.returnValue; }
+    function acordar() {
+      if (!('wakeLock' in navigator) || wake || d.visibilityState !== 'visible') return;
+      try { navigator.wakeLock.request('screen').then(function (w) { wake = w; w.addEventListener('release', function () { wake = null; }); }).catch(function () {}); } catch (e) {}
+    }
+    function soltar() { if (wake) { try { wake.release(); } catch (e) {} wake = null; } }
+    d.addEventListener('visibilitychange', function () { if (Object.keys(ativas).length && d.visibilityState === 'visible') acordar(); });
+    function ligar() { if (Object.keys(ativas).length === 1) { raiz.addEventListener('beforeunload', aoSair); acordar(); } marcar(); }
+    function desligar(id) { delete ativas[id]; marcar(); if (!Object.keys(ativas).length) { raiz.removeEventListener('beforeunload', aoSair); soltar(); } }
+    function pilula(tf) {
+      var p = el('div', { class: 'dgo-tarefa', role: 'status' });
+      p.appendChild(el('i', { texto: '⏳' }));
+      var txt = el('div', { style: { flex: '1', minWidth: '0' } });
+      txt.appendChild(el('b', { texto: tf.titulo }));
+      txt.appendChild(el('small', { texto: t('tarefaNaoFeche') }));
+      var barra = el('div', { class: 'dgo-tarefa-barra' }, [el('span')]);
+      txt.appendChild(barra);
+      p.appendChild(txt);
+      container().appendChild(p);
+      return { el: p, icone: p.firstChild, titulo: txt.firstChild, sub: txt.children[1], barra: barra.firstChild };
+    }
+    return {
+      iniciar: function (o) {
+        o = o || {}; var id = o.id || ('t' + Date.now());
+        if (ativas[id]) return ativas[id].promessa;
+        var ui = pilula({ titulo: o.titulo || t('tarefaProcessando') });
+        var andamento = function (fracao, texto) { if (fracao != null) ui.barra.style.width = Math.round(Math.max(0, Math.min(1, fracao)) * 100) + '%'; if (texto) ui.sub.textContent = texto; };
+        var promessa = new Promise(function (ok, falha) { try { Promise.resolve(o.executar(andamento)).then(ok, falha); } catch (e) { falha(e); } });
+        ativas[id] = { titulo: o.titulo || '', promessa: promessa, ui: ui };
+        ligar();
+        promessa.then(function (r) {
+          desligar(id); ui.barra.style.width = '100%'; ui.el.classList.add('pronta'); ui.icone.textContent = '✅'; ui.sub.textContent = t('tarefaPronta'); ui.el.setAttribute('role', 'button'); ui.el.tabIndex = 0;
+          try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch (e) {}
+          var abrir = function () { ui.el.remove(); if (typeof o.aoAbrir === 'function') o.aoAbrir(r); };
+          ui.el.addEventListener('click', abrir); ui.el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
+          if (o.abrirSozinho !== false && !d.hidden && (typeof o.aindaNaTela !== 'function' || o.aindaNaTela())) abrir(); // se a pessoa continua na mesma tela, abre direto
+        }, function (e) {
+          desligar(id); ui.el.classList.add('erro'); ui.icone.textContent = '⚠️'; ui.sub.textContent = (e && e.message && e.message.length < 80 ? e.message + ' · ' : '') + t('tarefaErro'); ui.el.setAttribute('role', 'button'); ui.el.tabIndex = 0;
+          ui.el.addEventListener('click', function () { ui.el.remove(); });
+        });
+        return promessa;
+      },
+      andamento: function (id, fracao, texto) { var tf = ativas[id]; if (!tf) return; if (fracao != null) tf.ui.barra.style.width = Math.round(fracao * 100) + '%'; if (texto) tf.ui.sub.textContent = texto; },
+      ativas: function () { return Object.keys(ativas); },
+      interrompida: function () { var r = interrompidaAntes; interrompidaAntes = null; return r; }
+    };
+  })();
+
   var API = {
     __carregado: true,
+    tarefa: Tarefa,
     versao: VERSAO,
     cfg: cfg,
     /* campo de senha com 👁: DGO.senha.olho(input) · aplicar(raiz) · esconder(raiz) */

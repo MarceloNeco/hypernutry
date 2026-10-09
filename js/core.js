@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.5.0';
+  HN.version = '0.5.1';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */

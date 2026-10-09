@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.5.1",
+   "data": "09/Out/2026",
+   "hora": "15:40:00",
+   "pt": "⏳ Leitura que não some: enquanto o app lê o rótulo ou o laudo, a tela fica acesa, uma pílula embaixo avisa \"não feche o app\" com a barra de progresso, e você pode usar outras telas. Ao terminar: \"✅ Pronto · toque para ver\" volta para a tela do resultado. Se tentar fechar a aba no meio, o celular pergunta antes. (Diretriz SolverONE de tarefas longas; módulo comum 1.4.0.)",
+   "en": "⏳ Reading that never vanishes: while the app reads the label or the report, the screen stays on, a pill at the bottom says \"do not close the app\" with a progress bar, and you can use other screens. When done: \"✅ Done · tap to see\" returns to the result screen. Closing the tab midway asks first. (SolverONE long-task guideline; shared module 1.4.0.)"
+  },
+  {
    "v": "0.5.0",
    "data": "09/Out/2026",
    "hora": "14:50:00",
