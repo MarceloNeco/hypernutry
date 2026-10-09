@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.4.3",
+   "data": "09/Out/2026",
+   "hora": "08:12:00",
+   "pt": "🧩 Módulo comum atualizado (1.3.1), igual ao dos outros apps SolverONE: a câmera do leitor de texto do módulo também abre a lente principal e foca onde você tocar. Nada muda nas telas do HyperNutry.",
+   "en": "🧩 Shared module updated (1.3.1), same as the other SolverONE apps: the module's text-reader camera also opens the main lens and focuses where you tap. Nothing changes on HyperNutry's screens."
+  },
+  {
    "v": "0.4.2",
    "data": "09/Out/2026",
    "hora": "01:16:10",

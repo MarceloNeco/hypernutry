@@ -21,7 +21,7 @@
 (function (raiz) {
   'use strict';
 
-  var VERSAO = '1.3.0';
+  var VERSAO = '1.3.1';
   if (raiz.DGO && raiz.DGO.__carregado) { return; }
 
   /* ------------------------------------------------------------------
@@ -467,6 +467,8 @@
       '.dgo-linha>*{flex:1;min-width:120px;}',
       '.dgo-fechar{position:absolute;top:10px;right:12px;}',
       '.dgo-video,.dgo-foto{width:100%;border-radius:12px;background:#000;display:block;max-height:48vh;object-fit:contain;}',
+      '.dgo-video{cursor:crosshair;}',
+      '.dgo-anel{position:fixed;width:60px;height:60px;margin:-30px 0 0 -30px;border:2px solid #fff;border-radius:50%;pointer-events:none;z-index:2147483647;box-shadow:0 0 0 2px rgba(0,0,0,.35);transition:opacity .9s,transform .9s;}',
       '.dgo-barra{height:7px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0;}',
       '.dgo-barra i{display:block;height:100%;width:0;background:var(--dgo-cor);transition:width .18s;}',
       '.dgo-sep{height:1px;background:rgba(255,255,255,.1);margin:16px 0;}',
@@ -2417,6 +2419,54 @@
       };
     },
 
+    /* Câmera: celular com várias câmeras atrás às vezes abre a grande-angular ou a macro, que não focam
+       de perto e deixam a foto embaçada. Escolhe a lente principal pelo nome e liga o foco contínuo. */
+    abrirCamera: function () {
+      var md = navigator.mediaDevices;
+      function pedir(extra) {
+        var v = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+        for (var k in extra) v[k] = extra[k];
+        return md.getUserMedia({ video: v, audio: false });
+      }
+      return pedir({ facingMode: { ideal: 'environment' } }).then(function (s) {
+        if (!md.enumerateDevices) return s;
+        return md.enumerateDevices().then(function (ds) {
+          var tras = ds.filter(function (x) { return x.kind === 'videoinput' && !/front|frontal|user|selfie/i.test(x.label); });
+          var boas = tras.filter(function (x) { return !/wide|ultra|grande|tele|macro|depth|profund|infra|ir\b/i.test(x.label); });
+          var n = function (x) { var m = /(\d+)/.exec(x.label); return m ? +m[1] : 99; };
+          var p = (boas.length ? boas : tras).slice().sort(function (a, b) { return n(a) - n(b); })[0];
+          var tr = s.getVideoTracks()[0], atual = (tr && tr.getSettings && tr.getSettings().deviceId) || '';
+          if (tras.length < 2 || !p || !p.deviceId || !atual || p.deviceId === atual) return s;
+          s.getTracks().forEach(function (f) { f.stop(); });
+          return pedir({ deviceId: { exact: p.deviceId } }).catch(function () { return pedir({ facingMode: { ideal: 'environment' } }); });
+        }, function () { return s; });
+      }).then(function (s) {
+        if ((OCR._recursos(s).focusMode || []).indexOf('continuous') >= 0) OCR._aplicar(s, { focusMode: 'continuous' });
+        return s;
+      });
+    },
+    _recursos: function (s) { var tr = s && s.getVideoTracks()[0]; try { return (tr && tr.getCapabilities) ? tr.getCapabilities() : {}; } catch (e) { return {}; } },
+    _aplicar: function (s, c) { var tr = s && s.getVideoTracks()[0]; try { return tr.applyConstraints({ advanced: [c] }).catch(function () {}); } catch (e) { return Promise.resolve(); } },
+    /* tocar na imagem: foco naquele ponto (onde o aparelho deixa), com um anel mostrando onde; depois volta ao contínuo */
+    focoNoToque: function (video) {
+      video.addEventListener('click', function (ev) {
+        var s = OCR._stream; if (!s || !video.videoWidth) return;
+        var r = video.getBoundingClientRect(), k = Math.min(r.width / video.videoWidth, r.height / video.videoHeight);
+        var dw = video.videoWidth * k, dh = video.videoHeight * k;
+        var x = Math.max(0, Math.min(1, (ev.clientX - r.left - (r.width - dw) / 2) / dw));
+        var y = Math.max(0, Math.min(1, (ev.clientY - r.top - (r.height - dh) / 2) / dh));
+        var anel = d.createElement('span'); anel.className = 'dgo-anel'; anel.setAttribute('data-dgo-ui', '1');
+        anel.style.left = ev.clientX + 'px'; anel.style.top = ev.clientY + 'px';
+        d.body.appendChild(anel);
+        setTimeout(function () { anel.style.opacity = '0'; anel.style.transform = 'scale(.7)'; }, 30);
+        setTimeout(function () { anel.remove(); }, 950);
+        var cap = OCR._recursos(s), fm = cap.focusMode || [], c = {};
+        if (cap.pointsOfInterest) c.pointsOfInterest = [{ x: x, y: y }];
+        if (fm.indexOf('single-shot') >= 0) c.focusMode = 'single-shot';
+        if (!Object.keys(c).length) return;
+        OCR._aplicar(s, c).then(function () { setTimeout(function () { if (fm.indexOf('continuous') >= 0 && OCR._stream === s) OCR._aplicar(s, { focusMode: 'continuous' }); }, 1500); });
+      });
+    },
     pararCamera: function () {
       if (OCR._stream) { OCR._stream.getTracks().forEach(function (f) { f.stop(); }); OCR._stream = null; }
     },
@@ -3152,13 +3202,12 @@
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         area.appendChild(aviso(t('semCamera'), 'erro')); return;
       }
-      navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
-      }).then(function (stream) {
+      OCR.abrirCamera().then(function (stream) {
         OCR._stream = stream;
         video = el('video', { class: 'dgo-video', autoplay: '', playsinline: '', muted: '' });
         video.srcObject = stream; video.muted = true;
         area.appendChild(video);
+        OCR.focoNoToque(video);
         area.appendChild(el('button', { class: 'dgo-b', type: 'button', texto: t('tirarFoto'), onclick: function () {
           fotoCanvas = d.createElement('canvas');
           fotoCanvas.width = video.videoWidth; fotoCanvas.height = video.videoHeight;
