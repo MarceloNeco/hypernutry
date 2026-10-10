@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.5.2",
+   "data": "10/Out/2026",
+   "hora": "23:41:00",
+   "pt": "🎛️ O HyperNutry passa a obedecer ao Controle dos apps do RootifyONE: se a administração da SolverONE desligar a IA, o reconhecimento do prato pela foto para (a foto fica só no aparelho) e as Configurações avisam \"Desligado pela administração da SolverONE.\". Sem internet, vale o último aviso guardado; sem aviso nenhum, tudo continua ligado.",
+   "en": "🎛️ HyperNutry now obeys the RootifyONE app controls: if the SolverONE administration turns AI off, plate recognition from photos stops (the photo stays on the device) and Settings say \"Turned off by the SolverONE administration.\". Offline, the last saved setting applies; with none, everything stays on."
+  },
+  {
    "v": "0.5.1",
    "data": "09/Out/2026",
    "hora": "15:40:00",

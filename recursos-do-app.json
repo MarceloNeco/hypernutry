@@ -1,0 +1,18 @@
+{
+ "formato": 1,
+ "app": "hypernutry",
+ "versao": "0.5.2",
+ "atualizado": "2026-10-10",
+ "nota": {
+  "pt": "O HyperNutry não tem AssistONE, anúncios, leitura em voz alta nem telemetria, então só obedece ao interruptor da IA (reconhecer o prato pela foto). O leitor de rótulo (OCR) é a função principal do app e roda no aparelho; ficou de fora por enquanto.",
+  "en": "HyperNutry has no AssistONE, ads, read-aloud or telemetry, so it only obeys the AI switch (recognising the plate from a photo). The label reader (OCR) is the app's main feature and runs on the device; it is left out for now."
+ },
+ "recursos": [
+  {
+   "id": "ia",
+   "nome": { "pt": "IA: reconhecer o prato pela foto", "en": "AI: recognise the plate from a photo" },
+   "onde": { "pt": "Câmera › Prato e Configurações › Inteligência artificial. Desligado: a foto fica só no aparelho e o cartão avisa \"Desligado pela administração da SolverONE.\"", "en": "Camera › Plate and Settings › Artificial intelligence. Off: the photo stays on the device and the card says \"Turned off by the SolverONE administration.\"" }
+  }
+ ],
+ "comportamentos": []
+}

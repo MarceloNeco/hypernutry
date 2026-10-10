@@ -34,6 +34,7 @@
   function iaCard() {
     var D = window.DGO, T2 = T;
     if (!D || !D.ia) return '';
+    if (HN.iaLigada && !HN.iaLigada()) return '<div class="card" data-ia-off><h3>✨ ' + T2('Inteligência artificial', 'Artificial intelligence') + '</h3><p class="small">' + T2('Desligado pela administração da SolverONE.', 'Turned off by the SolverONE administration.') + '</p><p class="t-caption muted">' + T2('A foto do prato fica só no aparelho: registre os alimentos à mão.', 'The plate photo stays on your device: log the foods by hand.') + '</p></div>';
     var visao = HN.iaVisao && HN.iaVisao.pronta() ? '🖼️ ' + esc(HN.iaVisao.nome()) : T2('nenhuma ainda', 'none yet');
     var sel = function (k, lab) { var v = D.rede.preferencia(k); return '<label class="f" for="rd-' + k + '">' + lab + '</label><select id="rd-' + k + '" data-in="rede" data-k="' + k + '">' + [['sempre', 'Wi-Fi ou dados', 'Wi-Fi or mobile data'], ['wifi', 'Só no Wi-Fi', 'Wi-Fi only'], ['nunca', 'Nunca', 'Never']].map(function (o) { return '<option value="' + o[0] + '"' + (v === o[0] ? ' selected' : '') + '>' + HN.tt([o[1], o[2]]) + '</option>'; }).join('') + '</select>'; };
     return '<div class="card"><h3>✨ ' + T2('Inteligência artificial', 'Artificial intelligence') + '</h3><p class="small">' + T2('Usada só se você quiser: reconhecer o prato pela foto (Meu acompanhamento). Em uso para fotos: ', 'Used only if you want: recognising the plate from a photo (My follow-up). In use for photos: ') + '<b>' + visao + '</b>.</p>' +
