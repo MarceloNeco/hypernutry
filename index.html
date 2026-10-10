@@ -19,8 +19,6 @@
 <nav id="bn" class="bn hide" aria-label="Navegação"></nav>
 <div id="layers"></div>
 <noscript>O HyperNutry precisa de JavaScript ativado.</noscript>
-<!-- interruptores do RootifyONE → Controle dos apps (antes do código do app) -->
-<script src="recursos.js" data-app="hypernutry"></script>
 <script src="js/data-foods.js"></script>
 <script src="js/data-taco.js"></script>
 <script src="js/data-recipes.js"></script>
@@ -39,8 +37,11 @@
 <script src="js/data-aditivos.js"></script>
 <script src="js/v-mercado.js"></script>
 <script>HN.start();</script>
-<!-- módulo comum SolverONE: cofre de IA e regra de rede (ver diretrizes-config.js) -->
+<!-- módulo comum SolverONE 1.9.0: cofre de IA, rede, interruptores/Modo DEUS, manutenção, Fundo, Compat e 💬 Feedback (ver diretrizes-config.js) -->
 <script src="diretrizes.js"></script>
+<!-- interruptores do RootifyONE → Controle dos apps: DEPOIS do módulo, para só repassar ao DGO.recursos
+     (antes dele, a cópia avulsa agia sozinha enquanto o módulo baixava e mostrava a manutenção duas vezes) -->
+<script src="recursos.js" data-app="hypernutry"></script>
 <script src="diretrizes-config.js"></script>
 <script src="js/ia-visao.js"></script>
 </body>

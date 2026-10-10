@@ -67,12 +67,21 @@
       var go = function () {
         if (!D.rede.podeUsarIA()) { nota(T('A IA está marcada para usar só no Wi-Fi ou não há internet. Registre à mão por enquanto.', 'AI is set to Wi-Fi only or there is no internet. Log by hand for now.')); return; }
         nota(T('Reconhecendo com a IA…', 'Recognising with AI…'));
-        chamar(p, D.ia.chavePara('visao'), D.ia.modelo(p), b64(canvas)).then(function (txt) {
+        var rodar = function () { return chamar(p, D.ia.chavePara('visao'), D.ia.modelo(p), b64(canvas)); };
+        // os alimentos entram no rascunho do diário assim que a IA responde, mesmo com a pessoa em outra tela
+        var aplicar = function (txt) {
+          if (!HN.draft) return; // a pessoa desistiu da refeição no meio
           var itens = ler(txt), achou = [], nao = [];
           itens.forEach(function (it) { var f = HN.acharAlimento(it.nome || ''), g = Math.max(5, Math.min(800, Math.round(+it.gramas || 100))); if (f) { HN.draft.items.push({ food: f.id, g: g }); achou.push(HN.foodName(f)); } else if (it.nome) nao.push(it.nome); });
           HN.haptic('sucesso');
           nota(itens.length ? T('A IA sugeriu: ', 'AI suggested: ') + (achou.join(', ') || '—') + '. ' + (nao.length ? T('Não achei na base: ', 'Not in the base: ') + nao.join(', ') + '. ' : '') + T('Confira e ajuste as quantidades: é uma estimativa.', 'Check and adjust the amounts: it is an estimate.') : T('A IA não reconheceu comida nesta foto. Registre à mão.', 'AI found no food in this photo. Log by hand.'));
-        }).catch(function (e) { nota('⚠️ ' + (D.ia.explicarErro ? D.ia.explicarErro(e) : T('A IA não respondeu.', 'AI did not answer.'))); });
+        };
+        var falhou = function (e) { nota('⚠️ ' + (D.ia.explicarErro ? D.ia.explicarErro(e) : T('A IA não respondeu.', 'AI did not answer.'))); };
+        if (D.fundo) { // diretriz "Fundo": pílula de andamento, tela acesa e "✅ toque para ver" volta ao diário
+          D.fundo.iniciar({ id: 'prato-ia', tipo: 'ia', titulo: T('Reconhecendo o prato com IA', 'Recognising the plate with AI'), rota: '#/diario/novo', podeCancelar: false,
+            executar: rodar, aoTerminar: aplicar, aindaNaTela: function () { return HN.route().name === 'diario'; },
+            aoAbrir: function () { if (HN.route().name !== 'diario') HN.go('/diario/novo'); } }).catch(falhou);
+        } else rodar().then(aplicar, falhou);
       };
       if (ok) { go(); return; }
       HN.confirm(T('A foto do prato vai para ' + HN.iaVisao.nome() + ', usando a sua chave, para reconhecer os alimentos. O HyperNutry não guarda a foto. Enviar?', 'The plate photo goes to ' + HN.iaVisao.nome() + ', using your key, to recognise the foods. HyperNutry does not store the photo. Send it?'), T('Enviar', 'Send')).then(function (s) { if (s) { ok = true; go(); } else nota(T('Foto não enviada. Registre à mão.', 'Photo not sent. Log by hand.')); });

@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.6.0",
+   "data": "10/Out/2026",
+   "hora": "11:30:00",
+   "pt": "⚡ O HyperNutry agora usa o módulo comum mais novo da SolverONE (1.9.0): (1) 💬 em todo lugar (menu ☰, Configurações, Ajuda e tela de erro) para dar uma opinião ou avisar um problema, com print, vídeo e áudio; sem internet, fica guardado e vai depois; (2) leitura do rótulo, do laudo e do prato com IA continua mesmo se você trocar de tela, e o resultado fica guardado esperando você; (3) a administração da SolverONE pode desligar uma função por um tempo (ela some do menu e da barra, e a tela avisa com calma) ou pôr o app em manutenção; (4) se o navegador for antigo demais, o app explica como resolver.",
+   "en": "⚡ HyperNutry now uses the newest SolverONE shared module (1.9.0): (1) 💬 everywhere (☰ menu, Settings, Help and the error screen) to give feedback or report a problem, with screenshot, video and audio; offline, it is kept and sent later; (2) reading the label, the report and the plate with AI keeps going even if you switch screens, and the result waits for you; (3) the SolverONE administration can turn a feature off for a while (it disappears from the menu and the bar, and the screen explains calmly) or put the app under maintenance; (4) if the browser is too old, the app explains how to fix it."
+  },
+  {
    "v": "0.5.3",
    "data": "10/Out/2026",
    "hora": "06:49:00",

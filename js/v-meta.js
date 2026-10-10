@@ -60,6 +60,7 @@
       (bar.length < HN.BAR_MAX ? '<label class="f" for="baradd">' + T('Adicionar', 'Add') + '</label><select id="baradd" data-in="bar-add"><option value="">…</option>' + Object.keys(HN.nav).filter(function (id) { return bar.indexOf(id) < 0; }).map(function (id) { return '<option value="' + id + '">' + HN.nav[id].e + ' ' + esc(HN.tt([HN.nav[id].pt, HN.nav[id].en])) + '</option>'; }).join('') + '</select>' : '') + '<button class="btn ghost sm mt" data-act="bar-reset">' + T('Restaurar padrão', 'Restore default') + '</button></div>';
     if (p) h += '<div class="card"><h3>' + T('Meu perfil', 'My profile') + '</h3><p>' + esc(p.nome || '') + ' · ' + (p.modo === 'hibrido' ? T('Híbrido Adaptativo', 'Adaptive Hybrid') : T('Intuitivo Integral', 'Whole Intuitive')) + '</p><div class="row wrap"><button class="btn sec sm" data-act="go" data-arg="/wizard/1">' + T('Refazer o perfil', 'Redo profile') + '</button><button class="btn sec sm" data-act="go" data-arg="/familia">' + T('Família e perfis', 'Family & profiles') + '</button></div></div>';
     h += '<div class="card"><h3>' + T('Meus dados (LGPD)', 'My data (LGPD)') + '</h3><p class="small muted">' + T('Tudo fica só neste aparelho. Você pode levar, trazer e apagar.', 'Everything stays on this device only. You can take, bring and delete it.') + '</p><div class="row wrap"><button class="btn sec sm" data-act="data-export">📤 ' + T('Exportar tudo (JSON)', 'Export all (JSON)') + '</button><label class="btn sec sm" for="impf">📥 ' + T('Importar', 'Import') + '</label><input id="impf" type="file" accept="application/json,.json" class="sr" data-in="cfg-import"></div><p class="small muted mt">' + (c.ultimoBackup ? T('Último backup: ', 'Last backup: ') + HN.fmtDate(c.ultimoBackup) : T('Você ainda não fez backup.', 'You have not made a backup yet.')) + '</p><div id="stor" class="small muted"></div><button class="btn bad block mt" data-act="data-wipe">🗑 ' + T('Apagar todos os meus dados', 'Delete all my data') + '</button></div>';
+    h += feedbackCard();
     h += '<div class="card"><h3>' + T('Versão', 'Version') + '</h3><p>HyperNutry <b>v' + HN.version + '</b> · ' + HN.fmtDate(Date.now()) + '</p><button class="btn ghost sm" data-act="check-update">🔄 ' + T('Buscar atualização', 'Check for updates') + '</button><details class="acc mt"><summary>' + T('Novidades', 'What\'s new') + '</summary><div id="news" class="small"></div></details></div>';
     return h;
   };
@@ -94,8 +95,16 @@
       ['O app substitui o nutricionista?', 'Does it replace a dietitian?', 'Não. É uma ferramenta educativa e de organização. Para dieta individual, doenças ou gestação, procure nutricionista/médico.', 'No. It is an educational and organisation tool. For individual diets, illness or pregnancy, see a dietitian/doctor.']
     ];
     return U.title('❓', T('Ajuda', 'Help')) + U.legal() + '<div class="card">' + q.map(function (x) { return '<details class="acc"><summary>' + T(x[0], x[1]) + '</summary><p>' + T(x[2], x[3]) + '</p></details>'; }).join('') + '</div>' +
-      '<div class="card"><h3>' + T('Atalhos', 'Shortcuts') + '</h3><div class="row wrap"><button class="btn sec sm" data-act="go" data-arg="/diario/novo">📝 ' + T('Registrar refeição', 'Log a meal') + '</button><button class="btn sec sm" data-act="go" data-arg="/rotulos">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn sec sm" data-act="go" data-arg="/saciedade">🥣 ' + T('Saciedade Raiz', 'Real Fullness') + '</button></div></div>';
+      feedbackCard() + '<div class="card"><h3>' + T('Atalhos', 'Shortcuts') + '</h3><div class="row wrap"><button class="btn sec sm" data-act="go" data-arg="/diario/novo">📝 ' + T('Registrar refeição', 'Log a meal') + '</button><button class="btn sec sm" data-act="go" data-arg="/rotulos">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn sec sm" data-act="go" data-arg="/saciedade">🥣 ' + T('Saciedade Raiz', 'Real Fullness') + '</button></div></div>';
   };
+
+  // 💬 opinião e problemas (DGO.feedback do módulo comum): em ⚙ e na Ajuda; o ☰ e a tela de erro também têm
+  function feedbackCard() {
+    if (!window.DGO || !DGO.feedback) return '';
+    return '<div class="card" data-recurso="feedback"><h3>💬 ' + T('Sua opinião', 'Your feedback') + '</h3><p class="small muted">' + T('Conte o que está bom, o que falta ou o que deu erro. Sem internet, fica guardado no aparelho e vai depois. Nenhum dado de saúde vai junto.', 'Tell us what works, what is missing or what broke. Offline, it is kept on the device and sent later. No health data goes with it.') + '</p>' +
+      '<div class="row wrap"><button class="btn sec sm" data-act="feedback">💬 ' + T('Dar uma opinião / avisar um problema', 'Give feedback / report a problem') + '</button><button class="btn ghost sm" data-act="feedback-meus">📋 ' + T('Meus envios', 'What I sent') + '</button></div></div>';
+  }
+  A['feedback-meus'] = function () { if (window.DGO && DGO.feedback) DGO.feedback.meus(); };
 
   /* ================= SOBRE ================= */
   V.sobre = function () {
