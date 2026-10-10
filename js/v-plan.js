@@ -32,7 +32,7 @@
   };
   function menuTab() {
     var c = HN.getCardapio(), p = HN.perfil() || {}, h = '', now = (new Date().getDay() + 6) % 7, nums = HN.numerosOk();
-    h += '<div class="row wrap mb"><button class="btn sec sm" data-act="menu-regen">🔀 ' + T('Gerar outra semana', 'Generate another week') + '</button><button class="btn sec sm" data-act="go" data-arg="/cozinheiro">🧑‍🍳 ' + T('Enviar ao cozinheiro', 'Send to cook') + '</button></div>';
+    h += '<div class="row wrap mb"><button class="btn sec sm" data-act="menu-regen" data-recurso="cardapio.gerar">🔀 ' + T('Gerar outra semana', 'Generate another week') + '</button><button class="btn sec sm" data-act="go" data-arg="/cozinheiro">🧑‍🍳 ' + T('Enviar ao cozinheiro', 'Send to cook') + '</button></div>';
     if ((p.equipamentos || []).length === 0) h += U.notice('info', T('Você não marcou eletrodomésticos: mostramos receitas que só usam o básico.', 'You did not tick appliances: we show recipes that need only basics.'));
     h += '<div class="week">' + c.dias.map(function (d, i) {
       var tot = 0; var rows = MEALS4.map(function (m) {
@@ -86,7 +86,7 @@
     });
     if (!any) h += '<p class="muted">' + T('Nada a comprar: a despensa cobre o cardápio. 🎉', 'Nothing to buy: the pantry covers the menu. 🎉') + '</p>';
     h += '<h4 style="margin:.9rem 0 .2rem">' + T('Outros itens', 'Other items') + '</h4>' + extra.map(function (e, i) { return '<div class="chk"><span class="tx grow">' + esc(e) + '</span><button class="ib" data-act="shop-xdel" data-arg="' + i + '" aria-label="' + T('Remover', 'Remove') + '">✕</button></div>'; }).join('') + '<div class="row mt"><input type="text" id="sx" placeholder="' + T('Ex.: papel higiênico', 'E.g. toilet paper') + '"><button class="btn sm" data-act="shop-xadd">＋</button></div></div>';
-    h += '<div class="row wrap"><button class="btn sec" data-act="shop-share">📤 ' + T('Compartilhar lista', 'Share list') + '</button><button class="btn sec" data-act="shop-done">✅ ' + T('Comprei os marcados → despensa', 'Bought the ticked → pantry') + '</button></div>';
+    h += '<div class="row wrap"><button class="btn sec" data-act="shop-share" data-recurso="compras.compartilhar">📤 ' + T('Compartilhar lista', 'Share list') + '</button><button class="btn sec" data-act="shop-done">✅ ' + T('Comprei os marcados → despensa', 'Bought the ticked → pantry') + '</button></div>';
     return h;
   }
   HN.ins['shop-ck'] = function (v, el) { var ok = S.get('comprasOk', {}), k = el.getAttribute('data-k'); if (v) ok[k] = 1; else delete ok[k]; S.set('comprasOk', ok); el.closest('.chk').classList.toggle('done', v); };
@@ -276,9 +276,9 @@
       '<div class="card"><label class="f">' + T('Dias', 'Days') + '</label><div class="chips">' + [0, 1, 2, 3, 4, 5, 6].map(function (i) { return '<button class="chip' + (CK.dias.indexOf(i) >= 0 ? ' on' : '') + '" data-act="ck-day" data-arg="' + i + '">' + HN.weekday(i).slice(0, 3) + '</button>'; }).join('') + '</div><label class="f">' + T('Refeições', 'Meals') + '</label><div class="chips">' + MEALS4.map(function (m) { return '<button class="chip' + (CK.meals.indexOf(m) >= 0 ? ' on' : '') + '" data-act="ck-meal" data-arg="' + m + '">' + U.mealEmoji(m) + ' ' + U.mealName(m) + '</button>'; }).join('') + '</div>' +
       '<div class="row mt"><b class="grow">' + T('Pessoas à mesa', 'People at the table') + '</b><button class="ib" data-act="ck-pp" data-arg="-1" aria-label="−">−</button><b style="min-width:1.5rem;text-align:center">' + CK.pessoas + '</b><button class="ib" data-act="ck-pp" data-arg="1" aria-label="+">＋</button></div>' +
       '<label class="chk"><input type="checkbox" data-in="ck-opt" data-k="alerg" ' + (CK.alerg ? 'checked' : '') + '><span class="tx">' + T('Incluir aviso do que <b>não</b> usar (alergias/restrições, sem citar saúde)', 'Include a list of what <b>not</b> to use (allergies/restrictions, no health mention)') + '</span></label><label class="chk"><input type="checkbox" data-in="ck-opt" data-k="lista" ' + (CK.lista ? 'checked' : '') + '><span class="tx">' + T('Incluir lista de compras da semana', 'Include the week\'s shopping list') + '</span></label></div>' +
-      '<div class="row wrap"><button class="btn grow" data-act="ck-print">🖨️ ' + T('Imprimir / PDF', 'Print / PDF') + '</button><button class="btn sec grow" data-act="ck-dl">⬇️ ' + T('Baixar arquivo', 'Download file') + '</button><button class="btn sec grow" data-act="ck-share">📤 ' + T('Compartilhar', 'Share') + '</button></div>' +
+      '<div class="row wrap" data-recurso="cozinheiro.enviar"><button class="btn grow" data-act="ck-print">🖨️ ' + T('Imprimir / PDF', 'Print / PDF') + '</button><button class="btn sec grow" data-act="ck-dl">⬇️ ' + T('Baixar arquivo', 'Download file') + '</button><button class="btn sec grow" data-act="ck-share">📤 ' + T('Compartilhar', 'Share') + '</button></div>' +
       '<p class="small muted mt">' + T('Para PDF: toque em Imprimir e escolha “Salvar como PDF”. Link na web exige servidor (versão futura); por ora, envie o arquivo pelo WhatsApp ou e-mail.', 'For PDF: tap Print and choose “Save as PDF”. A web link needs a server (future version); for now send the file by WhatsApp or e-mail.') + '</p>';
-    h += '<button class="fab fab-share" data-act="ck-share" aria-label="' + T('Compartilhar a folha da cozinha (sem dados de saúde)', 'Share the kitchen sheet (no health data)') + '">📤</button>';
+    h += '<button class="fab fab-share" data-act="ck-share" data-recurso="cozinheiro.enviar" aria-label="' + T('Compartilhar a folha da cozinha (sem dados de saúde)', 'Share the kitchen sheet (no health data)') + '">📤</button>';
     return h;
   }
   A['ck-day'] = function (i) { i = +i; var a = CK.dias, x = a.indexOf(i); if (x >= 0) a.splice(x, 1); else a.push(i); HN.refresh(); };

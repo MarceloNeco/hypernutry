@@ -184,7 +184,7 @@
     var g = HN.adv(), tipos = {}, mf = marcasFav();
     HN.cat.list().forEach(function (p) { if (p.tipo) tipos[tipoN(p)] = p.tipo; });
     var h = U.title('🏪', T('Produtos do mercado', 'Store products'), T('Veja quem tem muitos aditivos e prefira os mais simples', 'See which have many additives and prefer simpler ones')) +
-      '<div class="row wrap mb"><button class="btn grow" data-act="mk-scan">📷 ' + T('Ler produto', 'Scan product') + '</button><button class="btn sec" data-act="prod-edit" data-arg="">＋ ' + T('Cadastrar', 'Add') + '</button><button class="btn sec" data-act="go" data-arg="/mercado/aditivos">📖 ' + T('Glossário', 'Glossary') + '</button></div>' +
+      '<div class="row wrap mb"><button class="btn grow" data-act="mk-scan" data-recurso="camera camera.codigo">📷 ' + T('Ler produto', 'Scan product') + '</button><button class="btn sec" data-act="prod-edit" data-arg="">＋ ' + T('Cadastrar', 'Add') + '</button><button class="btn sec" data-act="go" data-arg="/mercado/aditivos">📖 ' + T('Glossário', 'Glossary') + '</button></div>' +
       '<div class="card"><input type="search" data-in="mk-q" value="' + esc(F.q) + '" placeholder="' + T('Buscar por nome, marca ou código', 'Search name, brand or code') + '" aria-label="' + T('Buscar produto', 'Search product') + '">' +
       '<div class="chips mt" role="group"><button class="chip' + (!F.selo && !F.fav ? ' on' : '') + '" data-act="mk-f" data-arg="">' + T('Todos', 'All') + '</button><button class="chip' + (F.fav ? ' on' : '') + '" data-act="mk-f" data-arg="fav">⭐ ' + T('Favoritos', 'Favourites') + '</button>' +
       ['limpo', 'pouco', 'muito'].map(function (s) { return '<button class="chip' + (F.selo === s ? ' on' : '') + '" data-act="mk-f" data-arg="' + s + '">' + SELO[s].e + ' ' + HN.tt([SELO[s].pt, SELO[s].en]) + '</button>'; }).join('') + '</div>' +
@@ -193,7 +193,7 @@
       '<div id="prods">' + listaHtml() + '</div>' +
       '<div class="card small mt"><div class="kv"><span>' + T('Lista de aditivos', 'Additive list') + '</span><b>' + g.aditivos.length + ' ' + T('itens · versão', 'items · version') + ' ' + esc(g.versao) + '</b></div><div class="kv"><span>' + T('Fotos guardadas', 'Saved photos') + '</span><b id="mk-fotos">…</b></div>' +
       '<label class="f" for="mk-foto">' + T('Fotos dos produtos', 'Product photos') + '</label><select id="mk-foto" data-in="mk-foto"><option value="pequena"' + (HN.cfg().fotoProduto !== 'nao' ? ' selected' : '') + '>' + T('Guardar pequena (≈15 KB cada, só no celular)', 'Keep small (≈15 KB each, on this phone only)') + '</option><option value="nao"' + (HN.cfg().fotoProduto === 'nao' ? ' selected' : '') + '>' + T('Não guardar fotos', 'Do not keep photos') + '</option></select>' +
-      '<button class="btn sec block mt" data-act="mk-sync">🔄 ' + T('Atualizar lista e produtos (precisa de internet)', 'Update list and products (needs internet)') + '</button></div>';
+      '<button class="btn sec block mt" data-act="mk-sync" data-recurso="mercado.atualizar">🔄 ' + T('Atualizar lista e produtos (precisa de internet)', 'Update list and products (needs internet)') + '</button></div>';
     return h;
   }
   function telaProduto(id) {

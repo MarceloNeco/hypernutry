@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.5.3';
+  HN.version = '0.6.0';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -109,6 +109,35 @@
   HN.navShort = { calc: ['Calcular', 'Calculate'], planejar: ['Cardápio', 'Menu'], receitas: ['Receitas', 'Recipes'], compras: ['Compras', 'Shopping'], rotulos: ['Rótulo', 'Label'], mercado: ['Mercado', 'Store'], aditivos: ['Aditivos', 'Additives'], acomp: ['Início', 'Home'], diario: ['Diário', 'Diary'], intuitivo: ['Fome', 'Hunger'], corpo: ['Corpo', 'Body'], metas: ['Metas', 'Goals'], despensa: ['Despensa', 'Pantry'], alimentos: ['Alimentos', 'Foods'], saciedade: ['Saciedade', 'Fullness'], tele: ['Consulta', 'Consult'], familia: ['Família', 'Family'], gostos: ['Gostos', 'Tastes'], cozinheiro: ['Cozinheiro', 'Cook'] };
   HN.partMap = { home: 'A', planejar: 'A', receitas: 'A', receita: 'A', alimentos: 'A', alimento: 'A', rotulos: 'A', mercado: 'A', saciedade: 'A', gostos: 'A', cozinheiro: 'A', acomp: 'B', diario: 'B', intuitivo: 'B', metas: 'B', familia: 'B', corpo: 'B', tele: 'B', wizard: 'B', boasvindas: 'B' };
   HN.partOf = function (name) { return HN.partMap[name] || 'C'; };
+
+  /* ---------- interruptores do RootifyONE (Controle dos apps e ⚡ Modo DEUS) ----------
+   * Cada tela do menu tem o id da chave em HN.nav (ex.: "compras"); ações têm ids próprios ("camera.prato").
+   * Desligada: o botão some (data-recurso + regra de CSS do módulo) e a rota mostra um aviso no lugar da tela.
+   * Nunca desligáveis aqui: ⚙ Configurações e Sobre/avisos legais (o app não pode ficar sem saída nem sem LGPD).
+   * Lista completa: recursos-do-app.json. Sem arquivo publicado, tudo fica ligado. */
+  HN.SEMPRE = { config: 1, sobre: 1 };
+  HN.recursoLigado = function (id) { return !id || !window.SolverRecursos || SolverRecursos.ligado(id, true); };
+  HN.recursoNav = function (id) { return HN.SEMPRE[id] ? '' : id; }; // id de interruptor de um item de HN.nav ('' = sempre ligado)
+  HN.recursoDaRota = function (r) {
+    var n = r.name, p1 = (r.parts || [])[1];
+    if (n === 'home') return 'calc';
+    if (n === 'planejar') return p1 === 'despensa' || p1 === 'compras' ? p1 : 'planejar';
+    if (n === 'mercado') return p1 === 'aditivos' ? 'aditivos' : 'mercado';
+    if (n === 'receita') return 'receitas';
+    if (n === 'alimento') return 'alimentos';
+    return HN.nav[n] ? HN.recursoNav(n) : '';
+  };
+  // botões que levam a uma tela (data-act="go" etc.) ganham o data-recurso dela: tela desligada, botão some
+  HN.marcarLinks = function (root) {
+    HN.qa('[data-act="go"],[data-act="drawer-go"],[data-act="search-go"]', root).forEach(function (el) {
+      if (el.hasAttribute('data-recurso')) return;
+      var a = (el.getAttribute('data-arg') || '').split('?')[0], parts = a.split('/').filter(Boolean);
+      var id = HN.recursoDaRota({ name: parts[0] || 'home', parts: parts.length ? parts : ['home'] });
+      if (id) el.setAttribute('data-recurso', id);
+    });
+  };
+  function attrRec(id) { id = HN.recursoNav(id); return id ? ' data-recurso="' + id + '"' : ''; }
+  HN.attrRec = attrRec;
   var lastPart = 'A';
   HN.curPart = function () { var p = HN.partOf(cur.name); if (p !== 'C') lastPart = p; return lastPart; };
   HN.homeOf = function () { return HN.curPart() === 'B' ? '/acomp' : '/'; };
@@ -120,9 +149,9 @@
 
   HN.searchIndex = function () {
     var out = [];
-    Object.keys(HN.nav).forEach(function (id) { var n = HN.nav[id]; out.push({ t: n.pt + ' ' + n.en + ' ' + n.k, label: HN.tt([n.pt, n.en]), e: n.e, sub: HN.T('Tela', 'Screen'), r: n.r }); });
-    HN.foodList.forEach(function (f) { out.push({ t: f.pt + ' ' + f.en, label: HN.foodName(f), e: '🥕', sub: HN.T('Alimento', 'Food') + ' · ' + f.kcal + ' kcal/100 g', r: '/alimento/' + f.id }); });
-    HN.recipeList.forEach(function (r) { out.push({ t: r.pt + ' ' + r.en, label: HN.tt([r.pt, r.en]), e: '🍳', sub: HN.T('Receita', 'Recipe') + ' · ' + r.time + ' min', r: '/receita/' + r.id }); });
+    Object.keys(HN.nav).forEach(function (id) { var n = HN.nav[id]; if (!HN.recursoLigado(HN.recursoNav(id))) return; out.push({ t: n.pt + ' ' + n.en + ' ' + n.k, label: HN.tt([n.pt, n.en]), e: n.e, sub: HN.T('Tela', 'Screen'), r: n.r }); });
+    if (HN.recursoLigado('alimentos')) HN.foodList.forEach(function (f) { out.push({ t: f.pt + ' ' + f.en, label: HN.foodName(f), e: '🥕', sub: HN.T('Alimento', 'Food') + ' · ' + f.kcal + ' kcal/100 g', r: '/alimento/' + f.id }); });
+    if (HN.recursoLigado('receitas')) HN.recipeList.forEach(function (r) { out.push({ t: r.pt + ' ' + r.en, label: HN.tt([r.pt, r.en]), e: '🍳', sub: HN.T('Receita', 'Recipe') + ' · ' + r.time + ' min', r: '/receita/' + r.id }); });
     return out;
   };
   function nrm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
@@ -154,7 +183,7 @@
       if (o.type === 'drawer') inner = '<div class="scrim" data-act="layer-close"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || 'Menu') + '">' + o.html + '</aside>';
       else if (o.type === 'full') inner = '<section class="full" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || '') + '">' + o.html + '</section>';
       else inner = '<div class="scrim" data-act="layer-close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || '') + '"><div class="grab"></div>' + o.html + '</div>';
-      wrap.innerHTML = inner; host.appendChild(wrap);
+      wrap.innerHTML = inner; HN.marcarLinks(wrap); host.appendChild(wrap);
       var L = { el: wrap, onClose: o.onClose, opener: document.activeElement };
       layers.push(L);
       history.pushState({ layer: layers.length }, '', location.href);
@@ -220,14 +249,33 @@
       r = parseHash(); name = r.name; view = HN.views[name];
     }
     if (!view) { name = 'home'; view = HN.views.home; r = { name: 'home', parts: ['home'], query: {} }; }
-    cur = r; var app = HN.q('#app'), y = window.scrollY;
-    var html; try { html = view(r.parts, r.query); } catch (e) { console.error(e); html = '<div class="notice bad">' + HN.T('Algo deu errado nesta tela. Volte ao Início.', 'Something went wrong on this screen. Go back Home.') + '</div>'; }
-    app.innerHTML = '<div class="view">' + html + '</div>';
-    if (HN.after[name]) { try { HN.after[name](r.parts, r.query); } catch (e) { console.error(e); } }
+    var rec = HN.recursoDaRota(r), off = !HN.recursoLigado(rec);
+    cur = r; cur.off = off; var app = HN.q('#app'), y = window.scrollY;
+    var html; if (off) html = desligada(r); else try { html = view(r.parts, r.query); } catch (e) { console.error(e); HN.ultimoErro = e; html = '<div class="notice bad">' + HN.T('Algo deu errado nesta tela. Volte ao Início.', 'Something went wrong on this screen. Go back Home.') + '</div>' + (window.DGO && DGO.feedback ? '<button class="btn sec sm mt" data-act="feedback" data-arg="erro" data-recurso="feedback">💬 ' + HN.T('Avisar que deu erro', 'Report the error') + '</button>' : ''); }
+    app.innerHTML = '<div class="view">' + html + '</div>'; HN.marcarLinks(app);
+    if (HN.after[name] && !off) { try { HN.after[name](r.parts, r.query); } catch (e) { console.error(e); } }
     window.scrollTo(0, keepScroll ? y : 0);
     HN.renderChrome(); document.title = 'HyperNutry' + (name !== 'home' && HN.nav[name] ? ' · ' + HN.tt([HN.nav[name].pt, HN.nav[name].en]) : '');
   };
   HN.refresh = function () { HN.render(true); };
+  // tela desligada no RootifyONE (Controle dos apps / ⚡ Modo DEUS): aviso calmo e caminhos de volta
+  function desligada(r) {
+    var T = HN.T, casa = HN.partOf(r.name) === 'B' ? '/acomp' : '/', casaRec = casa === '/' ? 'calc' : 'acomp';
+    return '<div class="card center" role="status"><p style="font-size:2.4rem;margin:.2rem 0" aria-hidden="true">⏸️</p><h2>' + T('Função desligada por enquanto', 'Feature turned off for now') + '</h2>' +
+      '<p class="muted">' + T('Desligado pela administração da SolverONE. O resto do app continua funcionando, e seus dados continuam guardados no aparelho.', 'Turned off by the SolverONE administration. The rest of the app keeps working, and your data stays saved on the device.') + '</p>' +
+      '<div class="row wrap" style="justify-content:center">' + (HN.recursoLigado(casaRec) && HN.recursoDaRota(r) !== casaRec ? '<button class="btn" data-act="go" data-arg="' + casa + '">🏠 ' + T('Ir para o Início', 'Go Home') + '</button>' : '') +
+      '<button class="btn sec" data-act="menu">☰ ' + T('Abrir o menu', 'Open the menu') + '</button></div></div>';
+  }
+  // os interruptores mudaram (cópia guardada lida pelo módulo, ou arquivo novo do RootifyONE): barra e tela atuais
+  HN.conferirRecursos = function () {
+    if (!cur.name) return;
+    var off = !HN.recursoLigado(HN.recursoDaRota(cur));
+    if (off !== !!cur.off && !HN.layer.count()) HN.refresh(); else HN.renderChrome();
+  };
+  // o módulo comum acabou de carregar (depois da 1ª tela): ⚙ e Ajuda redesenham para mostrar o 💬; as outras só conferem
+  HN.moduloPronto = function () {
+    if ((cur.name === 'config' || cur.name === 'ajuda') && !HN.layer.count()) HN.refresh(); else HN.conferirRecursos();
+  };
 
   /* ---------- cabeçalho e barra de baixo ---------- */
   var LOGO = '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22b573"/><stop offset="1" stop-color="#0b6b45"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lg)"/><path d="M18 46V18M18 32h14M32 18v28" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M38 30c0-10 8-15 16-15 0 9-5 16-16 15z" fill="#ffb55a"/></svg>';
@@ -240,7 +288,7 @@
       '<button class="brand" data-act="home" aria-label="HyperNutry ' + T('Início', 'Home') + '">' + LOGO + '<span>Hyper<b>Nutry</b></span></button><div class="grow"></div>' +
       '<button class="langbtn" data-act="lang" aria-label="' + T('Mudar idioma', 'Change language') + '" title="PT/EN">' + (HN.lang === 'pt' ? 'PT' : 'EN') + '</button>' +
       '<button class="ib" data-act="search" aria-label="' + T('Buscar', 'Search') + '">🔍</button>' +
-      '<button class="ib" data-act="help" aria-label="' + T('Ajuda', 'Help') + '">❓</button>' +
+      '<button class="ib" data-act="help" data-recurso="ajuda" aria-label="' + T('Ajuda', 'Help') + '">❓</button>' +
       '<button class="ib" data-act="go" data-arg="/config" aria-label="' + T('Configurações', 'Settings') + '">⚙️</button>' +
       '<button class="ib" data-act="home" aria-label="' + T('Início', 'Home') + '"' + (name === 'home' ? ' aria-current="page"' : '') + '>🏠</button>';
     var bn = HN.q('#bn');
@@ -249,9 +297,9 @@
     if (pn) { if (inWizard) pn.classList.add('hide'); else { pn.classList.remove('hide'); var ok = !!HN.cfg().aceite; pn.innerHTML = '<div class="seg' + (cp === 'B' ? ' b' : '') + '"><i aria-hidden="true"></i><button data-act="go" data-arg="/" class="' + (cp === 'A' ? 'on' : '') + '"' + (cp === 'A' ? ' aria-current="true"' : '') + '>🧮 ' + T('Calcular e cozinhar', 'Calculate & cook') + '<span class="tag">' + T('sem cadastro', 'no sign-up') + '</span></button><button data-act="go" data-arg="/acomp" class="' + (cp === 'B' ? 'on' : '') + '"' + (cp === 'B' ? ' aria-current="true"' : '') + '>🩺 ' + T('Meu acompanhamento', 'My follow-up') + '<span class="tag">' + T('saúde · protegido', 'health · protected') + (ok ? '' : ' 🔒') + '</span></button></div>'; } }
     if (inWizard || !hasProfile) { bn.classList.add('hide'); } else {
       bn.classList.remove('hide');
-      var btns = HN.barIds(cp).map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '" class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt(HN.navShort[id] || [n.pt, n.en]) + '</span></button>'; });
+      var btns = HN.barIds(cp).filter(function (id) { return HN.recursoLigado(HN.recursoNav(id)); }).map(function (id) { var n = HN.nav[id], on = (n.r === '/' ? name === 'home' : n.r.split('/')[1] === name && (id !== 'despensa' && id !== 'compras' || cur.parts[1] === n.r.split('/')[2])); return '<button data-act="go" data-arg="' + n.r + '"' + attrRec(id) + ' class="' + (on ? 'on' : '') + '"' + (on ? ' aria-current="page"' : '') + '><span class="e">' + n.e + '</span><span class="l">' + HN.tt(HN.navShort[id] || [n.pt, n.en]) + '</span></button>'; });
       while (btns.length < HN.BAR_MAX) btns.push('<span class="gap" aria-hidden="true"></span>'); // mantém a câmera no centro
-      var cam = '<button class="cam" data-act="scan" aria-label="' + T('Câmera: ler rótulo, código de barras, prato ou laudo', 'Camera: scan label, barcode, plate or report') + '"><span class="e">📷</span></button>';
+      var cam = '<button class="cam" data-act="scan" data-recurso="camera" aria-label="' + T('Câmera: ler rótulo, código de barras, prato ou laudo', 'Camera: scan label, barcode, plate or report') + '"><span class="e">📷</span></button>';
       bn.innerHTML = btns.slice(0, 2).join('') + cam + btns.slice(2).join('');
     }
   };
@@ -263,14 +311,20 @@
   A['layer-close'] = function () { HN.layer.close(); };
   A.lang = function () { HN.setCfg({ lang: HN.lang === 'pt' ? 'en' : 'pt' }); HN.lang = HN.cfg().lang; document.documentElement.lang = HN.lang === 'pt' ? 'pt-BR' : 'en'; HN.render(true); document.dispatchEvent(new CustomEvent('hn:idioma', { detail: HN.lang })); };
   A.help = function () { HN.go('/ajuda'); };
+  // 💬 Dar uma opinião / avisar um problema (DGO.feedback do módulo comum; sem banco, guarda no aparelho)
+  A.feedback = function (arg) {
+    if (!window.DGO || !DGO.feedback) return;
+    var o = arg === 'erro' ? { categoria: 'erro', erro: HN.ultimoErro || null } : {};
+    HN.layer.closeAllThen(function () { DGO.feedback.abrir(o); });
+  };
   A.menu = function (arg, el) {
     if (el) el.setAttribute('aria-expanded', 'true');
     var cur2 = cur.name, html = '<div class="dh"><div class="brand" style="cursor:default">' + LOGO + '<span>Hyper<b>Nutry</b></span></div><button class="ib" data-act="layer-close" aria-label="' + HN.T('Fechar menu', 'Close menu') + '">✕</button></div>';
     HN.menuGroups.forEach(function (g) {
       html += '<h4>' + HN.tt(g[0]) + '</h4>';
-      g[1].forEach(function (id) { var n = HN.nav[id]; var on = n.r === '/' ? cur2 === 'home' : (cur2 === n.r.split('/')[1] && !(id === 'despensa' || id === 'compras')); html += '<button class="dl ' + (on ? 'on' : '') + '" data-act="drawer-go" data-arg="' + n.r + '"><span class="e">' + n.e + '</span>' + HN.tt([n.pt, n.en]) + '</button>'; });
+      g[1].forEach(function (id) { var n = HN.nav[id]; var on = n.r === '/' ? cur2 === 'home' : (cur2 === n.r.split('/')[1] && !(id === 'despensa' || id === 'compras')); html += '<button class="dl ' + (on ? 'on' : '') + '" data-act="drawer-go" data-arg="' + n.r + '"' + attrRec(id) + '><span class="e">' + n.e + '</span>' + HN.tt([n.pt, n.en]) + '</button>'; });
     });
-    html += '<h4>' + HN.T('Mais', 'More') + '</h4><a class="dl" href="https://marceloneco.github.io" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="e">🌐</span>' + HN.T('Portal de projetos', 'Projects portal') + ' ↗</a>';
+    html += '<h4>' + HN.T('Mais', 'More') + '</h4>' + (window.DGO && DGO.feedback ? '<button class="dl" data-act="feedback" data-recurso="feedback"><span class="e">💬</span>' + HN.T('Dar uma opinião / avisar um problema', 'Give feedback / report a problem') + '</button>' : '') + '<a class="dl" href="https://marceloneco.github.io" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="e">🌐</span>' + HN.T('Portal de projetos', 'Projects portal') + ' ↗</a>';
     HN.layer.open({ type: 'drawer', label: 'Menu', html: html, onClose: function () { var b = HN.q('[data-act="menu"]'); if (b) b.setAttribute('aria-expanded', 'false'); } });
   };
   A['drawer-go'] = function (arg) { HN.go(arg); };
@@ -302,6 +356,7 @@
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]'); if (!el) return;
     if (el.matches('.chip, .tab, .bn button, .parts button, .cam')) HN.haptic('leve'); else if (el.closest('.scale')) HN.haptic('media');
+    var rc = el.closest('[data-recurso]'); if (rc && rc.getAttribute('data-recurso').split(/\s+/).some(function (id) { return !HN.recursoLigado(id); })) return; // desligado no RootifyONE
     var f = A[el.getAttribute('data-act')]; if (f) { if (el.tagName === 'A') { /* link normal */ } f(el.getAttribute('data-arg'), el, e); }
   });
   function inHandler(e) {

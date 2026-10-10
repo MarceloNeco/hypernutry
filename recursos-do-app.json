@@ -1,18 +1,422 @@
 {
  "formato": 1,
  "app": "hypernutry",
- "versao": "0.5.3",
+ "versao": "0.6.0",
  "atualizado": "2026-10-10",
  "nota": {
-  "pt": "O HyperNutry não tem AssistONE, anúncios, leitura em voz alta nem telemetria, então só obedece ao interruptor da IA (reconhecer o prato pela foto). O leitor de rótulo (OCR) é a função principal do app e roda no aparelho; ficou de fora por enquanto.",
-  "en": "HyperNutry has no AssistONE, ads, read-aloud or telemetry, so it only obeys the AI switch (recognising the plate from a photo). The label reader (OCR) is the app's main feature and runs on the device; it is left out for now."
+  "pt": "Todas as funções principais do HyperNutry obedecem ao Controle dos apps e ao ⚡ Modo DEUS (módulo comum 1.9.0). Nunca desligáveis: ⚙ Configurações (o app não fica sem saída, e Meus dados/LGPD continuam lá) e Sobre e avisos legais. O leitor do aparelho (OCR) segue a tela \"rotulos\" e a aba \"camera.rotulo\"; o id comum \"ocr\" ainda não é lido.",
+  "en": "Every main HyperNutry feature obeys the app controls and ⚡ GOD mode (shared module 1.9.0). Never switchable: ⚙ Settings (the app always has a way out, and My data/GDPR stays there) and About & legal. The on-device reader (OCR) follows the \"rotulos\" screen and the \"camera.rotulo\" tab; the common \"ocr\" id is not read yet."
  },
  "recursos": [
   {
+   "id": "app",
+   "nome": {
+    "pt": "O app inteiro (manutenção)",
+    "en": "The whole app (maintenance)"
+   },
+   "onde": {
+    "pt": "Desligado: tela cheia \"Em manutenção\" com \"Tentar de novo\" (mensagem no comportamento app.mensagem).",
+    "en": "Off: full screen \"Under maintenance\" with \"Try again\" (message in the app.mensagem behaviour)."
+   }
+  },
+  {
    "id": "ia",
-   "nome": { "pt": "IA: reconhecer o prato pela foto", "en": "AI: recognise the plate from a photo" },
-   "onde": { "pt": "Câmera › Prato e Configurações › Inteligência artificial. Desligado: a foto fica só no aparelho e o cartão avisa \"Desligado pela administração da SolverONE.\"", "en": "Camera › Plate and Settings › Artificial intelligence. Off: the photo stays on the device and the card says \"Turned off by the SolverONE administration.\"" }
+   "nome": {
+    "pt": "IA: reconhecer o prato e ler o rótulo pela foto",
+    "en": "AI: recognise the plate and read the label from a photo"
+   },
+   "onde": {
+    "pt": "Câmera › Prato, Ler rótulo › ✨ Ler com IA e Configurações › Inteligência artificial. Desligado: a foto fica só no aparelho e o cartão avisa \"Desligado pela administração da SolverONE.\"",
+    "en": "Camera › Plate, Read a label › ✨ Read with AI and Settings › Artificial intelligence. Off: the photo stays on the device and the card says \"Turned off by the SolverONE administration.\""
+   }
+  },
+  {
+   "id": "feedback",
+   "nome": {
+    "pt": "💬 Dar uma opinião / avisar um problema",
+    "en": "💬 Give feedback / report a problem"
+   },
+   "onde": {
+    "pt": "☰ › Mais, ⚙ Configurações, Ajuda e \"Avisar que deu erro\" na tela de erro. Desligado: todos somem.",
+    "en": "☰ › More, ⚙ Settings, Help and \"Report the error\" on the error screen. Off: all hidden."
+   }
+  },
+  {
+   "id": "feedback.pergunta-do-dia",
+   "nome": {
+    "pt": "Pergunta do dia (\"Está gostando hoje?\")",
+    "en": "Question of the day (\"Enjoying it today?\")"
+   },
+   "onde": {
+    "pt": "Balão uma vez por dia (só quando houver o banco do feedback). Desligado: não aparece.",
+    "en": "Once-a-day bubble (only once the feedback database exists). Off: never shown."
+   }
+  },
+  {
+   "id": "calc",
+   "nome": {
+    "pt": "🧮 Calculadora de calorias (Início da parte Calcular e cozinhar)",
+    "en": "🧮 Calorie calculator (Home of Calculate & cook)"
+   },
+   "onde": {
+    "pt": "Início › 🧮 Calcular e cozinhar. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "Home › 🧮 Calculate & cook. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "planejar",
+   "nome": {
+    "pt": "🗓️ Cardápio da semana",
+    "en": "🗓️ Weekly menu"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Cardápio da semana. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Weekly menu. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "cardapio.gerar",
+   "nome": {
+    "pt": "🔀 Gerar outra semana",
+    "en": "🔀 Generate another week"
+   },
+   "onde": {
+    "pt": "Cardápio da semana › 🔀 Gerar outra semana. Desligado: o botão some (o cardápio atual continua).",
+    "en": "Weekly menu › 🔀 Generate another week. Off: the button is hidden (the current menu stays)."
+   }
+  },
+  {
+   "id": "despensa",
+   "nome": {
+    "pt": "🧺 Despensa",
+    "en": "🧺 Pantry"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Despensa. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Pantry. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "compras",
+   "nome": {
+    "pt": "🛒 Lista de compras",
+    "en": "🛒 Shopping list"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Lista de compras. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Shopping list. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "compras.compartilhar",
+   "nome": {
+    "pt": "📤 Compartilhar a lista de compras",
+    "en": "📤 Share the shopping list"
+   },
+   "onde": {
+    "pt": "Lista de compras › 📤 Compartilhar lista. Desligado: o botão some.",
+    "en": "Shopping list › 📤 Share list. Off: the button is hidden."
+   }
+  },
+  {
+   "id": "receitas",
+   "nome": {
+    "pt": "🍳 Receitas",
+    "en": "🍳 Recipes"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Receitas (e cada receita). Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Recipes (and each recipe). Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "alimentos",
+   "nome": {
+    "pt": "🔎 Alimentos (TACO)",
+    "en": "🔎 Foods (TACO)"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Alimentos (e a ficha de cada alimento). Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Foods (and each food's page). Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "mercado",
+   "nome": {
+    "pt": "🏪 Produtos do mercado",
+    "en": "🏪 Store products"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Produtos do mercado (e a ficha de cada produto). Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Store products (and each product page). Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "mercado.atualizar",
+   "nome": {
+    "pt": "🔄 Atualizar lista e produtos (internet)",
+    "en": "🔄 Update list and products (internet)"
+   },
+   "onde": {
+    "pt": "Produtos do mercado › 🔄 Atualizar. Desligado: o botão some (vale a lista guardada).",
+    "en": "Store products › 🔄 Update. Off: the button is hidden (the saved list applies)."
+   }
+  },
+  {
+   "id": "aditivos",
+   "nome": {
+    "pt": "📖 Glossário de aditivos",
+    "en": "📖 Additive glossary"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Glossário de aditivos. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Additive glossary. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "rotulos",
+   "nome": {
+    "pt": "🏷️ Ler rótulo (farol de ultraprocessado)",
+    "en": "🏷️ Read a label (ultra-processed traffic light)"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Ler rótulo. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Read a label. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "rotulo.ia",
+   "nome": {
+    "pt": "✨ Ler o rótulo com IA",
+    "en": "✨ Read the label with AI"
+   },
+   "onde": {
+    "pt": "Ler rótulo › ✨ Ler com IA (também some com \"ia\" desligado). Desligado: o botão some; o leitor do aparelho continua.",
+    "en": "Read a label › ✨ Read with AI (also hidden when \"ia\" is off). Off: the button is hidden; the on-device reader keeps working."
+   }
+  },
+  {
+   "id": "saciedade",
+   "nome": {
+    "pt": "🥣 Saciedade Raiz",
+    "en": "🥣 Real Fullness"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Saciedade Raiz. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Real Fullness. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "gostos",
+   "nome": {
+    "pt": "😋 Gostos e cozinha",
+    "en": "😋 Tastes & kitchen"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Gostos e cozinha. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Tastes & kitchen. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "cozinheiro",
+   "nome": {
+    "pt": "🧑‍🍳 Modo cozinheiro",
+    "en": "🧑‍🍳 Cook mode"
+   },
+   "onde": {
+    "pt": "☰ › Calcular e cozinhar › Modo cozinheiro. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › Calculate & cook › Cook mode. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "cozinheiro.enviar",
+   "nome": {
+    "pt": "🖨️ Imprimir, baixar e compartilhar a folha da cozinha",
+    "en": "🖨️ Print, download and share the kitchen sheet"
+   },
+   "onde": {
+    "pt": "Modo cozinheiro › Imprimir / Baixar / 📤. Desligado: os botões somem.",
+    "en": "Cook mode › Print / Download / 📤. Off: the buttons are hidden."
+   }
+  },
+  {
+   "id": "camera",
+   "nome": {
+    "pt": "📷 Câmera (botão do centro da barra de baixo)",
+    "en": "📷 Camera (centre button of the bottom bar)"
+   },
+   "onde": {
+    "pt": "Barra de baixo › 📷 e os botões que abrem a câmera (Ler produto, Ler mais uma parte). Desligado: somem.",
+    "en": "Bottom bar › 📷 and the buttons that open the camera (Scan product, Read one more part). Off: hidden."
+   }
+  },
+  {
+   "id": "camera.rotulo",
+   "nome": {
+    "pt": "📷 Câmera › Rótulo (foto dos ingredientes)",
+    "en": "📷 Camera › Label (ingredients photo)"
+   },
+   "onde": {
+    "pt": "Câmera › aba Rótulo. Desligado: a aba some e a câmera abre no próximo modo ligado.",
+    "en": "Camera › Label tab. Off: the tab is hidden and the camera opens in the next mode that is on."
+   }
+  },
+  {
+   "id": "camera.codigo",
+   "nome": {
+    "pt": "📷 Câmera › Código de barras (Open Food Facts)",
+    "en": "📷 Camera › Barcode (Open Food Facts)"
+   },
+   "onde": {
+    "pt": "Câmera › aba Código e Produtos do mercado › 📷 Ler produto. Desligado: somem.",
+    "en": "Camera › Barcode tab and Store products › 📷 Scan product. Off: hidden."
+   }
+  },
+  {
+   "id": "camera.prato",
+   "nome": {
+    "pt": "📷 Câmera › Prato (foto da refeição)",
+    "en": "📷 Camera › Plate (meal photo)"
+   },
+   "onde": {
+    "pt": "Câmera › aba Prato 🔒. Desligado: a aba some.",
+    "en": "Camera › Plate tab 🔒. Off: the tab is hidden."
+   }
+  },
+  {
+   "id": "camera.laudo",
+   "nome": {
+    "pt": "📷 Câmera › Laudo de bioimpedância",
+    "en": "📷 Camera › Body-composition report"
+   },
+   "onde": {
+    "pt": "Câmera › aba Laudo 🔒. Desligado: a aba some.",
+    "en": "Camera › Report tab 🔒. Off: the tab is hidden."
+   }
+  },
+  {
+   "id": "acomp",
+   "nome": {
+    "pt": "🩺 Meu acompanhamento (Início da parte de saúde)",
+    "en": "🩺 My follow-up (Home of the health part)"
+   },
+   "onde": {
+    "pt": "Início › 🩺 Meu acompanhamento. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "Home › 🩺 My follow-up. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "diario",
+   "nome": {
+    "pt": "📝 Diário (registrar refeição)",
+    "en": "📝 Diary (log a meal)"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Diário. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Diary. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "intuitivo",
+   "nome": {
+    "pt": "🧘 Fome e emoções",
+    "en": "🧘 Hunger & mood"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Fome e emoções. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Hunger & mood. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "metas",
+   "nome": {
+    "pt": "🎯 Metas flexíveis",
+    "en": "🎯 Flexible goals"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Metas flexíveis. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Flexible goals. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "corpo",
+   "nome": {
+    "pt": "📏 Corpo e bem-estar (medidas e laudos)",
+    "en": "📏 Body & well-being (measurements and reports)"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Corpo e bem-estar. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Body & well-being. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "familia",
+   "nome": {
+    "pt": "👨‍👩‍👧 Família e perfis",
+    "en": "👨‍👩‍👧 Family & profiles"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Família e perfis. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Family & profiles. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "tele",
+   "nome": {
+    "pt": "🩺 Telenutrição",
+    "en": "🩺 Telenutrition"
+   },
+   "onde": {
+    "pt": "☰ › Meu acompanhamento › Telenutrição. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › My follow-up › Telenutrition. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "tele.pedir",
+   "nome": {
+    "pt": "📅 Pedir um horário (Telenutrição)",
+    "en": "📅 Request a slot (Telenutrition)"
+   },
+   "onde": {
+    "pt": "Telenutrição › Pedir um horário. Desligado: o cartão some.",
+    "en": "Telenutrition › Request a slot. Off: the card is hidden."
+   }
+  },
+  {
+   "id": "tele.exportar",
+   "nome": {
+    "pt": "📤 Exportar meu diário alimentar (CSV/JSON)",
+    "en": "📤 Export my food diary (CSV/JSON)"
+   },
+   "onde": {
+    "pt": "Telenutrição › Exportar meu diário alimentar. Desligado: o cartão some (⚙ › Meus dados continua).",
+    "en": "Telenutrition › Export my food diary. Off: the card is hidden (⚙ › My data stays)."
+   }
+  },
+  {
+   "id": "planos",
+   "nome": {
+    "pt": "💎 Planos",
+    "en": "💎 Plans"
+   },
+   "onde": {
+    "pt": "☰ › App › Planos. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › App › Plans. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
+  },
+  {
+   "id": "ajuda",
+   "nome": {
+    "pt": "❓ Ajuda",
+    "en": "❓ Help"
+   },
+   "onde": {
+    "pt": "☰ › App › Ajuda e o ❓ do topo. Desligada: some do ☰, da barra de baixo, da busca e dos botões que levam a ela; quem abrir pelo endereço vê \"Função desligada por enquanto\".",
+    "en": "☰ › App › Help and the ❓ at the top. Off: hidden from ☰, the bottom bar, search and the buttons leading to it; opening it by address shows \"Feature turned off for now\"."
+   }
   }
  ],
- "comportamentos": []
+ "comportamentos": [
+  "app.mensagem"
+ ]
 }

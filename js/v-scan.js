@@ -8,12 +8,14 @@
 (function (HN) {
   'use strict';
   var S = HN.S, esc = HN.esc, T = HN.T, A = HN.acts;
+  // rec = interruptores do RootifyONE (Modo DEUS): o modo some se ele ou a tela onde o resultado abre estiver desligado
   var MODES = [
-    { id: 'rot', e: '🏷️', pt: 'Rótulo', en: 'Label' },
-    { id: 'cod', e: '▮▯▮', pt: 'Código', en: 'Barcode' },
-    { id: 'prato', e: '🍽️', pt: 'Prato', en: 'Plate', b: true },
-    { id: 'bio', e: '📄', pt: 'Laudo', en: 'Report', b: true }
+    { id: 'rot', e: '🏷️', pt: 'Rótulo', en: 'Label', rec: ['camera.rotulo', 'rotulos'] },
+    { id: 'cod', e: '▮▯▮', pt: 'Código', en: 'Barcode', rec: ['camera.codigo'] },
+    { id: 'prato', e: '🍽️', pt: 'Prato', en: 'Plate', b: true, rec: ['camera.prato', 'diario'] },
+    { id: 'bio', e: '📄', pt: 'Laudo', en: 'Report', b: true, rec: ['camera.laudo', 'corpo'] }
   ];
+  function modos() { return MODES.filter(function (x) { return x.rec.every(HN.recursoLigado); }); }
   var st = { mode: null, stream: null, loop: null, busy: false };
 
   /* ---------- Open Food Facts ---------- */
@@ -63,7 +65,7 @@
       (lk ? '<button class="btn block" data-act="go" data-arg="/acomp">🩺 ' + T('Entrar no Meu acompanhamento', 'Enter My follow-up') + '</button>' :
         m === 'cod' ? '<div class="row scan-code"><input id="sccode" type="text" inputmode="numeric" autocomplete="off" placeholder="' + T('ou digite o número', 'or type the number') + '" aria-label="' + T('Número do código de barras', 'Barcode number') + '"><button class="btn sm" data-act="scan-code">' + T('Buscar', 'Look up') + '</button></div>' + (canDetect ? '<div class="row scan-code" style="justify-content:center"><button class="btn sec sm" data-act="scan-foto-cod">📸 ' + T('Ler o que está no quadro (código ou ingredientes)', 'Read what is in the frame (code or ingredients)') + '</button></div>' : '') + (canDetect ? '' : '<p class="scan-hint small">' + T('Este navegador não lê código de barras sozinho (o iPhone ainda não deixa). Digite o número que fica embaixo das barras.', 'This browser cannot read barcodes by itself (iPhone does not allow it yet). Type the number under the bars.') + '</p>') :
         '<div class="row" style="justify-content:center;gap:1.2rem"><label class="ib scan-gal" for="scgal" title="' + T('Escolher da galeria', 'Choose from gallery') + '" aria-label="' + T('Escolher da galeria', 'Choose from gallery') + '">🖼️</label><input id="scgal" type="file" accept="image/*" class="sr" data-in="scan-gal"><button class="btn scan-shot" data-act="scan-shot">📸 ' + T('Tirar foto e ler', 'Take photo and read') + '</button></div>') +
-      '<div class="seg scan-modes" role="tablist">' + MODES.map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
+      '<div class="seg scan-modes" role="tablist">' + modos().map(function (x) { return '<button role="tab" data-act="scan-mode" data-arg="' + x.id + '" data-recurso="' + x.rec[0] + '" class="' + (x.id === m ? 'on' : '') + '" aria-selected="' + (x.id === m) + '">' + HN.tt([x.pt, x.en]) + (x.b ? ' 🔒' : '') + '</button>'; }).join('') + '</div></div>';
     return h;
   }
   function paint() { var el = HN.q('#scanui'); if (el) { el.innerHTML = body(); el.classList.remove('has-card'); } ferramentas(); /* sem has-card: ao trocar de modo o quadro e a dica voltam */ var v = HN.q('#scvideo'); if (v) v.classList.toggle('dim', locked(st.mode)); startLoop(); }
@@ -107,14 +109,14 @@
     var salvo = HN.cat && HN.cat.porEan(code);
     if (!navigator.onLine) {
       if (salvo) { cardProduto(salvo, null, true); return; }
-      card('<p>📵 ' + T('Sem internet e este produto ainda não está no seu catálogo. O número é ', 'Offline and this product is not in your catalogue yet. The number is ') + '<b class="num">' + code + '</b>. ' + T('Leia a foto do rótulo (funciona sem internet).', 'Read the label photo (works offline).') + '</p><div class="row"><button class="btn sec sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
+      card('<p>📵 ' + T('Sem internet e este produto ainda não está no seu catálogo. O número é ', 'Offline and this product is not in your catalogue yet. The number is ') + '<b class="num">' + code + '</b>. ' + T('Leia a foto do rótulo (funciona sem internet).', 'Read the label photo (works offline).') + '</p><div class="row"><button class="btn sec sm grow" data-act="scan-mode" data-arg="rot" data-recurso="camera.rotulo rotulos">🏷️ ' + T('Ler rótulo', 'Read label') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
     }
     card('<p class="center">🔎 ' + T('Procurando', 'Looking up') + ' <b class="num">' + code + '</b>…</p>');
     HN.offBuscar(code).then(function (o) {
       if (!o) {
         if (salvo) { cardProduto(salvo, null, false); return; }
         st.novoEan = code;
-        card('<p>' + T('O código ', 'Code ') + '<b class="num">' + code + '</b> ' + T('não está no Open Food Facts. Cadastre você mesmo: tire foto dos ingredientes ou digite.', 'is not on Open Food Facts. Add it yourself: photograph the ingredients or type them.') + '</p><div class="row wrap"><button class="btn sm grow" data-act="scan-mode" data-arg="rot">🏷️ ' + T('Foto do rótulo', 'Label photo') + '</button><button class="btn sec sm" data-act="scan-novo">✏️ ' + T('Digitar', 'Type it') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
+        card('<p>' + T('O código ', 'Code ') + '<b class="num">' + code + '</b> ' + T('não está no Open Food Facts. Cadastre você mesmo: tire foto dos ingredientes ou digite.', 'is not on Open Food Facts. Add it yourself: photograph the ingredients or type them.') + '</p><div class="row wrap"><button class="btn sm grow" data-act="scan-mode" data-arg="rot" data-recurso="camera.rotulo rotulos">🏷️ ' + T('Foto do rótulo', 'Label photo') + '</button><button class="btn sec sm" data-act="scan-novo">✏️ ' + T('Digitar', 'Type it') + '</button><button class="btn ghost sm" data-act="scan-again">' + T('Ler outro', 'Scan another') + '</button></div>'); return;
       }
       var p = HN.cat.put(HN.prodDeOff(o, salvo)); cardProduto(p, o, false);
     }).catch(function () { if (salvo) { cardProduto(salvo, null, true); return; } card('<p>⚠️ ' + T('Não consegui consultar agora. Tente de novo ou leia a foto do rótulo.', 'Could not look it up now. Try again or read the label photo.') + '</p><div class="row"><button class="btn sm grow" data-act="scan-again">' + T('Tentar de novo', 'Try again') + '</button></div>'); });
@@ -196,7 +198,7 @@
     img.onerror = function () { HN.toast(T('Não consegui abrir essa imagem.', 'Could not open that image.')); };
     img.src = url;
   };
-  A['scan-mode'] = function (m) { st.mode = m; st.busy = false; paint(); var tr = st.stream && st.stream.getVideoTracks()[0]; if (tr) ajustarFoco(tr); };
+  A['scan-mode'] = function (m) { if (!modos().some(function (x) { return x.id === m; })) return; st.mode = m; st.busy = false; paint(); var tr = st.stream && st.stream.getVideoTracks()[0]; if (tr) ajustarFoco(tr); };
   A['scan-again'] = function () { st.busy = false; card(''); };
   A['scan-code'] = function () { var i = HN.q('#sccode'); if (i) lookup(i.value); };
   A['scan-add'] = function () { if (!st.last && st.lastId && A['prod-calc']) { A['prod-calc'](st.lastId); return; } var o = st.last; if (!o) return; var p = salvarProduto(o); if (HN.calcAdd) HN.calcAdd(p.id); HN.toast(T('Adicionado à calculadora ✓', 'Added to calculator ✓')); HN.go('/'); };
@@ -273,7 +275,11 @@
 
   // o 📷 abre o visor; a parte atual decide o modo inicial
   A.scan = function () {
-    st.mode = HN.scanModo || st.mode || (HN.curPart() === 'B' ? 'prato' : 'rot'); // Rótulo é o padrão: ingredientes → farol de ultraprocessado; o código é atalho HN.scanModo = null; st.busy = false;
+    st.mode = HN.scanModo || st.mode || (HN.curPart() === 'B' ? 'prato' : 'rot'); // Rótulo é o padrão: ingredientes → farol de ultraprocessado; o código é atalho
+    HN.scanModo = null; st.busy = false;
+    var ms = modos(); // modo desligado no RootifyONE: abre no primeiro que estiver ligado
+    if (!HN.recursoLigado('camera') || !ms.length) { HN.toast(T('A câmera está desligada pela administração da SolverONE.', 'The camera is turned off by the SolverONE administration.'), 3500); return; }
+    if (!ms.some(function (x) { return x.id === st.mode; })) st.mode = ms[0].id;
     HN.layer.open({ type: 'full', label: T('Câmera', 'Camera'), focus: false,
       html: '<div class="scan"><video id="scvideo" playsinline muted autoplay></video><div id="scanui" class="scan-ui"></div></div>',
       onClose: stop,
