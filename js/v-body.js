@@ -19,7 +19,8 @@
   // foto (arquivo ou câmera) → confere nitidez → trata para leitura → mostra a prévia
   function useImage(img, opts) {
     try { var small = document.createElement('canvas'), w = img.naturalWidth || img.width, hh = img.naturalHeight || img.height, k = Math.min(1, 900 / Math.max(w, hh)); small.width = Math.round(w * k); small.height = Math.round(hh * k); var x = small.getContext('2d'); x.drawImage(img, 0, 0, small.width, small.height); var d = x.getImageData(0, 0, small.width, small.height), p = d.data; for (var i = 0; i < p.length; i += 4) { var g = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2]; p[i] = p[i + 1] = p[i + 2] = g; } x.putImageData(d, 0, 0); SC.blur = O.nitidez(small) < 60; } catch (e) { SC.blur = false; }
-    SC.canvas = (opts && opts.recortado) ? O.preparar(img) : O.preprocessar(img, 1600); // recorte da câmera: tratamento suave; foto inteira: o antigo
+    SC.canvas = (opts && opts.recortado) ? O.preparar(img) : O.preprocessar(img, 1600); // recorte da câmera: limiar adaptativo; foto inteira: o antigo
+    SC.orig = img; // a original: o leitor também tenta em tons de cinza, e a IA (se usada) recebe esta
     var pv = HN.q('#scprev'); if (pv) { pv.innerHTML = '<img src="' + SC.canvas.toDataURL('image/jpeg', .5) + '" alt="' + T('Prévia da foto tratada', 'Preview of processed photo') + '" style="border-radius:12px;border:1px solid var(--line)">' + (SC.blur ? U.notice('warn', T('A foto parece desfocada. Tente de novo com mais luz e o celular firme, ou escolha outra.', 'The photo looks blurry. Try again with more light and a steady phone, or choose another.')) : '<p class="small muted">' + T('Foto pronta. Toque em “Ler a foto”.', 'Photo ready. Tap “Read the photo”.') + '</p>'); }
   }
   HN.ins['sc-file'] = function (v, el) {
@@ -32,7 +33,7 @@
   var pending = null;
   HN.scanImage = function (kind, canvas, opts) { pending = { kind: kind, canvas: canvas, opts: opts }; HN.go(kind === 'bio' ? '/corpo/exame' : '/rotulos'); };
   function runPending() {
-    if (SC.pronto && HN.q('#sctext')) { var pr = SC.pronto; SC.pronto = null; SC.text = pr.txt; HN.q('#sctext').value = pr.txt; if (pr.txt.trim()) A['sc-parse'](pr.kind); return; }
+    if (SC.pronto && HN.q('#sctext')) { var pr = SC.pronto; SC.pronto = null; SC.text = pr.txt; SC.porIA = !!pr.ia; HN.q('#sctext').value = pr.txt; if (pr.txt.trim()) A['sc-parse'](pr.kind); return; }
     if (!pending || !HN.q('#scprev')) return; var p = pending; pending = null; SC.text = ''; useImage(p.canvas, p.opts); A['sc-ocr']();
   }
   ['rotulos', 'corpo'].forEach(function (n) { var old = HN.after[n]; HN.after[n] = function (a, b) { if (old) old(a, b); runPending(); }; });
@@ -42,10 +43,12 @@
     var go = function () {
       var pv = HN.q('#scprev'), note = document.createElement('p'); note.className = 'small'; note.id = 'scprog'; note.textContent = T('Preparando o leitor…', 'Preparing the reader…'); if (pv) pv.appendChild(note);
       var kind = HN.q('#rotres') ? 'rot' : 'bio', rota = kind === 'bio' ? '/corpo/exame' : '/rotulos';
-      var ler = function (andamento) { return O.ler(SC.canvas, HN.lang === 'pt' ? 'por' : 'eng', function (m) { var n = HN.q('#scprog'); if (n) n.textContent = (m.status === 'recognizing text' ? T('Lendo', 'Reading') : T('Preparando', 'Preparing')) + ' ' + Math.round((m.progress || 0) * 100) + '%'; if (andamento) andamento(m.progress || 0); }); };
+      var ler = function (andamento) { return O.lerMelhor([SC.canvas, SC.orig ? O.cinza(SC.orig) : null], HN.lang === 'pt' ? 'por' : 'eng', function (m) { var n = HN.q('#scprog'); if (n) n.textContent = (m.status === 'recognizing text' ? T('Lendo', 'Reading') : T('Preparando', 'Preparing')) + ' ' + Math.round((m.progress || 0) * 100) + '%'; if (andamento) andamento(m.progress || 0); }); };
       // mostra o resultado na tela certa; se a pessoa foi para outra tela, guarda e a tela mostra ao abrir (HN.after)
-      var mostrar = function (txt) {
-        SC.text = txt; var t = HN.q('#sctext'), n = HN.q('#scprog');
+      var mostrar = function (res) {
+        var txt = typeof res === 'string' ? res : (res.texto || '');
+        if (SC.anexar != null) { txt = SC.anexar + (txt.trim() ? '\n' + txt : ''); SC.anexar = null; SC.partes = (SC.partes || 1) + 1; } else SC.partes = 1; // "➕ Ler mais uma parte": junta ao texto anterior
+        SC.text = txt; SC.porIA = false; var t = HN.q('#sctext'), n = HN.q('#scprog');
         if (!t) { SC.pronto = { kind: kind, txt: txt }; HN.go(rota); return; }
         t.value = txt; if (n) n.textContent = txt.trim() ? T('Leitura concluída: resultado abaixo. Se algo saiu errado, corrija o texto e toque em Interpretar.', 'Reading complete: result below. If something came out wrong, fix the text and tap Interpret.') : T('Não achei texto na foto. Aproxime mais, com luz, e tente de novo.', 'No text found in the photo. Get closer, with light, and try again.');
         if (txt.trim()) A['sc-parse'](kind); /* interpreta sozinho: a pessoa quer o farol, não um botão a mais */
@@ -57,6 +60,24 @@
     };
     if (O.motorPronto()) go(); else HN.confirm(T('Para ler a imagem preciso baixar o motor de leitura (≈5,5 MB só na primeira vez). Baixar agora? Em dados móveis isso consome sua franquia.', 'To read the image I need to download the OCR engine (≈5.5 MB only the first time). Download now? On mobile data this uses your allowance.'), T('Baixar e ler', 'Download and read')).then(function (ok) { if (ok) setTimeout(go, 50); });
   };
+  // ➕ mais uma parte: abre a câmera no Rótulo e junta o texto novo ao que já foi lido
+  A['rot-mais'] = function () { SC.anexar = (HN.q('#sctext') || {}).value || SC.text || ''; HN.scanModo = 'rot'; if (A.scan) A.scan(); };
+  A['rot-outra'] = function () { SC.anexar = null; HN.scanModo = 'rot'; if (A.scan) A.scan(); };
+  // ✨ IA da chave da pessoa: a foto vai para a nuvem (aviso claro, uma vez por sessão); o texto volta para cá
+  var iaOk = false;
+  A['rot-ia'] = function () {
+    if (!SC.orig || !HN.iaVisao || !HN.iaVisao.pronta()) return;
+    var foto = SC.orig;
+    var go = function () {
+      var rodar = function () { return HN.iaVisao.rotulo(foto); };
+      var mostrar = function (txt) { SC.text = txt; SC.porIA = true; SC.partes = 1; var t = HN.q('#sctext'); if (!t) { SC.pronto = { kind: 'rot', txt: txt, ia: true }; HN.go('/rotulos'); return; } t.value = txt; A['sc-parse']('rot'); };
+      var falhou = function (e) { HN.toast('⚠️ ' + ((e && e.message) || T('A IA não respondeu.', 'AI did not answer.')), 5000); };
+      if (window.DGO && DGO.tarefa) DGO.tarefa.iniciar({ id: 'leitura-ia', titulo: T('Lendo o rótulo com IA', 'Reading the label with AI'), executar: rodar, aindaNaTela: function () { return !!HN.q('#sctext'); }, aoAbrir: mostrar }).catch(falhou);
+      else rodar().then(mostrar, falhou);
+    };
+    if (iaOk) { go(); return; }
+    HN.confirm(T('A foto do rótulo vai para ' + HN.iaVisao.nome() + ', usando a sua chave, para ler o texto. Só o rótulo: nenhum dado seu de saúde vai junto, e o HyperNutry não guarda a foto. Enviar?', 'The label photo goes to ' + HN.iaVisao.nome() + ', using your key, to read the text. Only the label: none of your health data goes with it, and HyperNutry does not store the photo. Send it?'), T('Enviar', 'Send')).then(function (s) { if (s) { iaOk = true; go(); } });
+  };
   A['sc-parse'] = function (kind) {
     var txt = (HN.q('#sctext') || {}).value || SC.text; SC.text = txt; if (!txt.trim()) { HN.toast(T('Sem texto para interpretar.', 'No text to interpret.')); return; }
     if (kind === 'bio') { var b = O.parseBio(txt); HN.bioResult = b; showBio(b); } else { var r = O.parseRotulo(txt); HN.rotResult = r; showRotulo(r); }
@@ -67,8 +88,10 @@
   var SEM = { verde: ['Sem alertas relevantes', 'No relevant warnings'], amarelo: ['Atenção', 'Caution'], vermelho: ['Vários alertas', 'Several warnings'], cinza: ['Não consegui avaliar (faltam números)', 'Could not assess (numbers missing)'] };
   /* Farol do produto: junta o que a lista de ingredientes diz (aditivos de atenção, marcadores de ultraprocessado)
      com a tabela, quando há números. Sem ingredientes e sem números: cinza. */
-  function farol(r, ad) {
-    var a = r.avaliacao, temIngr = !!(r.ingredientes && r.ingredientes.length > 8), ultra = r.nova4.length >= 2, motivos = [];
+  function farol(r, ad, q) {
+    var a = r.avaliacao, temIngr = !!(r.ingredientes && r.ingredientes.length > 8) && !(q && q.ingrRuim), ultra = r.nova4.length >= 2, motivos = [];
+    // leitura ilegível (sem ingredientes legíveis e sem números): nunca dar farol — o verde com texto lixo já aconteceu
+    if (!temIngr && a.nivel === 'cinza') return { nivel: 'cinza', ilegivel: !!(q && (q.ruim || q.ingrRuim || (SC.text || '').trim().length > 20)), titulo: T('Não consegui ler direito esta foto', 'I could not read this photo properly'), motivos: [], temIngr: false };
     if (ad && ad.selo === 'muito') motivos.push(T('vários aditivos de atenção', 'several additives to watch'));
     else if (ad && ad.selo === 'pouco') motivos.push(ad.lista.length + ' ' + T('aditivo(s) de atenção', 'additive(s) to watch'));
     if (r.nova4.length) motivos.push(T('marcadores de ultraprocessado: ', 'ultra-processed markers: ') + r.nova4.join(', '));
@@ -81,15 +104,20 @@
     else if ((ad && ad.selo === 'muito') || a.nivel === 'vermelho' || ultra || (r.nova4.length && ((ad && ad.selo === 'pouco') || a.altos.length))) nivel = 'vermelho';
     else if ((ad && ad.selo === 'pouco') || r.nova4.length || a.nivel === 'amarelo') nivel = 'amarelo';
     else nivel = 'verde';
-    var titulo = { verde: T('Sem sinais de ultraprocessado', 'No signs of ultra-processing'), amarelo: T('Atenção: processado com aditivos', 'Caution: processed with additives'), vermelho: T('Ultraprocessado (provável)', 'Ultra-processed (likely)'), cinza: T('Não deu para avaliar', 'Could not assess') }[nivel];
+    if (!temIngr) motivos.push(T('ingredientes não lidos: o farol olha só a tabela', 'ingredients not read: the light only looks at the table'));
+    var titulo = { verde: temIngr ? T('Sem sinais de ultraprocessado', 'No signs of ultra-processing') : T('Tabela sem alertas', 'No warnings in the table'), amarelo: T('Atenção: processado com aditivos', 'Caution: processed with additives'), vermelho: T('Ultraprocessado (provável)', 'Ultra-processed (likely)'), cinza: T('Não deu para avaliar', 'Could not assess') }[nivel];
     return { nivel: nivel, titulo: titulo, motivos: motivos, temIngr: temIngr };
   }
   function showRotulo(r) {
     var box = HN.q('#rotres'); if (!box) return; var a = r.avaliacao, mine = HN.restrAll(), cf = r.alergenos.concat(r.podeConter).map(function (x) { return x.replace('*', ''); }).filter(function (x) { return mine.indexOf(x) >= 0; });
-    var ad = HN.analisar ? HN.analisar(r.ingredientes) : null, f = farol(r, ad);
-    var h = '';
+    var q = SC.porIA ? { ruim: false } : O.qualidade(SC.text); q.ingrRuim = !SC.porIA && !!r.ingredientes && !O.ingredientesLegiveis(r.ingredientes).ok;
+    var ad = HN.analisar ? HN.analisar(q.ingrRuim ? '' : r.ingredientes) : null, f = farol(r, ad, q);
+    var h = '', ia = HN.iaVisao && HN.iaVisao.pronta() && SC.orig;
+    var acoes = '<div class="row wrap mt">' + (ia ? '<button class="btn ' + (f.ilegivel ? '' : 'sec ') + 'sm" data-act="rot-ia">✨ ' + T('Ler com IA', 'Read with AI') + ' (' + esc(HN.iaVisao.nome()) + ')</button>' : '') + '<button class="btn sec sm" data-act="rot-mais">➕ ' + T('Ler mais uma parte', 'Read one more part') + '</button><button class="btn ghost sm" data-act="rot-outra">📸 ' + T('Outra foto', 'Another photo') + '</button></div>';
     if (cf.length) h += '<div class="notice bad" role="alert"><b>⚠️ ' + T('Conflita com o seu perfil:', 'Conflicts with your profile:') + ' ' + cf.map(HN.alergName).join(', ') + '</b><br>' + T('Não consuma sem conferir a embalagem.', 'Do not eat without checking the package.') + '</div>';
-    h += '<div class="big-sem ' + f.nivel + '"><span class="sem ' + f.nivel + '" style="width:1.6rem;height:1.6rem"></span><div><div>' + f.titulo + '</div>' + (f.motivos.length ? '<div class="small" style="font-weight:500">' + esc(f.motivos.join(' · ')) + '</div>' : (f.nivel === 'cinza' ? '<div class="small" style="font-weight:500">' + T('Não li a lista de ingredientes nem a tabela. Tire a foto mais de perto.', 'I read neither the ingredient list nor the table. Take the photo closer.') + '</div>' : '')) + '</div></div>';
+    if (f.ilegivel) h += '<div class="big-sem cinza"><span class="sem cinza" style="width:1.6rem;height:1.6rem"></span><div><div>' + f.titulo + '</div><div class="small" style="font-weight:500">' + T('O texto saiu embaralhado, então não dou farol (seria chute). Tente: chegar mais perto, com luz e sem reflexo; ler a parte que faltou com ➕; ou', 'The text came out scrambled, so no traffic light (it would be a guess). Try: get closer, with light and no glare; read the missing part with ➕; or') + ' ' + (ia ? T('✨ ler com a IA da sua chave (lê bem rótulo curvo e letra pequena).', '✨ read with your AI key (good with curved labels and small print).') : T('configurar uma IA em ⚙ Configurações → IA, que lê bem rótulo curvo e letra pequena.', 'set up an AI in ⚙ Settings → AI, which reads curved labels and small print well.')) + '</div></div></div>' + (SC.partes > 1 ? '<p class="small muted">🧩 ' + SC.partes + ' ' + T('partes lidas e juntadas', 'parts read and merged') + '</p>' : '') + acoes;
+    else h += '<div class="big-sem ' + f.nivel + '"><span class="sem ' + f.nivel + '" style="width:1.6rem;height:1.6rem"></span><div><div>' + f.titulo + '</div>' + (f.motivos.length ? '<div class="small" style="font-weight:500">' + esc(f.motivos.join(' · ')) + '</div>' : (f.nivel === 'cinza' ? '<div class="small" style="font-weight:500">' + T('Não li a lista de ingredientes nem a tabela. Tire a foto mais de perto.', 'I read neither the ingredient list nor the table. Take the photo closer.') + '</div>' : '')) + '</div></div>';
+    if (!f.ilegivel) h += (SC.partes > 1 ? '<p class="small muted">🧩 ' + SC.partes + ' ' + T('partes lidas e juntadas', 'parts read and merged') + (SC.porIA ? ' · ✨ ' + T('lido pela IA', 'read by AI') : '') + '</p>' : (SC.porIA ? '<p class="small muted">✨ ' + T('Lido pela IA da sua chave. Confira com a embalagem.', 'Read by your AI key. Check against the package.') + '</p>' : '')) + acoes;
     // aditivos logo abaixo do farol: é o que a pessoa quer ver primeiro
     if (ad) h += '<div class="card mt"><h3>' + T('Aditivos', 'Additives') + ' ' + HN.seloHtml(ad) + '</h3>' + HN.aditivosHtml(ad) + (f.temIngr ? '<p class="small muted">' + T('Ingredientes lidos: ', 'Ingredients read: ') + esc(r.ingredientes.slice(0, 220)) + (r.ingredientes.length > 220 ? '…' : '') + '</p>' : '') + '<button class="btn sec block mt" data-act="rot-cat">🏪 ' + T('Guardar no catálogo do mercado', 'Save to the store catalogue') + '</button></div>';
     var al = { acucar: ['Alto em açúcar adicionado', 'High in added sugar'], saturada: ['Alto em gordura saturada', 'High in saturated fat'], sodio: ['Alto em sódio', 'High in sodium'] };

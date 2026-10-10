@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "app": "hypernutry",
- "versao": "0.5.2",
+ "versao": "0.5.3",
  "atualizado": "2026-10-10",
  "nota": {
   "pt": "O HyperNutry não tem AssistONE, anúncios, leitura em voz alta nem telemetria, então só obedece ao interruptor da IA (reconhecer o prato pela foto). O leitor de rótulo (OCR) é a função principal do app e roda no aparelho; ficou de fora por enquanto.",
