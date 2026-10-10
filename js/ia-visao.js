@@ -8,7 +8,9 @@
   'use strict';
   var T = HN.T, ok = false;
   function dgo() { return window.DGO && window.DGO.ia ? window.DGO : null; }
-  function prov() { var D = dgo(); try { return D ? D.ia.provedorPara('visao') : ''; } catch (e) { return ''; } }
+  // interruptor "ia" do RootifyONE → Controle dos apps (recursos.js): desligado = a foto fica só no aparelho
+  HN.iaLigada = function () { return !window.SolverRecursos || SolverRecursos.ligado('ia', true); };
+  function prov() { var D = dgo(); if (!HN.iaLigada()) return ''; try { return D ? D.ia.provedorPara('visao') : ''; } catch (e) { return ''; } }
   var NOMES = { gemini: 'Google Gemini', openai: 'OpenAI', mistral: 'Mistral', anthropic: 'Anthropic' };
   var BASE = { openai: 'https://api.openai.com/v1', mistral: 'https://api.mistral.ai/v1' };
   var PROMPT = 'Liste os alimentos visíveis neste prato com uma estimativa de gramas de cada um. Responda SOMENTE com JSON no formato {"itens":[{"nome":"arroz branco cozido","gramas":120}]}. Use nomes simples em português do Brasil, como na tabela TACO (ex.: "feijão carioca cozido", "peito de frango grelhado", "alface"). Se não houver comida, responda {"itens":[]}.';
@@ -76,4 +78,6 @@
       HN.confirm(T('A foto do prato vai para ' + HN.iaVisao.nome() + ', usando a sua chave, para reconhecer os alimentos. O HyperNutry não guarda a foto. Enviar?', 'The plate photo goes to ' + HN.iaVisao.nome() + ', using your key, to recognise the foods. HyperNutry does not store the photo. Send it?'), T('Enviar', 'Send')).then(function (s) { if (s) { ok = true; go(); } else nota(T('Foto não enviada. Registre à mão.', 'Photo not sent. Log by hand.')); });
     }
   };
+  // chegou arquivo novo de interruptores: redesenha as telas que mostram a IA
+  if (window.SolverRecursos) SolverRecursos.aoMudar(function () { var n = HN.route && HN.route().name; if (n === 'config' || n === 'diario') HN.refresh(); });
 })(window.HN = window.HN || {});

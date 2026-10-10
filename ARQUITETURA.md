@@ -3,6 +3,7 @@
 PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`. Dados só no aparelho (localStorage, prefixo `hypernutry:`; documentos em IndexedDB).
 
 ## Arquivos (ordem de carga no index.html)
+- `recursos.js` (v0.5.3, `data-app="hypernutry"`, carregado **antes** de tudo): interruptores do RootifyONE → Controle dos apps (`SolverRecursos.ligado/valor/aoMudar`, `data-recurso` some sozinho). Cópia avulsa do master do rootify-one: **não editar aqui**. Lê `solverone-dados/recursos/global.json` e `hypernutry.json` (o app vence). O que o app obedece está em `recursos-do-app.json` (hoje só `ia`: `HN.iaLigada()` em `ia-visao.js`; desligado, `HN.iaVisao.pronta()` é falso e o cartão de IA das Configurações avisa "Desligado pela administração da SolverONE."). Se o `diretrizes.js` for trocado para ≥ 1.6.0, o `recursos.js` só repassa para o `DGO.recursos`.
 - `js/data-foods.js` ~65 alimentos por 100 g (base TACO de referência) + sinalizadores (vegano, glúten, saciedade…).
 - `js/data-taco.js` TACO completa (591 itens, micronutrientes); alérgenos estimados pelo nome.
 - `js/data-recipes.js` equipamentos e 16 receitas.
