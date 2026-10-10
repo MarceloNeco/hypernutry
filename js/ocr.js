@@ -68,14 +68,14 @@
       out.avisos.push('porcao-convertida');
     } else if (!Object.keys(out.per100).length) out.avisos.push('sem-100g');
     // alergênicos declarados
-    var mc = n.match(/(?:alergicos?\s*:?\s*)?contem\s+(?!ingredientes)([^.\n]+)/), mq = n.match(/pode conter\s*([^.\n]+)/);
-    var decl = mc ? mc[1] : '', pode = mq ? mq[1] : '';
+    // todos os "contém …" (ex.: "CONTÉM GLÚTEN. ALÉRGICOS: CONTÉM LEITE E DERIVADOS."), não só o primeiro
+    var mq = n.match(/pode conter\s*:?\s*([^.\n]+)/), decl = (n.match(/contem\s+(?!ingredientes)[^.\n]+/g) || []).join(' '), pode = mq ? mq[1] : '';
     ALERG.forEach(function (a) { if (a[1].test(decl)) out.alergenos.push(a[0]); if (a[1].test(pode) && out.alergenos.indexOf(a[0]) < 0) out.podeConter.push(a[0]); });
     // ingredientes
-    var mi = raw.match(/ingredientes?\s*:?\s*([\s\S]+?)(?:\n\s*\n|al[eé]rgicos?|cont[eé]m|$)/i);
+    var mi = raw.match(/(?:ingredientes?|\bingr\.)\s*:?\s*([\s\S]+?)(?:\n\s*\n|al[eé]rgicos?|cont[eé]m|$)/i); // "Ingr.:" abreviado também (iogurtes, laticínios)
     // sem a palavra "ingredientes" (ela costuma ficar numa faixa colorida que o leitor não lê): se o texto antes de
     // "alérgicos"/"contém" parece uma lista (vírgulas), é a lista de ingredientes
-    if (!mi) { var ant = raw.split(/al[eé]rgicos?|cont[eé]m|pode conter/i)[0] || ''; if ((ant.match(/,/g) || []).length >= 2) mi = [null, ant.replace(/^[^A-Za-zÀ-ÿ(]+/, '')]; }
+    if (!mi) { var ant = raw.split(/al[eé]rgicos?|cont[eé]m|pode conter/i)[0] || ''; if ((ant.match(/,/g) || []).length >= 2 && ant.length < 500 && !/kcal|porcao|energetico|carboidrat|%\s*vd/.test(norm(ant)) && O.ingredientesLegiveis(ant).ok) mi = [null, ant.replace(/^[^A-Za-zÀ-ÿ(]+/, '')]; } // só quando o trecho parece texto de verdade (não lixo de leitura)
     if (mi) {
       out.ingredientes = mi[1].replace(/\s+/g, ' ').trim();
       var ni = norm(out.ingredientes);
@@ -192,11 +192,70 @@
     }
     var m = s / n; return s2 / n - m * m;
   };
-  O.ler = function (canvasOuImg, lang, onProgress) {
+  function reconhecer(canvasOuImg, lang, onProgress) {
     return O.carregarMotor().then(function () {
       var op = { logger: function (m) { if (onProgress && m.progress != null) onProgress(m); } };
       if (local) { op.workerPath = abs(BASE + 'worker.min.js'); op.corePath = abs(BASE); op.langPath = abs(BASE + 'lang'); }
       return window.Tesseract.recognize(canvasOuImg, lang || 'por', op);
-    }).then(function (r) { return r.data.text; });
+    }).then(function (r) { return { texto: r.data.text || '', conf: Math.round(r.data.confidence || 0) }; });
+  }
+  O.ler = function (canvasOuImg, lang, onProgress) { return reconhecer(canvasOuImg, lang, onProgress).then(function (r) { return r.texto; }); };
+  // Lê várias versões da mesma foto (ex.: preto e branco adaptativo e tons de cinza) e fica com a de maior confiança.
+  // Rótulo curvo, letra pequena e fundo escuro mudam qual tratamento funciona; testar dois custa ~1–2 s a mais.
+  O.lerMelhor = function (variantes, lang, onProgress) {
+    var lista = (variantes || []).filter(Boolean), melhor = null, i = 0;
+    var passo = function () {
+      if (i >= lista.length) return Promise.resolve(melhor || { texto: '', conf: 0 });
+      var k = i;
+      return reconhecer(lista[k], lang, function (m) { if (onProgress) onProgress({ status: m.status, progress: (k + (m.progress || 0)) / lista.length }); }).then(function (r) {
+        var q = O.qualidade(r.texto), nota = r.conf + q.plausivel * 30 + Math.min(q.chaves, 4) * 5;
+        if (!melhor || nota > melhor.nota) melhor = { texto: r.texto, conf: r.conf, nota: nota };
+        i++; return passo();
+      }, function () { i++; return passo(); });
+    };
+    return passo();
+  };
+  // Tons de cinza com contraste ajustado (sem preto e branco): vai melhor em foto com fundo escuro ou letra fina.
+  O.cinza = function (img, maxLado) {
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, maior = Math.max(w, h);
+    var esc = maior > (maxLado || 2000) ? (maxLado || 2000) / maior : (maior < 1400 ? Math.min(2, 1400 / maior) : 1);
+    var c = document.createElement('canvas'); c.width = Math.round(w * esc); c.height = Math.round(h * esc);
+    var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
+    var d = x.getImageData(0, 0, c.width, c.height), p = d.data, hist = new Uint32Array(256), i, g;
+    for (i = 0; i < p.length; i += 4) { g = (0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]) | 0; p[i] = g; hist[g]++; }
+    var n = p.length / 4, lo = 0, hi = 255, acc = 0;
+    for (i = 0; i < 256; i++) { acc += hist[i]; if (acc >= n * 0.02) { lo = i; break; } }
+    acc = 0; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= n * 0.02) { hi = i; break; } }
+    var k = hi > lo ? 255 / (hi - lo) : 1;
+    for (i = 0; i < p.length; i += 4) { g = (p[i] - lo) * k; g = g < 0 ? 0 : g > 255 ? 255 : g; p[i] = p[i + 1] = p[i + 2] = g; }
+    x.putImageData(d, 0, 0);
+    return c;
+  };
+  // A leitura presta? Conta palavras com cara de português e termos de rótulo. Serve para NUNCA dar farol verde
+  // com texto ilegível (aconteceu: lixo de leitura virou "lista de ingredientes" e o farol saiu verde).
+  var CHAVES = /\b(ingredientes?|ingr|informacao|nutricional|porcao|valor|energetico|kcal|carboidratos?|acucares?|proteinas?|gorduras?|saturadas?|sodio|fibras?|calcio|leite|agua|sal|farinha|oleo|aroma|corante|conservador|emulsificante|estabilizante|alergicos?|contem|gluten|soja|trigo|derivados)\b/g;
+  /* Os ingredientes são legíveis? A maioria das palavras tem de ser de alimento ou aditivo conhecido (base de alimentos
+     do app + glossário de aditivos + termos comuns de rótulo). Lixo de leitura ("RARO IAN ASAS") não passa. */
+  var LEX = null, FIXO = 'agua leite desnatado integral semidesnatado enzima lactase fermento fermentos lacteo lacteos acucar acucares sal farinha trigo enriquecida ferro acido folico milho arroz aveia cevada centeio soja oleo oleos azeite gordura vegetal vegetais hidrogenada interesterificada palma cacau chocolate po manteiga creme soro proteina proteinas amido modificado amidos fecula mandioca batata tomate cebola alho pimenta especiarias condimento condimentos ervas extrato polpa suco fruta frutas morango uva laranja limao banana maca abacaxi coco amendoim castanha castanhas nozes amendoas avela gergelim linhaca chia mel xarope glicose frutose maltodextrina dextrose sacarose lactose cloreto sodio potassio calcio carbonato fosfato citrato bicarbonato vitamina vitaminas minerais mineral zinco magnesio iodo iodado ovo ovos clara gema carne frango bovina suina peixe atum sardinha camarao queijo requeijao iogurte nata gelatina pectina goma gomas xantana guar carragena celulose fibra fibras inulina polidextrose lecitina mono diglicerideos acidos graxos estabilizante estabilizantes espessante espessantes emulsificante emulsificantes conservador conservadores conservante antioxidante antioxidantes acidulante acidulantes regulador acidez corante corantes aromatizante aromatizantes aroma aromas natural naturais artificial artificiais identico realcador sabor edulcorante edulcorantes adocante sucralose aspartame acesulfame ciclamato sacarina estevia glutamato monossodico fermento quimico biologico levedura vinagre malte maltado cultura culturas lactica lacticas bifidobacterias probioticos sorbato benzoato propionato nitrito nitrato metabissulfito caramelo urucum curcuma carmim beterraba clorofila tartrazina'.split(' ');
+  function lexico() {
+    if (LEX) return LEX; LEX = {};
+    FIXO.forEach(function (w) { LEX[w] = 1; });
+    (HN.foodList || []).forEach(function (f) { norm(f.pt).split(/[^a-z]+/).forEach(function (w) { if (w.length >= 4) LEX[w] = 1; }); });
+    var ad = HN.aditivosBase && HN.aditivosBase.aditivos || [];
+    ad.forEach(function (a) { norm((a.nome && a.nome.pt || '') + ' ' + (a.outros || []).join(' ')).split(/[^a-z]+/).forEach(function (w) { if (w.length >= 4) LEX[w] = 1; }); });
+    return LEX;
+  }
+  var PARADA = { com: 1, sem: 1, dos: 1, das: 1, por: 1, para: 1, contem: 1, pode: 1, ingredientes: 1, ingrediente: 1, ingr: 1, tipo: 1 };
+  O.ingredientesLegiveis = function (texto) {
+    var L = lexico(), ws = norm(texto).split(/[^a-z]+/).filter(function (w) { return w.length >= 3 && !PARADA[w]; }), conhecidas = 0;
+    ws.forEach(function (w) { if (L[w] || L[w.replace(/s$/, '')] || (w.length >= 6 && Object.prototype.hasOwnProperty.call(L, w.slice(0, -2)))) conhecidas++; });
+    var taxa = ws.length ? conhecidas / ws.length : 0;
+    return { ok: ws.length >= 2 && taxa >= 0.5, taxa: Math.round(taxa * 100) / 100, palavras: ws.length };
+  };
+  O.qualidade = function (texto) {
+    var t = String(texto || ''), toks = t.split(/\s+/).map(function (w) { return w.replace(/^[^A-Za-zÀ-ÿ0-9]+|[^A-Za-zÀ-ÿ0-9%]+$/g, ''); }).filter(function (w) { return w.length >= 3 && /[A-Za-zÀ-ÿ]/.test(w); });
+    var bons = toks.filter(function (w) { return /^[A-Za-zÀ-ÿ]+$/.test(w) && /[aeiouáéíóúâêôãõà]/i.test(w) && !/([^aeiou\s])\1\1/i.test(w) && !(/[a-zà-ÿ][A-ZÀ-Þ]/.test(w)); }).length;
+    var chaves = (norm(t).match(CHAVES) || []).length, plausivel = toks.length ? bons / toks.length : 0;
+    return { plausivel: Math.round(plausivel * 100) / 100, chaves: chaves, ruim: !(chaves >= 3 && plausivel >= 0.55) && !(chaves >= 1 && plausivel >= 0.75) };
   };
 })(window.HN = window.HN || {});

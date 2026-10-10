@@ -13,23 +13,24 @@
   var BASE = { openai: 'https://api.openai.com/v1', mistral: 'https://api.mistral.ai/v1' };
   var PROMPT = 'Liste os alimentos visíveis neste prato com uma estimativa de gramas de cada um. Responda SOMENTE com JSON no formato {"itens":[{"nome":"arroz branco cozido","gramas":120}]}. Use nomes simples em português do Brasil, como na tabela TACO (ex.: "feijão carioca cozido", "peito de frango grelhado", "alface"). Se não houver comida, responda {"itens":[]}.';
 
-  function b64(canvas) { var k = Math.min(1, 768 / Math.max(canvas.width, canvas.height)), c = document.createElement('canvas'); c.width = Math.round(canvas.width * k); c.height = Math.round(canvas.height * k); c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.7); }
+  var PROMPT_ROTULO = 'Transcreva fielmente o texto deste rótulo de alimento, em português, linha por linha. Inclua a tabela nutricional (uma linha por nutriente, com os números na ordem das colunas) e a lista de ingredientes começando com "Ingredientes:". Inclua também alérgicos e "pode conter". Se uma parte estiver cortada ou ilegível, escreva [ilegível] no lugar. Não invente nada e não comente: responda só o texto.';
+  function b64(canvas, lado, q) { var k = Math.min(1, (lado || 768) / Math.max(canvas.width, canvas.height)), c = document.createElement('canvas'); c.width = Math.round(canvas.width * k); c.height = Math.round(canvas.height * k); c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', q || 0.7); }
   function falha(r) { return r.text().then(function (t) { var e = new Error(t.slice(0, 300)); e.status = r.status; throw e; }); }
-  function chamar(p, chave, modelo, dataUrl) {
-    var data = dataUrl.split(',')[1];
+  function chamar(p, chave, modelo, dataUrl, prompt, texto) { // texto = resposta livre (rótulo); sem ele, JSON (prato)
+    var data = dataUrl.split(',')[1], PR = prompt || PROMPT, tok = texto ? 1500 : 600;
     if (p === 'gemini') {
       return fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(modelo) + ':generateContent', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: PROMPT }, { inline_data: { mime_type: 'image/jpeg', data: data } }] }], generationConfig: { responseMimeType: 'application/json' } }) })
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: PR }, { inline_data: { mime_type: 'image/jpeg', data: data } }] }], generationConfig: texto ? {} : { responseMimeType: 'application/json' } }) })
         .then(function (r) { return r.ok ? r.json() : falha(r); }).then(function (j) { var c = j.candidates && j.candidates[0]; return ((c && c.content && c.content.parts) || []).map(function (x) { return x.text || ''; }).join(''); });
     }
     if (p === 'anthropic') {
       return fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': chave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({ model: modelo, max_tokens: 600, messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: data } }, { type: 'text', text: PROMPT }] }] }) })
+        body: JSON.stringify({ model: modelo, max_tokens: tok, messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: data } }, { type: 'text', text: PR }] }] }) })
         .then(function (r) { return r.ok ? r.json() : falha(r); }).then(function (j) { return (j.content || []).map(function (x) { return x.text || ''; }).join(''); });
     }
     // formato OpenAI (OpenAI, Mistral)
     return fetch(BASE[p] + '/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + chave },
-      body: JSON.stringify({ model: modelo, max_tokens: 600, messages: [{ role: 'user', content: [{ type: 'text', text: PROMPT }, { type: 'image_url', image_url: { url: dataUrl } }] }] }) })
+      body: JSON.stringify({ model: modelo, max_tokens: tok, messages: [{ role: 'user', content: [{ type: 'text', text: PR }, { type: 'image_url', image_url: { url: dataUrl } }] }] }) })
       .then(function (r) { return r.ok ? r.json() : falha(r); }).then(function (j) { return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || ''; });
   }
   // nome dito pela IA → alimento da base (TACO primeiro, nome mais curto que contém as palavras)
@@ -48,7 +49,15 @@
   function nota(t) { if (HN.draft) HN.draft.photoNote = t; if (HN.route().name === 'diario') HN.refresh(); }
 
   HN.iaVisao = {
-    pronta: function () { return !!prov(); },
+    pronta: function () { var p = prov(); return !!p && (!!BASE[p] || p === 'gemini' || p === 'anthropic'); },
+    // texto do rótulo pela IA da chave da pessoa (quem chama pede a confirmação de envio). Resolve com o texto.
+    rotulo: function (canvas) {
+      var D = dgo(), p = prov();
+      if (!D || !p) return Promise.reject(new Error(T('Nenhuma IA configurada no cofre de chaves.', 'No AI set up in the key vault.')));
+      if (!D.rede.podeUsarIA()) return Promise.reject(new Error(T('A IA está marcada para usar só no Wi-Fi ou não há internet.', 'AI is set to Wi-Fi only or there is no internet.')));
+      return chamar(p, D.ia.chavePara('visao'), D.ia.modelo(p), b64(canvas, 1600, 0.85), PROMPT_ROTULO, true).then(function (t) { return String(t || '').replace(/```[a-z]*\n?|```/g, '').trim(); },
+        function (e) { throw new Error(D.ia.explicarErro ? D.ia.explicarErro(e) : T('A IA não respondeu.', 'AI did not answer.')); });
+    },
     nome: function () { var p = prov(); return NOMES[p] || p; },
     prato: function (canvas) {
       var D = dgo(), p = prov(); if (!D || !p) return;
