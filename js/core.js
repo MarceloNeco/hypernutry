@@ -4,7 +4,7 @@
  */
 (function (HN) {
   'use strict';
-  HN.version = '0.6.0';
+  HN.version = '0.7.0';
   var NS = 'hypernutry:';
 
   /* ---------- utilidades ---------- */
@@ -173,31 +173,46 @@
     return { hits: hits.slice(0, 30).map(function (h) { return h.it; }), sug: sug };
   };
 
-  /* ---------- camadas (gaveta, folha, tela cheia) e botão Voltar ---------- */
-  var layers = [], closeAll = null;
-  var LY = HN.layer = {
+  /* ---------- camadas (gaveta, folha, tela cheia) e botão Voltar ----------
+   * Todas as janelas do app (gaveta ☰, folhas, tela cheia, confirmações) passam por aqui e por baixo são a
+   * janela comum (janela.js, SolverJanela): a página de trás não rola nem recebe toque; ✕, Esc, Voltar do celular e
+   * toque na parte escura fecham; com texto digitado, tocar fora/Esc/Voltar perguntam "Descartar?" (busca e
+   * calculadoras passam temTexto:false); uma janela por vez. Só a confirmação curta (HN.confirm) abre por cima de
+   * outra janela e fecha junto com ela.
+   * o.type: 'drawer' (gaveta), 'sheet' (folha, padrão) ou 'full' (tela cheia). O <dialog> é o fundo escuro; o
+   * painel (.drawer/.sheet/.full) fica dentro dele. */
+  var layers = [];
+  HN.layer = {
     count: function () { return layers.length; },
     open: function (o) {
-      var host = HN.q('#layers'), wrap = document.createElement('div');
-      var inner = '';
-      if (o.type === 'drawer') inner = '<div class="scrim" data-act="layer-close"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || 'Menu') + '">' + o.html + '</aside>';
-      else if (o.type === 'full') inner = '<section class="full" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || '') + '">' + o.html + '</section>';
-      else inner = '<div class="scrim" data-act="layer-close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="' + HN.esc(o.label || '') + '"><div class="grab"></div>' + o.html + '</div>';
-      wrap.innerHTML = inner; HN.marcarLinks(wrap); host.appendChild(wrap);
-      var L = { el: wrap, onClose: o.onClose, opener: document.activeElement };
+      var wrap = document.createElement('div'), inner = '';
+      if (o.type === 'drawer') inner = '<aside class="drawer" aria-label="' + HN.esc(o.label || 'Menu') + '">' + o.html + '</aside>';
+      else if (o.type === 'full') inner = '<section class="full" aria-label="' + HN.esc(o.label || '') + '">' + o.html + '</section>';
+      else inner = '<div class="sheet" aria-label="' + HN.esc(o.label || '') + '"><div class="grab"></div>' + o.html + '</div>';
+      wrap.innerHTML = inner; HN.marcarLinks(wrap);
+      var L = { el: wrap, J: null };
       layers.push(L);
-      history.pushState({ layer: layers.length }, '', location.href);
-      var f = HN.q('[autofocus]', wrap) || HN.q('button,input,select,textarea', wrap); if (f && o.focus !== false) { try { f.focus({ preventScroll: true }); } catch (e) { /* ignora */ } }
-      if (o.after) o.after(wrap);
+      var f = o.focus === false ? false : (HN.q('[autofocus]', wrap) || HN.q('button,input,select,textarea', wrap) || undefined);
+      L.J = SolverJanela.abrir({
+        conteudo: wrap, classe: 'hn-ly hn-' + (o.type || 'sheet'), rotulo: o.label || (o.type === 'drawer' ? 'Menu' : ''),
+        papel: o.papel, porCima: !!o.porCima, temTexto: o.temTexto, focar: f,
+        aoFechar: function () { var i = layers.indexOf(L); if (i >= 0) layers.splice(i, 1); if (o.onClose) o.onClose(); }
+      });
+      /* o "depois de abrir" espera a janela aparecer (ela pode esperar a vez de outra ou do histórico) */
+      if (o.after) {
+        if (L.J.aberta) o.after(wrap);
+        else {
+          var quando = function (e) { if (e.detail && e.detail.id === L.J.id) { document.removeEventListener('janela:aberta', quando); o.after(wrap); } };
+          document.addEventListener('janela:aberta', quando);
+        }
+      }
       return wrap;
     },
-    close: function () { if (layers.length) history.back(); },
-    _removeTop: function () { var L = layers.pop(); if (!L) return; if (L.el.parentNode) L.el.parentNode.removeChild(L.el); if (L.onClose) L.onClose(); if (L.opener && L.opener.focus) { try { L.opener.focus({ preventScroll: true }); } catch (e) { /* ignora */ } } },
+    close: function () { if (layers.length) layers[layers.length - 1].J.fechar('fechar'); },
     closeAllThen: function (fn) {
       if (!layers.length) { fn(); return; }
-      var n = layers.length, done = false;
-      closeAll = function () { if (done) return; done = true; closeAll = null; while (layers.length) LY._removeTop(); fn(); };
-      history.go(-n); setTimeout(function () { if (closeAll) closeAll(); }, 400);
+      layers.slice().reverse().forEach(function (L) { L.J.fechar('fechar'); });
+      SolverJanela.quandoQuieto(fn);   // depois que o histórico acompanhou o fechamento
     },
     top: function () { return layers.length ? layers[layers.length - 1].el : null; }
   };
@@ -206,21 +221,26 @@
     return new Promise(function (res) {
       var settled = false;
       HN.layer.open({
-        label: msg, onClose: function () { if (!settled) { settled = true; res(false); } },
+        label: msg, papel: 'alertdialog', porCima: !!SolverJanela.aberta(), temTexto: false,
+        onClose: function () { if (!settled) { settled = true; res(false); } },
         html: '<p style="font-size:1.05rem">' + msg + '</p><div class="row wrap mt"><button class="btn ' + (opts.danger ? 'bad' : '') + ' grow" data-act="confirm-ok">' + HN.esc(okLabel || 'OK') + '</button><button class="btn ghost grow" data-act="layer-close">' + HN.T('Cancelar', 'Cancel') + '</button></div>',
         after: function (el) { el.addEventListener('click', function (e) { if (e.target.closest('[data-act="confirm-ok"]')) { settled = true; res(true); HN.layer.close(); } }); }
       });
     });
   };
-  HN.sheet = function (title, html, after) { return HN.layer.open({ label: title, html: '<div class="row"><h2 class="grow">' + title + '</h2><button class="ib" data-act="layer-close" aria-label="' + HN.T('Fechar', 'Close') + '">✕</button></div>' + html, after: after }); };
+  HN.sheet = function (title, html, after, opts) { return HN.layer.open({ label: title, html: '<div class="row"><h2 class="grow">' + title + '</h2><button class="ib" data-act="layer-close" aria-label="' + HN.T('Fechar', 'Close') + '">✕</button></div>' + html, after: after, temTexto: opts && opts.temTexto }); };
 
   /* ---------- toast ---------- */
-  var toastT;
+  var toastT, toastEl;
   HN.toast = function (msg, ms) {
-    var old = HN.q('.toast'); if (old) old.remove();
-    var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t);
+    if (toastEl) toastEl.remove();
+    var t = toastEl = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+    var J = window.SolverJanela && SolverJanela.aberta();   // com uma janela aberta, só o que está dentro dela aparece
+    (J ? J.el : document.body).appendChild(t);
     clearTimeout(toastT); toastT = setTimeout(function () { t.remove(); }, ms || 2600);
   };
+  // a janela fechou com um aviso dentro: o aviso vai para a página e termina o seu tempo
+  document.addEventListener('janela:fechada', function () { if (toastEl && !toastEl.isConnected) document.body.appendChild(toastEl); });
 
   /* ---------- rota ---------- */
   HN.views = {}; HN.after = {}; HN.acts = {}; HN.ins = {};
@@ -325,12 +345,12 @@
       g[1].forEach(function (id) { var n = HN.nav[id]; var on = n.r === '/' ? cur2 === 'home' : (cur2 === n.r.split('/')[1] && !(id === 'despensa' || id === 'compras')); html += '<button class="dl ' + (on ? 'on' : '') + '" data-act="drawer-go" data-arg="' + n.r + '"' + attrRec(id) + '><span class="e">' + n.e + '</span>' + HN.tt([n.pt, n.en]) + '</button>'; });
     });
     html += '<h4>' + HN.T('Mais', 'More') + '</h4>' + (window.DGO && DGO.feedback ? '<button class="dl" data-act="feedback" data-recurso="feedback"><span class="e">💬</span>' + HN.T('Dar uma opinião / avisar um problema', 'Give feedback / report a problem') + '</button>' : '') + '<a class="dl" href="https://marceloneco.github.io" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="e">🌐</span>' + HN.T('Portal de projetos', 'Projects portal') + ' ↗</a>';
-    HN.layer.open({ type: 'drawer', label: 'Menu', html: html, onClose: function () { var b = HN.q('[data-act="menu"]'); if (b) b.setAttribute('aria-expanded', 'false'); } });
+    HN.layer.open({ type: 'drawer', label: 'Menu', temTexto: false, html: html, onClose: function () { var b = HN.q('[data-act="menu"]'); if (b) b.setAttribute('aria-expanded', 'false'); } });
   };
   A['drawer-go'] = function (arg) { HN.go(arg); };
   A.search = function () {
     var T = HN.T;
-    HN.layer.open({ type: 'full', label: T('Buscar', 'Search'), html: '<div class="fh"><button class="ib" data-act="layer-close" aria-label="' + T('Voltar', 'Back') + '">←</button><input type="search" id="q" class="grow" autofocus autocomplete="off" placeholder="' + T('Buscar telas, alimentos, receitas…', 'Search screens, foods, recipes…') + '" data-in="busca"></div><div id="qres" style="padding:.6rem .9rem"><p class="muted">' + T('Digite para buscar. Ex.: "airfryer", "fome", "arroz".', 'Type to search. E.g. "air fryer", "hunger", "rice".') + '</p></div>' });
+    HN.layer.open({ type: 'full', label: T('Buscar', 'Search'), temTexto: false, html: '<div class="fh"><button class="ib" data-act="layer-close" aria-label="' + T('Voltar', 'Back') + '">←</button><input type="search" id="q" class="grow" autofocus autocomplete="off" placeholder="' + T('Buscar telas, alimentos, receitas…', 'Search screens, foods, recipes…') + '" data-in="busca"></div><div id="qres" style="padding:.6rem .9rem"><p class="muted">' + T('Digite para buscar. Ex.: "airfryer", "fome", "arroz".', 'Type to search. E.g. "air fryer", "hunger", "rice".') + '</p></div>' });
   };
   HN.ins.busca = function (v) {
     var r = HN.search(v), box = HN.q('#qres'); if (!box) return;
@@ -366,11 +386,10 @@
     var v = type === 'checkbox' ? el.checked : el.value, f = HN.ins[el.getAttribute('data-in')]; if (f) f(v, el, e);
   }
   document.addEventListener('input', inHandler); document.addEventListener('change', inHandler);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && layers.length) HN.layer.close(); if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.card.tap[role=button]')) { e.preventDefault(); e.target.click(); } });
+  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.card.tap[role=button]')) { e.preventDefault(); e.target.click(); } });
 
+  /* o Voltar que fecha uma janela é da janela comum (janela.js ouve antes e não deixa chegar aqui) */
   window.addEventListener('popstate', function (e) {
-    if (closeAll) { closeAll(); return; }
-    if (layers.length) { LY._removeTop(); return; }
     HN.render();
     if (e.state && e.state.inicio && cur.name === 'home') HN.toast(HN.T('Toque em Voltar de novo para sair do HyperNutry', 'Tap Back again to leave HyperNutry'), 2200);
   });

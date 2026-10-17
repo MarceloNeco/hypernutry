@@ -1,6 +1,13 @@
 {
  "versoes": [
   {
+   "v": "0.7.0",
+   "data": "17/Out/2026",
+   "hora": "18:50:00",
+   "pt": "🪟 Todas as janelas do HyperNutry ficaram iguais e mais firmes (menu ☰, folhas, busca, câmera, cozinhar, atenção plena e as confirmações): enquanto uma está aberta, a tela de trás não rola nem recebe toque. Fecham no ✕, no Esc, no Voltar do celular ou tocando na parte escura (arrastar de dentro para fora não fecha). Se você digitou algo e tentar fechar, o app pergunta \"Descartar o que você digitou?\"; na busca e nas calculadoras, não. A confirmação (\"Apagar?\") abre por cima da janela e fecha junto com ela, e os avisos rápidos aparecem dentro da janela. 🔐 Chaves de IA: ficam só no cofre, trancadas com o seu PIN; as chaves antigas passam sozinhas para o cofre. Com chave guardada, o PIN é pedido ao abrir e ao recarregar, e o cofre tranca ao sair do app, ao ficar escondido e sem uso. A chave guardada não aparece no campo: mostra \"✓ guardado\" e \"Mostrar a chave guardada\" (pede o PIN). Se o aparelho tiver digital, dá para abrir o cofre com ela (Configurações).",
+   "en": "🪟 Every HyperNutry window now behaves the same and is firmer (☰ menu, sheets, search, camera, cooking, mindful eating and confirmations): while one is open, the screen behind neither scrolls nor takes taps. They close with ✕, Esc, the phone's Back button or a tap on the dark area (dragging from inside to outside does not close). If you typed something and try to close, the app asks \"Discard what you typed?\"; in search and calculators it does not. The confirmation (\"Delete?\") opens on top of the window and closes with it, and quick notices appear inside the window. 🔐 AI keys: they stay only in the vault, locked with your PIN; old keys move to the vault by themselves. With a saved key, the PIN is asked on opening and on reload, and the vault locks when you leave the app, when it is hidden and when idle. The saved key never shows in the field: it shows \"✓ saved\" and \"Show the saved key\" (asks for the PIN). If your device has a fingerprint, you can open the vault with it (Settings)."
+  },
+  {
    "v": "0.6.0",
    "data": "10/Out/2026",
    "hora": "11:30:00",
