@@ -10,11 +10,12 @@ PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`.
 - `js/calc.js` (`HN.calc`) fórmulas (Mifflin, Harris, Katch), faixas flexíveis, macros, substituição, cardápio, lista de compras, alertas de segurança.
 - `js/ocr.js` (`HN.ocr`) interpreta texto de rótulo e de bioimpedância; motor Tesseract.js **hospedado** em `vendor/tesseract/` (v5.1.1, núcleo LSTM, idiomas por/eng best_int), carregado só quando a pessoa pede; cai para o CDN se a pasta faltar.
 - `js/v-scan.js` câmera em tela cheia (botão 📷): **abre no Rótulo** (v0.5.0: ingredientes → farol de ultraprocessado em `v-body.js` `farol()`, interpretado sozinho após o OCR); modos Rótulo, Código (ZXing hospedado via `js/barras.js` + Open Food Facts, `HN.offBuscar`), Prato (foto de referência no diário; IA via `HN.iaVisao` quando existir) e Laudo. Câmera só ao tocar; desligada ao fechar.
-- `js/core.js` utilidades, armazenamento `HN.S`, perfil, menu, busca, camadas (botão Voltar), roteador, `HN.start()`.
+- `js/core.js` utilidades, armazenamento `HN.S`, perfil, menu, busca, camadas (`HN.layer`, por baixo a janela comum), roteador, `HN.start()`.
 - `js/v-calc.js` PARTE A: calculadora de calorias, gostos e cozinha; liga TACO/restrições/gostos às telas existentes.
 - `js/ui.js` peças de tela (chips, escala, gráficos SVG).
 - `js/v-*.js` telas: home (boas-vindas, assistente, diário, fome e emoções), food (alimentos, saciedade, metas), plan (cardápio, despensa, compras, receitas, família, cozinheiro), body (corpo, rótulos, telenutrição), meta (planos, config, ajuda, sobre).
-- `diretrizes.js` (módulo comum SolverONE **1.9.0** desde a v0.6.0, **idêntico em todos os apps — não editar aqui**, a cópia mestre é a do RootifyONE) + `diretrizes-config.js` (o único arquivo do módulo que é deste app). Ligados: cofre de IA (`DGO.ia`), rede (`DGO.rede`), interruptores e manutenção (`fonteCentral: '/solverone-dados/'`), `DGO.fundo`, `DGO.compat` (`usa`: câmera, armazenamento, IndexedDB, espaço) e `DGO.feedback` (`supabase` **vazio** de propósito: o banco do feedback ainda não existe, então o envio fica guardado no aparelho e o app avisa; quando existir, só a chave PÚBLICA). Desligados: PT/EN e datas do módulo, anúncios, login, níveis, OCR, PWA e notificações do módulo (o app tem os próprios).
+- `janela.js` (**janela comum**, `SolverJanela` 1.0.1) e `cofre.js` (**cofre comum de chaves**, `SolverCofre` 1.4.0), desde a v0.7.0: cópias exatas do master do rootify-one, **não editar aqui**. Ordem na página: `janela.js` (no começo, antes do `core.js`) → `cofre.js` → `diretrizes.js` → `diretrizes-config.js`. Os dois estão no `sw.js`.
+- `diretrizes.js` (módulo comum SolverONE **1.11.0** desde a v0.7.0 (1.9.0 na v0.6.0), **idêntico em todos os apps — não editar aqui**, a cópia mestre é a do RootifyONE) + `diretrizes-config.js` (o único arquivo do módulo que é deste app). Ligados: cofre de IA (`DGO.ia`), rede (`DGO.rede`), interruptores e manutenção (`fonteCentral: '/solverone-dados/'`), `DGO.fundo`, `DGO.compat` (`usa`: câmera, armazenamento, IndexedDB, espaço) e `DGO.feedback` (`supabase` **vazio** de propósito: o banco do feedback ainda não existe, então o envio fica guardado no aparelho e o app avisa; quando existir, só a chave PÚBLICA). Desligados: PT/EN e datas do módulo, anúncios, login, níveis, OCR, PWA e notificações do módulo (o app tem os próprios).
 - `recursos-do-app.json` (raiz): o que o app obedece, lido pelo RootifyONE ("Quem obedece" e grade do ⚡ Modo DEUS). Formato detalhado `{id, nome{pt,en}, onde{pt,en}}`. **Função nova = id novo aqui na mesma versão.**
 - `js/data-aditivos.js` (`HN.aditivosBase`): glossário de aditivos e ingredientes de atenção (79 itens, 11 categorias, nível alto/medio/baixo, PT/EN, fontes no topo). Formato idêntico ao arquivo master `solverone-dados/conteudo/hypernutry/aditivos.json` que o RootifyONE publica.
 - `js/v-mercado.js` (v0.4.0): `HN.analisar(ingredientes, offTags)` (acha pelo número INS — com sufixos 150d, 500ii — pelos nomes e pelas marcas do Open Food Facts; selo 🟢 limpo / 🟡 pouco / 🔴 muito), `HN.cat` (catálogo em `catalogo`; `marcasFav`), fotos pequenas no IndexedDB `hypernutry-fotos` (WebP ≤360 px), `HN.advAtualizar` (lista central uma vez por dia com internet), telas `/mercado`, `/mercado/p/<id>`, `/mercado/aditivos`.
@@ -23,7 +24,7 @@ PWA em JavaScript/HTML/CSS puros. Sem framework, sem build. Tudo em `window.HN`.
 
 ## Regras do projeto
 - Texto sempre `T('pt','en')`; em listas use `[pt,en]` + `HN.tt` (idioma é lido na hora de desenhar, nunca na carga).
-- Ações por `data-act` (`HN.acts`), campos por `data-in` (`HN.ins`). Navegação só por `HN.go` e `HN.layer` (cada camada tem entrada no histórico).
+- Ações por `data-act` (`HN.acts`), campos por `data-in` (`HN.ins`). Navegação só por `HN.go` e `HN.layer` (cada janela tem entrada no histórico, feita pela janela comum).
 - Números de calorias nunca aparecem para menor de 18, histórico de transtorno alimentar, gestação ou sem dados (`HN.numerosOk`).
 - Sem promessa de resultado, sem antes/depois, sem comparar com medicamento, sem prescrição (CFN 599/2018, Lei 8.234/1991).
 - Nenhum segredo no repositório.
@@ -64,3 +65,25 @@ Tudo em `css/style.css`, como variáveis no `:root` (claro) e repetidas para o e
 - **💬 Feedback** (v0.6.0): `A.feedback` abre `DGO.feedback.abrir` (☰ › Mais, cartão "Sua opinião" em ⚙ e na Ajuda, "Avisar que deu erro" na tela de erro do roteador com `HN.ultimoErro`); `feedback.tela` do config diz a tela atual; a pergunta do dia nunca aparece no assistente, nas boas-vindas nem com janela aberta.
 - **Código de barras** (v0.4.6): `js/barras.js` (`HN.barras`) carrega `vendor/zxing/zxing.min.js` (@zxing/library 0.21.3, Apache-2.0) só no modo Código; `ler(canvas, angulos)` tenta horizontal, vertical e inclinações (gira o canvas) e confere o dígito verificador (`valido`). O laço ao vivo (`startLoop`) corta a região do quadro (`regiao`, ≤1000 px) a cada 320 ms; `aceitar()` aceita EAN-13 do ZXing na hora e exige duas leituras iguais do resto (o BarcodeDetector do navegador, mantido só como apoio, inventa números curtos). Vídeo pedido em 4:3 (1920×1440) e mostrado com `object-fit: contain` (campo inteiro; `cover` cortava os lados e parecia zoom); o quadro é absoluto no centro, e `regiao`/`focarEm` mapeiam com `Math.min`.
 - **Leitura no quadro** (v0.4.5, `v-scan.js`): `recorte(canvas, folga)` corta a foto no que a pessoa enquadrou (vídeo em `object-fit: contain` desde a v0.4.6; foto de outra proporção mapeada pela largura, centrada). Rótulo: recorte com 6% de folga → `HN.scanImage('rot', c, {recortado:true})` → `O.preparar` (cinza + auto-níveis por percentis, sem binarizar; amplia foto pequena). Foto da galeria continua com `O.preprocessar` (binarização), que vai melhor em foto inteira. Código: botão 📸 (`scan-foto-cod`) lê o código parado com `BarcodeDetector` no recorte (25% de folga) e depois na foto inteira.
+
+## Janelas pela janela comum e cofre com PIN (v0.7.0, 17/Out/2026)
+- **`HN.layer.open` é a janela comum** (`SolverJanela.abrir`, uma função só, sem cópia): gaveta ☰ (`type:'drawer'`), folha
+  (`'sheet'`, padrão) e tela cheia (`'full'`: busca, câmera, cozinhar, atenção plena). O `<dialog>` (`.hn-ly`) é o fundo escuro;
+  o painel (`.drawer`/`.sheet`/`.full`) fica dentro dele (o antigo `.scrim` e o `#layers` saíram). A página de trás não rola nem
+  recebe toque; ✕, Esc, Voltar do celular e toque na parte escura fecham (começar E terminar no escuro); com texto digitado,
+  tocar fora/Esc/Voltar perguntam "Descartar?"; uma janela por vez. A API de antes continua: `open(o)` (devolve o miolo),
+  `close()`, `closeAllThen(fn)` (fecha todas e roda `fn` depois que o histórico acompanhou), `top()`, `count()`.
+- **Opções novas em `open`**: `temTexto:false` (busca, menu, calculadora: não perguntam "Descartar?"), `porCima` e `papel`
+  (só `HN.confirm`). `HN.sheet(título, html, after, {temTexto:false})`. O `after` espera a janela aparecer (ela pode esperar a vez).
+- **`HN.confirm`** abre POR CIMA quando já há janela aberta (alertdialog; fecha junto com a de baixo) e como janela normal quando
+  vem da página. Não há `alert()`/`confirm()`/`prompt()` nativos no app.
+- **`HN.toast`** com janela aberta nasce DENTRO dela (a camada de cima do navegador cobre tudo o que está fora) e volta para a
+  página se a janela fechar antes do fim.
+- **Cofre**: `cofre: { fontes: [], proteger: true }` no `diretrizes-config.js`. O app só guardava chave no item do módulo
+  (`dgo:global:chaves-ia`), que o cofre já conhece. Com chave guardada: PIN ao abrir e ao recarregar; tranca ao sair do app,
+  escondido e sem uso. **A cópia em texto aberto de `dgo:global:chaves-ia` continua** (o cofre a marca `manter`) até o master
+  pôr `LIMPAR_COMPARTILHADAS = true`, só seguro depois que o CifrasONE também for atualizado. Painel da digital:
+  `SolverCofre.painelDigital` em Configurações, logo abaixo do botão "Abrir o cofre de chaves" (`#hn-cofre-digital`).
+- Teste: `teste/janelas.js` (Playwright, 390 px e 1280 px, câmera falsa; ver o cabeçalho do arquivo).
+- **Pendências**: (1) master: `janela.js` trava também o `body`; com cabeçalho `sticky` ele pode "pular" atrás da janela;
+  (2) pedir `LIMPAR_COMPARTILHADAS = true` no master quando CifrasONE e HyperNutry estiverem mesclados.

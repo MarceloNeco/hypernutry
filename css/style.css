@@ -149,7 +149,8 @@ table.tbl { border-collapse: separate; border-spacing: 0; min-width: 100%; font-
 .s2 { color: var(--ok); font-weight: 800; } .s1 { color: var(--warn); font-weight: 800; } .s0 { color: var(--muted); }
 
 /* navegação */
-.scrim { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.45); animation: fin .18s ease; }
+/* as janelas (gaveta, folha, tela cheia) são a janela comum (janela.js): o <dialog> é a parte escura que cobre a tela */
+dialog.hn-ly[open] { background: rgba(0,0,0,.45); animation: fin .18s ease; }
 @keyframes fin { from { opacity: 0; } to { opacity: 1; } }
 .drawer { position: fixed; top: 0; bottom: 0; left: 0; z-index: 41; width: min(86vw, 20rem); background: var(--card); box-shadow: 4px 0 24px rgba(0,0,0,.25); overflow-y: auto; scrollbar-width: thin; animation: dslide .22s var(--ease); padding-bottom: 2rem; }
 @keyframes dslide { from { transform: translateX(-100%); } to { transform: none; } }
@@ -259,7 +260,8 @@ main { padding-bottom: calc(var(--bn) + 2.2rem + env(safe-area-inset-bottom)); }
 /* gaveta, folhas e tela cheia com vidro e movimento de mola */
 .drawer { background: var(--glass-solid); }
 .sheet { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-border); border-bottom: 0; animation: sup .28s var(--spring); }
-.scrim { background: rgba(15,23,42,.45); }
+dialog.hn-ly[open] { background: rgba(15,23,42,.45); }
+dialog.hn-full[open] { background: transparent; animation: none; }
 .full .fh { background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
 
 /* vidro desligado: navegador sem suporte, alto contraste ou quem pede menos transparência — fundo sólido */

@@ -38,7 +38,7 @@
     var visao = HN.iaVisao && HN.iaVisao.pronta() ? '🖼️ ' + esc(HN.iaVisao.nome()) : T2('nenhuma ainda', 'none yet');
     var sel = function (k, lab) { var v = D.rede.preferencia(k); return '<label class="f" for="rd-' + k + '">' + lab + '</label><select id="rd-' + k + '" data-in="rede" data-k="' + k + '">' + [['sempre', 'Wi-Fi ou dados', 'Wi-Fi or mobile data'], ['wifi', 'Só no Wi-Fi', 'Wi-Fi only'], ['nunca', 'Nunca', 'Never']].map(function (o) { return '<option value="' + o[0] + '"' + (v === o[0] ? ' selected' : '') + '>' + HN.tt([o[1], o[2]]) + '</option>'; }).join('') + '</select>'; };
     return '<div class="card"><h3>✨ ' + T2('Inteligência artificial', 'Artificial intelligence') + '</h3><p class="small">' + T2('Usada só se você quiser: reconhecer o prato pela foto (Meu acompanhamento). Em uso para fotos: ', 'Used only if you want: recognising the plate from a photo (My follow-up). In use for photos: ') + '<b>' + visao + '</b>.</p>' +
-      '<button class="btn sec block" data-act="ia-cofre">🔑 ' + T2('Abrir o cofre de chaves (guia passo a passo)', 'Open the key vault (step-by-step guide)') + '</button>' +
+      '<button class="btn sec block" data-act="ia-cofre">🔑 ' + T2('Abrir o cofre de chaves (guia passo a passo)', 'Open the key vault (step-by-step guide)') + '</button><div id="hn-cofre-digital" class="mt"></div>' +
       '<p class="t-caption muted mt">' + T2('Plano grátis primeiro (Gemini lê fotos e não pede cartão). A chave fica só neste aparelho e vale em todos os apps SolverONE. Nunca cole a chave em chat ou e-mail.', 'Free plan first (Gemini reads photos and needs no card). The key stays on this device only and works in every SolverONE app. Never paste the key in a chat or e-mail.') + '</p>' +
       '<h3 class="mt2">📶 ' + T2('Rede e dados móveis', 'Network and mobile data') + '</h3>' + sel('pesado', T2('Baixar pacotes grandes (leitor de rótulos ≈5,5 MB)', 'Download large packages (label reader ≈5.5 MB)')) + sel('ia', T2('Perguntar à IA (fotos do prato)', 'Ask the AI (plate photos)')) +
       '<p class="t-caption muted mt">' + T2('Só Chrome e Edge no Android dizem se é Wi-Fi ou dados; nos outros, “Só no Wi-Fi” bloqueia apenas em economia de dados.', 'Only Chrome and Edge on Android tell Wi-Fi from data; elsewhere, “Wi-Fi only” blocks only in data-saver mode.') + '</p></div>';
@@ -65,6 +65,7 @@
     return h;
   };
   HN.after.config = function () {
+    var dig = HN.q('#hn-cofre-digital'); if (dig && window.SolverCofre && SolverCofre.painelDigital) SolverCofre.painelDigital(dig); // painel da digital do cofre (desenhado pelo cofre.js)
     var box = HN.q('#stor'); if (box && navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { box.textContent = T('Uso do aparelho: ', 'Device usage: ') + HN.num((e.usage || 0) / 1048576, 1) + ' MB' + (e.quota ? ' / ' + HN.num(e.quota / 1048576, 0) + ' MB' : ''); }, function () { });
     var nw = HN.q('#news'); if (nw) fetch('versoes.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (j) { nw.innerHTML = (j.versoes || []).map(function (v) { return '<p><b>v' + esc(v.v) + '</b> · ' + esc(v.data) + '<br>' + esc(HN.tt([v.pt, v.en])) + '</p>'; }).join(''); }).catch(function () { nw.textContent = T('Indisponível offline.', 'Unavailable offline.'); });
   };

@@ -5,7 +5,7 @@
    leitor de rótulos e instalação (sw.js). Do módulo comum entram: o cofre de
    chaves de IA (o mesmo de todos os apps SolverONE) e a regra de rede
    (Wi-Fi ou dados). Sem anúncios, sem login do módulo (ainda não há contas).
-   Módulo comum 1.9.0: interruptores e ⚡ Modo DEUS, manutenção, Fundo, Compat e Feedback.
+   Módulo comum 1.11.0: interruptores e ⚡ Modo DEUS, manutenção, Fundo, Compat, Feedback, janela comum e cofre com PIN.
    ===================================================================== */
 DGO.iniciar({
   app: 'hypernutry',                        /* gaveta de dados: nunca mude */
@@ -20,7 +20,7 @@ DGO.iniciar({
   seletorIdiomaVisivel: false,
   datasAutomaticas: false,
   varreduraAutomatica: false,
-  ignorar: ['#top', '#parts', '#app', '#bn', '#layers'],
+  ignorar: ['#top', '#parts', '#app', '#bn', 'dialog.hn-ly'],
 
   anuncios: { ativo: false, arquivo: '', popup: { ativo: false } },   /* SolverONE não mostra anúncio */
   login: { ativo: false, permitirVisitante: false, permitirPagante: false, permitirAnunciante: false },
@@ -77,7 +77,13 @@ DGO.iniciar({
     ]
   },
 
-  rede: { pesado: 'wifi', ia: 'sempre' }
+  rede: { pesado: 'wifi', ia: 'sempre' },
+
+  /* cofre comum de chaves (cofre.js): as chaves de IA moram só nele, trancadas por PIN. O lugar antigo
+     (dgo:global:chaves-ia) o próprio cofre já conhece de fábrica; este app não guardava chave em nenhum outro
+     lugar, por isso 'fontes' fica vazio. proteger: com chave guardada, PIN ao abrir e ao recarregar; tranca ao sair
+     do app, escondido e sem uso (trabalho rodando no Fundo só adia). Sem chave guardada, nunca pede PIN. */
+  cofre: { fontes: [], proteger: true }
 });
 
 /* Modo DEUS: a tela aberta confere de novo os interruptores agora que o módulo leu a cópia guardada,

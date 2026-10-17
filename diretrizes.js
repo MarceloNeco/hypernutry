@@ -21,7 +21,16 @@
 (function (raiz) {
   'use strict';
 
-  var VERSAO = '1.9.0';
+  /* 1.11.0 (17/Out/2026): toda janela do módulo (a janela padrão, o pop-up de anúncio, o "Estou ciente")
+     passa pela janela comum (janela.js, global SolverJanela, também em DGO.janela): a página de trás não rola
+     nem recebe toque, Esc/Voltar/toque fora cancelam, texto digitado pergunta "Descartar?". A tela das chaves
+     de IA não põe mais a chave guardada no campo: "✓ guardado", "Mostrar a chave" (pede o PIN, 30 s) e a
+     máscara "••••" nunca vira chave. Mínimos recomendados de navegador sobem para os que têm :has().
+     Ordem: janela.js -> cofre.js -> diretrizes.js -> diretrizes-config.js.
+     1.10.0 (16/Out/2026): as chaves de IA moram SÓ no cofre comum (cofre.js, global SolverCofre), trancadas
+     por PIN. Sem o cofre.js na página, continua do jeito antigo (texto aberto) e avisa no console.
+     Ver ARQUITETURA.md, "Cofre comum de chaves" e "Janela comum". */
+  var VERSAO = '1.11.0';
   if (raiz.DGO && raiz.DGO.__carregado) { return; }
 
   /* ------------------------------------------------------------------
@@ -80,6 +89,17 @@
       contexto: '',                 // o que este app faz, para a IA saber onde esta
       sugestoes: [],                // [{pt,en}] perguntas de exemplo
       servico: 'ia'                 // id do servico, para o controle de nivel
+    },
+
+    /* cofre comum (cofre.js): onde este app guardava chaves em texto aberto antes, para irem
+       sozinhas para o cofre na primeira vez que ele abrir. Ex. (RiseONE):
+       fontes: [{ chave: 'riseone.v1', caminho: 'settings.ai.keys', mapa: { gemini: 'ia:gemini', openai: 'ia:openai', claude: 'ia:anthropic' } }] */
+    cofre: {
+      fontes: [],
+      /* 1.11.0: true = as regras do PIN do Contador 1.25 neste app (SolverCofre.proteger, cofre.js 1.4.0): com chave
+         guardada, pede o PIN ao abrir e ao recarregar; tranca ao sair do app, com o app escondido por mais de 1 minuto
+         e com 5 minutos sem uso (trabalho rodando no Fundo só adia esse último). Quem não guarda chave nunca vê o PIN. */
+      proteger: false
     },
 
     /* o que pode ser feito em dados moveis: 'sempre' | 'wifi' | 'nunca' */
@@ -390,6 +410,7 @@
       '.dgo-guia-ilu img,.dgo-guia-ilu svg{display:block;width:100%;height:auto;border-radius:10px;}',
       '.dgo-campo{position:relative;}',
       '.dgo-olho{position:absolute;right:6px;bottom:6px;width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#94a3b8;cursor:pointer;font-size:16px;}',
+      '.dgo-guardado{color:#34d399;font-weight:700;margin-left:4px;}',
       '.dgo-usar{flex-wrap:wrap;}.dgo-usar .dgo-b{width:auto;flex:1 1 auto;}',
       '.dgo-passo{border:2px solid var(--dgo-cor);border-radius:12px;padding:10px 12px;margin:10px 0;background:rgba(255,255,255,.04);}',
       '.dgo-passo-cab{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:13px;}',
@@ -777,7 +798,13 @@
     suaChave: ['Sua chave', 'Your key'],
     umaVez: ['aparece só uma vez!', 'shows only once!'],
     salvarTestar: ['Salvar e testar', 'Save and test'],
-    mostrarChave: ['Mostrar ou esconder a chave', 'Show or hide the key'],
+    mostrarChave: ['Mostrar a chave guardada', 'Show the saved key'],
+    mostrarChaveMotivo: ['Para mostrar a chave guardada, digite o PIN do cofre.', 'To show the saved key, type the vault PIN.'],
+    mostrandoChave: ['A chave aparece por 30 segundos e depois volta a ficar escondida.', 'The key shows for 30 seconds and then hides again.'],
+    guardado: ['✓ guardado', '✓ saved'],
+    guardadoCofre: ['✓ Guardado no cofre', '✓ Saved in the vault'],
+    chaveTrocar: ['Colar outra chave para trocar', 'Paste another key to replace it'],
+    chaveMascara: ['Isso é só a máscara da chave. Cole a chave de verdade.', 'That is just the key mask. Paste the real key.'],
     testando: ['Testando a chave com o provedor…', 'Testing the key with the provider…'],
     chaveOk: ['✓ Chave aceita. Pronto para usar.', '✓ Key accepted. Ready to use.'],
     chaveSalva: ['Chave salva.', 'Key saved.'],
@@ -1580,6 +1607,16 @@
       caixa.style.setProperty('--c-fraca', corSuave(cor, 0.10));
 
       var envelope = el('div', { class: 'dgo-pop-env' }, [caixa, fecharBt]);
+      /* 1.11.0: pela janela comum. A contagem 3, 2, 1 é a ÚNICA exceção escrita da regra "nenhuma janela sem
+         saída": enquanto ela corre, nada fecha; depois, ✕, Esc, Voltar e toque fora valem. */
+      var Jc = janelaComum();
+      if (Jc) {
+        var jAn = Jc.abrir({ conteudo: envelope, classe: 'dgo-pop-fundo', rotulo: a.nome, atributos: { 'data-dgo-ui': '1' },
+          espera: { segundos: espera, botao: fecharBt }, focar: fecharBt });
+        fecharBt.addEventListener('click', function () { if (!fecharBt.disabled) jAn.fechar('fechar'); });
+        return jAn.el;
+      }
+      avisarSemJanela();
       var fundo = el('div', { class: 'dgo-pop-fundo', 'data-dgo-ui': '1', role: 'dialog',
                               'aria-modal': 'true' }, [envelope]);
       d.body.appendChild(fundo);
@@ -2819,31 +2856,62 @@
   /* ------------------------------------------------------------------
      15. JANELAS (modais) DO MODULO
      ------------------------------------------------------------------ */
-  var modalEl = null;
+  /* 1.11.0: a janela do módulo é a janela comum (janela.js). Ela é UMA só: abrir outra tela do módulo
+     com a janela já aberta troca o conteúdo (como antes), sem empilhar nem mexer no histórico. */
+  var modalEl = null, modalJ = null;
+  function janelaComum() { var J = raiz.SolverJanela; return (J && J.__carregado) ? J : null; }
+  var _avisouSemJanela = false;
+  function avisarSemJanela() {
+    if (_avisouSemJanela) return; _avisouSemJanela = true;
+    try { console.warn('[DGO ' + VERSAO + '] janela.js não está nesta página: as janelas do módulo abrem do jeito antigo (sem travar a página de trás). Carregue <script src="janela.js"></script> antes do cofre.js e do diretrizes.js.'); } catch (e) {}
+  }
+  function focarPrimeiro(caixa) {
+    var primeiro = caixa.querySelector('input,button,select,textarea');
+    return (primeiro && !Plataforma.ehCelular()) ? primeiro : null;
+  }
   function abrirModal(caixa, recriar) {
-    fecharModal();
+    var J = janelaComum();
+    if (!J) return abrirModalAntigo(caixa, recriar);
+    if (modalJ && !modalJ.fechada) {
+      modalJ.trocar(caixa);
+    } else {
+      modalJ = J.abrir({ conteudo: caixa, classe: 'dgo-modal', focar: focarPrimeiro(caixa), atributos: { 'data-dgo-ui': '1' },
+        aoFechar: function () { OCR.pararCamera(); modalJ = null; modalEl = null; } });
+      modalEl = modalJ.el;
+    }
+    modalEl._recriar = recriar || null;
+    var f = focarPrimeiro(caixa); if (f && modalEl.open) { try { f.focus(); } catch (e) {} }
+    return modalEl;
+  }
+  function fecharModal() {
+    OCR.pararCamera();
+    if (modalJ) { var j = modalJ; modalJ = null; modalEl = null; j.fechar('fechar'); return; }
+    fecharModalAntigo();
+  }
+  /* sem o janela.js na página (app que ainda não recebeu o arquivo): o jeito de antes, com aviso no console */
+  function abrirModalAntigo(caixa, recriar) {
+    avisarSemJanela();
+    fecharModalAntigo();
     modalEl = el('div', { class: 'dgo-modal', 'data-dgo-ui': '1', role: 'dialog', 'aria-modal': 'true' }, [caixa]);
     modalEl._recriar = recriar || null;
     modalEl.addEventListener('click', function (e) { if (e.target === modalEl) fecharModal(); });
     d.addEventListener('keydown', escFecha);
     d.body.appendChild(modalEl);
-    var primeiro = modalEl.querySelector('input,button,select,textarea');
-    if (primeiro && !Plataforma.ehCelular()) { try { primeiro.focus(); } catch (e) {} }
+    var f = focarPrimeiro(caixa); if (f) { try { f.focus(); } catch (e) {} }
     return modalEl;
   }
   function escFecha(e) { if (e.key === 'Escape') fecharModal(); }
-  function fecharModal() {
-    OCR.pararCamera();
+  function fecharModalAntigo() {
     d.removeEventListener('keydown', escFecha);
     if (modalEl && modalEl.parentNode) modalEl.parentNode.removeChild(modalEl);
     modalEl = null;
   }
   function redesenharInterfaceDGO() {
-    if (modalEl && typeof modalEl._recriar === 'function') { var f = modalEl._recriar; fecharModal(); f(); }
-    if (bannerEl) { /* o texto do placeholder muda com o idioma */
-      var img = bannerEl.querySelector('img');
-      if (img && !cfg.anuncios.imagem) img.src = imagemPlaceholder();
-    }
+    /* com a janela comum o conteúdo é trocado no lugar (sem fechar e abrir de novo); no jeito antigo, abrirModal já fecha antes */
+    if (modalEl && typeof modalEl._recriar === 'function') { var f = modalEl._recriar; f(); }
+    /* a faixa de anúncio é refeita no idioma novo (antes chamava imagemPlaceholder(), que não existe
+       mais, e a troca de idioma quebrava com anúncio na tela — achado no CifrasONE, 10/Out/2026) */
+    if (bannerEl) montarFaixa();
   }
   function campo(rotulo, props) {
     var i = el('input', props || { type: 'text' });
@@ -4460,14 +4528,60 @@
     }
   };
 
+  /* ---- cofre comum (cofre.js, 1.10.0) ---- */
+  function cofreComum() { var C = raiz.SolverCofre; return (C && C.__carregado) ? C : null; }
+  var _avisouSemCofre = false;
+  function avisarSemCofre() {
+    if (_avisouSemCofre) return; _avisouSemCofre = true;
+    try { console.warn('[DGO ' + VERSAO + '] cofre.js não está nesta página: as chaves de IA continuam no jeito antigo (texto aberto em dgo:global:chaves-ia). Carregue <script src="cofre.js"></script> antes do diretrizes.js.'); } catch (e) {}
+  }
+  var _cofreLigado = false;
+  function ligarCofreComum() {
+    var C = cofreComum();
+    if (!C) { avisarSemCofre(); return; }
+    if (cfg.cofre && cfg.cofre.fontes && cfg.cofre.fontes.length) C.registrarFontes(cfg.cofre.fontes);
+    if (C.aberto()) C.migrar().catch(function () {});     /* abriu antes do app dizer onde guardava as chaves */
+    if (_cofreLigado) return; _cofreLigado = true;
+    if (cfg.cofre && cfg.cofre.proteger && typeof C.proteger === 'function') {
+      var nm = cfg.nome, nPt = (nm && typeof nm === 'object') ? (nm.pt || nm.en || 'app') : String(nm || 'app'), nEn = (nm && typeof nm === 'object') ? (nm.en || nm.pt || 'the app') : String(nm || 'the app');
+      C.proteger({
+        motivo: { pt: 'Digite o PIN para usar as chaves guardadas no ' + nPt + '.', en: 'Type the PIN to use the keys saved in ' + nEn + '.' },
+        /* trabalho demorado rodando (foto, OCR, IA, importação) só adia o trancar por falta de uso */
+        ocupado: function () { var a = Fundo.ativas(); return a && a.length ? 'fundo:' + a.length : false; }
+      });
+    }
+    d.addEventListener('cofre:mudou', function (e) {
+      var nome = (e.detail && e.detail.nome) || '';
+      if (nome === '*' || nome.indexOf('ia:') === 0) d.dispatchEvent(new CustomEvent('dgo:ia-chaves', { detail: { provedor: nome === '*' ? '' : nome.slice(3), tem: !!(e.detail && e.detail.tem) } }));
+    });
+    ['cofre:aberto', 'cofre:trancado'].forEach(function (ev) {
+      d.addEventListener(ev, function () { d.dispatchEvent(new CustomEvent('dgo:ia-chaves', { detail: { provedor: '', cofre: ev.slice(6) } })); });
+    });
+  }
+
   var IA = {
     _conversa: [],
     cofreBackend: null,      /* futuro: { ler(), gravar(obj) } para sincronizar entre aparelhos */
 
-    /* ---- cofre, compartilhado entre os apps (mesma origem) ---- */
-    chaves: function () { return Guardar.ler('chaves-ia', {}, true) || {}; },
-    chave: function (prov) { return IA.chaves()[prov] || ''; },
+    /* ---- cofre, compartilhado entre os apps (mesma origem) ----
+       1.10.0: com o cofre.js na pagina, a chave mora SO no SolverCofre ('ia:<provedor>'), trancada por PIN.
+       Sem ele, o jeito antigo (dgo:global:chaves-ia em texto aberto) continua, com aviso no console. */
+    chaves: function () { if (cofreComum()) return {}; avisarSemCofre(); return Guardar.ler('chaves-ia', {}, true) || {}; },
+    /* sem esperar: o que ja esta aberto ('' com o cofre trancado) */
+    chave: function (prov) { var C = cofreComum(); return C ? String(C.lerAgora('ia:' + prov) || '') : (IA.chaves()[prov] || ''); },
+    /* Promise: se o cofre estiver trancado, pede o PIN e responde depois */
+    lerChave: function (prov) {
+      var C = cofreComum();
+      if (!C) return Promise.resolve(IA.chave(prov));
+      return C.ler('ia:' + prov, { motivo: { pt: 'Para usar a IA (' + nomeProv(PROVEDORES[prov] || { nome: prov }) + ') com a chave guardada.', en: 'To use the AI (' + nomeProv(PROVEDORES[prov] || { nome: prov }) + ') with the saved key.' } })
+        .then(function (v) { return String(v || ''); });
+    },
     definirChave: function (prov, valor) {
+      var C = cofreComum();
+      if (C) {
+        /* o aviso dgo:ia-chaves sai pelo evento cofre:mudou (ver ligarCofreComum) */
+        return (valor ? C.gravar('ia:' + prov, String(valor).trim(), { motivo: { pt: 'Para guardar a chave de IA com proteção.', en: 'To keep the AI key protected.' } }) : C.apagar('ia:' + prov));
+      }
       var c = IA.chaves();
       if (valor) c[prov] = String(valor).trim(); else delete c[prov];
       Guardar.gravar('chaves-ia', c, true);
@@ -4480,6 +4594,8 @@
       if (PROVEDORES[prov] && PROVEDORES[prov].semChave) return true;
       /* um proxy no servidor dispensa chave no navegador */
       if (IA.proxyDe(prov)) return true;
+      var C = cofreComum();
+      if (C) return C.tem('ia:' + prov);       /* sabe sem abrir: o cofre guarda os nomes em claro, nunca os valores */
       return !!IA.chave(prov);
     },
 
@@ -4527,7 +4643,7 @@
       prov = prov || IA.provedor();
       var pr = PROVEDORES[prov];
       if (!pr || !pr.listar) return Promise.resolve([]);
-      return pr.listar(IA.chave(prov)).then(function (lista) {
+      return IA.lerChave(prov).then(function (k) { return pr.listar(k); }).then(function (lista) {
         var cache = Guardar.ler('ia-lista-modelos', {}, true) || {};
         cache[prov] = { em: Date.now(), modelos: lista.slice(0, 400) };
         Guardar.gravar('ia-lista-modelos', cache, true);
@@ -4566,16 +4682,18 @@
           body: JSON.stringify({ provedor: prov, modelo: modelo, sistema: sistema, mensagens: msgs, app: cfg.app, limite: opcoes.limite || null })
         }).then(lerResposta).then(function (j) { return String(j.texto || j.resposta || '').trim(); });
       }
-      var chave = IA.chave(prov);
-      if (!chave && prov !== 'personalizado') return Promise.reject(new Error('sem-chave'));
-      /* opcoes.limite: tamanho maximo da resposta (textos longos, como termos) */
-      return pr.chamar(chave, modelo, sistema, msgs, opcoes.limite).catch(function (e) {
-        /* Modelo aposentado pelo provedor (o Google faz isso sem aviso): escolhe outro
-           entre os que a chave aceita, guarda e tenta de novo uma vez. */
-        if (opcoes._semTroca || !IA.modeloSumiu(e) || !pr.listar) throw e;
-        return IA.trocarModeloSozinho(prov, modelo, e).then(function (novo) {
-          if (!novo) throw e;
-          return IA.perguntar(pergunta, Object.assign({}, opcoes, { modelo: novo, _semTroca: true }));
+      /* 1.10.0: a chave vem do cofre comum (pede o PIN se estiver trancado) */
+      return IA.lerChave(prov).then(function (chave) {
+        if (!chave && prov !== 'personalizado') throw new Error('sem-chave');
+        /* opcoes.limite: tamanho maximo da resposta (textos longos, como termos) */
+        return pr.chamar(chave, modelo, sistema, msgs, opcoes.limite).catch(function (e) {
+          /* Modelo aposentado pelo provedor (o Google faz isso sem aviso): escolhe outro
+             entre os que a chave aceita, guarda e tenta de novo uma vez. */
+          if (opcoes._semTroca || !IA.modeloSumiu(e) || !pr.listar) throw e;
+          return IA.trocarModeloSozinho(prov, modelo, e).then(function (novo) {
+            if (!novo) throw e;
+            return IA.perguntar(pergunta, Object.assign({}, opcoes, { modelo: novo, _semTroca: true }));
+          });
         });
       });
     },
@@ -4663,6 +4781,7 @@
     explicarErro: function (e) {
       var en = Idioma.atual === 'en', m = String(e && e.message || e || ''), st = e && e.status;
       function T2(pt, en2) { return en ? en2 : pt; }
+      if (m === 'cofre-trancado') return T2('O cofre de chaves ficou trancado. Abra com o seu PIN para usar a IA.', 'The key vault stayed locked. Open it with your PIN to use the AI.');
       if (m === 'sem-chave') return T2('Falta a chave da IA. Abra o cofre de chaves e cole uma grátis.', 'The AI key is missing. Open the key vault and paste a free one.');
       if (m === 'sem-internet') return T2('Sem internet.', 'No internet.');
       if (m === 'so-wifi') return T2('A IA está marcada para usar só no Wi-Fi (Configurações → Rede).', 'AI is set to Wi-Fi only (Settings → Network).');
@@ -4928,6 +5047,8 @@
   function chaveParece(prov, valor) {
     var pr = PROVEDORES[prov]; valor = String(valor || '').trim();
     if (!valor) return { ok: false, pt: 'Cole a chave.', en: 'Paste the key.' };
+    /* 1.11.0: a máscara "••••••••" é só desenho do campo: nunca pode virar a chave guardada */
+    if (/^[•·●*]{3,}$/.test(valor)) return { ok: false, pt: UI.chaveMascara[0], en: UI.chaveMascara[1] };
     if (/\s/.test(valor)) return { ok: false, pt: 'A chave tem espaço ou quebra de linha no meio: copie de novo, inteira.', en: 'The key has a space or line break inside: copy it again, whole.' };
     if (valor.length < 20) return { ok: false, pt: 'Curta demais: parece que faltou um pedaço.', en: 'Too short: looks like part is missing.' };
     /* Prefixo e so uma dica: os provedores mudam o formato (o Gemini passou de AIza para AQ.
@@ -4964,7 +5085,8 @@
       if (prontos.length) return prontos[0];
       return (cap === 'tts' || cap === 'stt') ? 'aparelho' : '';
     },
-    chave: function (cap) { var p = PorUso.provedor(cap); return p ? IA.chave(p) : ''; }
+    chave: function (cap) { var p = PorUso.provedor(cap); return p ? IA.chave(p) : ''; },
+    lerChave: function (cap) { var p = PorUso.provedor(cap); return p && p !== 'aparelho' ? IA.lerChave(p) : Promise.resolve(''); }
   };
 
   /* ---- ilustracao desenhada de cada passo (SVG), ou o print do app ---- */
@@ -5009,6 +5131,12 @@
   }
 
   function abrirChaves(provedorAberto, capInicial) {
+    /* 1.10.0: com cofre comum trancado, pede o PIN antes de mostrar as chaves */
+    var C = cofreComum();
+    if (C && !C.aberto() && (C.existe() || C.pendentes().length)) {
+      return C.pedir({ motivo: { pt: 'Para ver e trocar as chaves de IA.', en: 'To see and change your AI keys.' } })
+        .then(function (ok) { return ok ? abrirChaves(provedorAberto, capInicial) : null; });
+    }
     completarProvedores();
     var aberto = provedorAberto || '';
     var filtro = capInicial || Guardar.ler('ia-cofre-filtro', '', true) || '';
@@ -5145,13 +5273,33 @@
             cB._input.addEventListener('change', function () { IA.definirBase(p, cB._input.value); });
             corpo.appendChild(cB);
           }
+          /* 1.11.0 (as regras do Contador 1.25): a chave guardada NÃO vem para o campo. O campo serve só para colar
+             uma nova; o 👁 mostra o que se digita (sem PIN). A guardada aparece com "Mostrar a chave guardada", que
+             tranca o cofre e pede o PIN de novo (quem pegou o celular aberto não vê), por 30 segundos. */
+          var jaTem = IA.temChave(p), mostrada = '';
           var cK = campo(t('chave') + ' — ' + nomeProv(pr), { type: 'password', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'none',
-            placeholder: IA.chave(p) ? '••••••••' : (prefixoTxt(pr) ? prefixoTxt(pr) + '…' : '') });
-          cK._input.value = IA.chave(p);
-          var olho = el('button', { type: 'button', class: 'dgo-olho', 'aria-label': t('mostrarChave'), texto: '👁', onclick: function () {
-            cK._input.type = cK._input.type === 'password' ? 'text' : 'password'; } });
-          cK.appendChild(olho);
+            'data-lpignore': 'true', 'data-1p-ignore': '', 'data-sj-texto': '', placeholder: jaTem ? t('chaveTrocar') : (prefixoTxt(pr) ? prefixoTxt(pr) + '…' : '') });
+          if (jaTem) cK.firstChild.appendChild(el('span', { class: 'dgo-guardado', texto: ' ' + t('guardado') }));
           corpo.appendChild(cK);
+          if (jaTem) {
+            var notaMostrar = el('p', { class: 'dgo-mini', role: 'status' });
+            corpo.appendChild(el('button', { class: 'dgo-b dgo-b2', type: 'button', texto: '👁 ' + t('mostrarChave'), onclick: function () {
+              var b = this, C = cofreComum(); b.disabled = true;
+              var pedir = C ? C.trancar().then(function () { return C.pedir({ motivo: { pt: UI.mostrarChaveMotivo[0], en: UI.mostrarChaveMotivo[1] }, semOferta: true }); }) : Promise.resolve(true);
+              pedir.then(function (ok) {
+                b.disabled = false;
+                if (!ok) return;
+                mostrada = IA.chave(p);
+                cK._input.value = mostrada; cK._input.type = 'text'; if (cK._input._olho) cK._input._olho.pintar();
+                notaMostrar.textContent = t('mostrandoChave');
+                setTimeout(function () {
+                  if (cK._input.value === mostrada) cK._input.value = '';
+                  mostrada = ''; cK._input.type = 'password'; if (cK._input._olho) cK._input._olho.pintar(); notaMostrar.textContent = '';
+                }, 30000);
+              }, function () { b.disabled = false; });
+            } }));
+            corpo.appendChild(notaMostrar);
+          }
 
           var cM = null, dl = null;
           if ((pr.cap || []).indexOf('texto') !== -1) {
@@ -5167,31 +5315,41 @@
           var l1 = el('div', { class: 'dgo-linha' });
           l1.appendChild(el('button', { class: 'dgo-b', type: 'button', texto: t('salvarTestar'), onclick: function () {
             var b = this, valor = cK._input.value.trim();
-            var chk = chaveParece(p, valor);
+            /* campo vazio (ou só a chave mostrada) com chave já guardada: testa a guardada, sem gravar de novo */
+            var soTestar = jaTem && (!valor || valor === mostrada);
+            var chk = soTestar ? { ok: true } : chaveParece(p, valor);
             msg.innerHTML = '';
             if (!chk.ok && !(p === 'personalizado' && !valor)) { msg.appendChild(aviso(chk[Idioma.atual] || chk.pt, 'erro')); return; }
             if (chk.aviso) msg.appendChild(aviso(chk.aviso[Idioma.atual] || chk.aviso.pt, 'info'));
-            IA.definirChave(p, valor);
-            if (cM) IA.definirModelo(p, cM._input.value.trim());
-            if ((pr.cap || []).indexOf('texto') !== -1 && IA.temChave(p) && !IA.provedoresProntos().filter(function (x) { return x !== p; }).length) IA.definirProvedor(p);
-            b.disabled = true; msg.appendChild(aviso(t('testando'), 'info'));
-            testarChave(p, valor).then(function (r) {
-              msg.innerHTML = '';
-              msg.appendChild(aviso(r.semTeste ? t('chaveSalva') : t('chaveOk'), 'ok'));
-              guiaDefinir(p, null);
-              if (janelaGuia && !janelaGuia.closed) { try { janelaGuia.close(); } catch (e3) {} }
-              if (r.modelos && dl) {
-                var gratis = r.modelos.filter(function (m) { return m.gratis; });
-                var usar = (gratis.length && pr.gratis) ? gratis : r.modelos;
-                dl.innerHTML = ''; usar.slice(0, 300).forEach(function (m) { dl.appendChild(el('option', { value: m.id })); });
-                if (cM && !cM._input.value && usar.length) { cM._input.value = usar[0].id; IA.definirModelo(p, usar[0].id); }
-              }
-              setTimeout(reabrir, 900);
-            }).catch(function (e) {
-              msg.innerHTML = '';
-              var st = e && e.status;
-              var txt = st === 401 || st === 403 ? t('chaveRecusada') : (!st && /fetch|network/i.test(String(e && e.message)) ? t('corsAviso') : t('erroIA') + ' ' + ((e && e.message) || ''));
-              msg.appendChild(aviso(txt, st === 401 || st === 403 ? 'erro' : 'info'));
+            b.disabled = true;
+            /* 1.10.0: com o cofre comum, gravar pode pedir o PIN (ou criar o cofre) antes; espera terminar */
+            (soTestar ? IA.lerChave(p).then(function (v) { valor = v; }) : Promise.resolve(IA.definirChave(p, valor))).then(function () {
+              if (cM) IA.definirModelo(p, cM._input.value.trim());
+              if ((pr.cap || []).indexOf('texto') !== -1 && IA.temChave(p) && !IA.provedoresProntos().filter(function (x) { return x !== p; }).length) IA.definirProvedor(p);
+              /* gravou: o texto do campo já está salvo (tocar fora não pergunta "Descartar?") e o campo esvazia */
+              cK._input.value = ''; cK._input.type = 'password'; mostrada = '';
+              if (modalJ) modalJ.salvo();
+              msg.appendChild(aviso(soTestar ? t('testando') : t('guardadoCofre') + ' · ' + t('testando'), 'info'));
+              return testarChave(p, valor).then(function (r) {
+                msg.innerHTML = '';
+                msg.appendChild(aviso((soTestar ? '' : t('guardadoCofre') + ' · ') + (r.semTeste ? t('chaveSalva') : t('chaveOk')), 'ok'));
+                guiaDefinir(p, null);
+                if (janelaGuia && !janelaGuia.closed) { try { janelaGuia.close(); } catch (e3) {} }
+                if (r.modelos && dl) {
+                  var gratis = r.modelos.filter(function (m) { return m.gratis; });
+                  var usar = (gratis.length && pr.gratis) ? gratis : r.modelos;
+                  dl.innerHTML = ''; usar.slice(0, 300).forEach(function (m) { dl.appendChild(el('option', { value: m.id })); });
+                  if (cM && !cM._input.value && usar.length) { cM._input.value = usar[0].id; IA.definirModelo(p, usar[0].id); }
+                }
+                setTimeout(reabrir, 900);
+              }).catch(function (e) {
+                msg.innerHTML = '';
+                var st = e && e.status;
+                var txt = st === 401 || st === 403 ? t('chaveRecusada') : (!st && /fetch|network/i.test(String(e && e.message)) ? t('corsAviso') : t('erroIA') + ' ' + ((e && e.message) || ''));
+                msg.appendChild(aviso(txt, st === 401 || st === 403 ? 'erro' : 'info'));
+              });
+            }, function (e) {
+              msg.innerHTML = ''; msg.appendChild(aviso(IA.explicarErro(e), 'erro'));
             }).then(function () { b.disabled = false; });
           } }));
           corpo.appendChild(l1);
@@ -5207,7 +5365,7 @@
               onclick: function () { if (c === 'texto') IA.definirProvedor(p); else PorUso.definir(c, p); reabrir(); } }));
           });
           if (!pr.semChave) lu.appendChild(el('button', { class: 'dgo-b dgo-b2', type: 'button', texto: t('remover'), onclick: function () {
-            IA.definirChave(p, ''); ['stt', 'tts'].forEach(function (c) { if (PorUso.ler()[c] === p) PorUso.definir(c, ''); }); reabrir(); } }));
+            Promise.resolve(IA.definirChave(p, '')).then(function () { ['stt', 'tts'].forEach(function (c) { if (PorUso.ler()[c] === p) PorUso.definir(c, ''); }); reabrir(); }, function () {}); } }));
           corpo.appendChild(lu);
         }
         corpo.appendChild(msg);
@@ -5215,6 +5373,14 @@
       });
 
       caixa.appendChild(aviso(t('chaveAvisoCusto') + ' ' + t('chaveNuncaChat'), 'info'));
+      var Cc = cofreComum();
+      if (Cc && Cc.aberto()) {
+        caixa.appendChild(el('p', { class: 'dgo-mini', texto: Idioma.atual === 'en'
+          ? '🔐 The keys are locked with your PIN in this browser.'
+          : '🔐 As chaves ficam trancadas com o seu PIN neste navegador.' }));
+        caixa.appendChild(el('button', { class: 'dgo-b dgo-b2', type: 'button', texto: Idioma.atual === 'en' ? '🔒 Lock the vault now' : '🔒 Trancar o cofre agora',
+          onclick: function () { fecharModal(); Cc.trancar(); } }));
+      }
       caixa.appendChild(el('button', { class: 'dgo-b dgo-b2', type: 'button', texto: t('fechar'), onclick: fecharModal }));
       return caixa;
     }
@@ -5432,7 +5598,9 @@
      mensagem certa; escrito sem sintaxe nova, porque roda justamente no navegador velho.
      ------------------------------------------------------------------ */
   var Compat = (function () {
-    var MINIMOS_PADRAO = { chrome: 100, edge: 100, firefox: 100, safari: 15.4, samsung: 18 };
+    /* 1.11.0: os primeiros com :has() (a trava da rolagem atrás das janelas) e, no iPhone, overscroll-behavior.
+       Fonte: MDN browser-compat-data 8.1.6 (17/Out/2026). Abaixo disso só aparece a faixa "atualize"; nada bloqueia. */
+    var MINIMOS_PADRAO = { chrome: 105, edge: 105, firefox: 121, safari: 16, samsung: 20 };
     var DENTRO = [[/Instagram/i, 'Instagram'], [/FBAN|FBAV|FB_IAB|FBIOS|FB4A/i, 'Facebook'], [/WhatsApp/i, 'WhatsApp'],
                   [/LinkedInApp/i, 'LinkedIn'], [/musical_ly|TikTok|BytedanceWebview|trill_/i, 'TikTok']];
     var NOMES = {   /* [pt, en, título pt, título en, ícone] */
@@ -5592,8 +5760,17 @@
       var b = el('button', { type: 'button', class: estilo || '', texto: L('Copiar endereço', 'Copy address') });
       b.addEventListener('click', function () {
         var u = raiz.location.href, feito = function () { b.textContent = L('✓ Copiado', '✓ Copied'); };
-        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(u).then(feito, function () { raiz.prompt(L('Copie o endereço:', 'Copy the address:'), u); }); return; } } catch (e) {}
-        raiz.prompt(L('Copie o endereço:', 'Copy the address:'), u);
+        /* 1.11.0: sem prompt() do navegador (janela que não segue a regra): o endereço aparece selecionado ao lado do botão */
+        function mostrar() {
+          if (b._campo) { b._campo.select(); return; }
+          var c = el('input', { type: 'text', readonly: '', value: u, 'aria-label': L('Endereço para copiar', 'Address to copy'),
+            style: { display: 'block', width: '100%', marginTop: '6px', minHeight: '40px', boxSizing: 'border-box' } });
+          b._campo = c; if (b.parentNode) b.parentNode.insertBefore(c, b.nextSibling);
+          b.textContent = L('Copie o endereço abaixo', 'Copy the address below');
+          try { c.focus(); c.select(); } catch (e2) {}
+        }
+        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(u).then(feito, mostrar); return; } } catch (e) {}
+        mostrar();
       });
       return b;
     }
@@ -5753,7 +5930,8 @@
     function explicar(id, opcoes, r) {
       opcoes = opcoes || {};
       return new Promise(function (ok) {
-        var antes = d.getElementById('dgo-compat-janela'); if (antes) antes.parentNode.removeChild(antes);
+        /* a do jeito antigo some; a da janela comum espera a vez (uma janela por vez) */
+        var antes = d.getElementById('dgo-compat-janela'); if (antes && !antes.classList.contains('sj')) antes.parentNode.removeChild(antes);
         var st = r ? (id === 'espaco' ? 'pouco' : r[id]) : 'bloqueado', nav = (r && r.navegador) || navegador(), amb = ambiente(nav);
         var nome = nomeDe(id), icone = (NOMES[id] || [])[4] || '⚠️';
         var titulo = st === 'bloqueado' ? L('O acesso a ' + nome + ' está bloqueado', 'Access to ' + nome + ' is blocked')
@@ -5771,6 +5949,14 @@
           : L('Use outro aparelho, ou abra este endereço no Chrome ou no Safari atualizado.', 'Use another device, or open this address in an up-to-date Chrome or Safari.') }));
         var ent = el('button', { class: 'dgo-b', type: 'button', texto: L('Entendi', 'Got it') });
         caixa.appendChild(ent);
+        var Jc = janelaComum();
+        if (Jc) {      /* 1.11.0: pela janela comum (Entendi, Esc, Voltar e toque fora fecham) */
+          var jc = Jc.abrir({ conteudo: caixa, classe: 'dgo-compat-janela', id: 'dgo-compat-janela', papel: 'alertdialog', rotulo: titulo, focar: ent,
+            atributos: { 'data-dgo-ui': '1', 'data-recurso-faltando': id }, aoFechar: function () { ok(); } });
+          ent.addEventListener('click', function () { jc.fechar('entendi'); });
+          return;
+        }
+        avisarSemJanela();
         var jan = el('div', { id: 'dgo-compat-janela', class: 'dgo-compat-janela', role: 'alertdialog', 'aria-modal': 'true', 'aria-label': titulo, 'data-dgo-ui': '1', 'data-recurso-faltando': id }, [caixa]);
         function fechar() { d.removeEventListener('keydown', esc, true); if (jan.parentNode) jan.parentNode.removeChild(jan); ok(); }
         function esc(e) { if (e.key === 'Escape') { e.stopPropagation(); fechar(); } }
@@ -5940,6 +6126,8 @@
       if (Manutencao._tela && Manutencao._tela.parentNode) {          /* já aberta: só atualiza a mensagem */
         var mx = d.getElementById('dgo-manutencao-msg'); if (mx) mx.textContent = Manutencao.mensagem(); return;
       }
+      /* o recursos.js carregado antes do módulo pode já ter aberto a dele: fica uma só, a do módulo */
+      var outra = d.getElementById('dgo-manutencao'); if (outra && outra.parentNode) outra.parentNode.removeChild(outra);
       var nome = typeof cfg.nome === 'object' ? ((en ? cfg.nome.en : cfg.nome.pt) || cfg.nome.pt || '') : (cfg.nome || '');
       var aviso = el('p', { 'aria-live': 'polite', style: { cssText: 'min-height:1.4em;color:#475569;margin:.8rem 0 0;' } });
       var bt = el('button', { type: 'button', id: 'dgo-manutencao-tentar', style: { cssText: 'margin-top:1.2rem;min-height:48px;padding:.6rem 1.4rem;font:inherit;font-weight:700;border:0;border-radius:12px;background:' + (cfg.cor || '#0ea5e9') + ';color:#fff;cursor:pointer;' },
@@ -5965,7 +6153,9 @@
       setTimeout(function () { try { bt.focus(); } catch (e) {} }, 30);
     },
     esconder: function () {
-      if (!Manutencao._tela) return;
+      var outra = d.getElementById('dgo-manutencao');               /* a do recursos.js, se ficou alguma */
+      if (outra && outra !== Manutencao._tela && outra.parentNode) outra.parentNode.removeChild(outra);
+      if (!Manutencao._tela) { if (outra) { try { d.documentElement.removeAttribute('data-dgo-manutencao'); d.documentElement.style.overflow = ''; } catch (e) {} } return; }
       if (Manutencao._tela.parentNode) Manutencao._tela.remove();
       Manutencao._tela = null;
       try { d.documentElement.removeAttribute('data-dgo-manutencao'); d.documentElement.style.overflow = ''; } catch (e) {}
@@ -6871,10 +7061,16 @@
     cfg: cfg,
     /* campo de senha com 👁: DGO.senha.olho(input) · aplicar(raiz) · esconder(raiz) */
     senha: Senha,
+    /* cofre comum de chaves (cofre.js) ou null, se a pagina nao carregou o cofre.js */
+    get cofre() { return cofreComum(); },
+    /* janela comum (janela.js, 1.11.0) ou null, se a pagina nao carregou o janela.js. Toda janela do app usa
+       DGO.janela.abrir({ conteudo, classe, aoFechar }) (ou SolverJanela.abrir, nos apps sem o modulo) */
+    get janela() { return janelaComum(); },
 
     iniciar: function (opcoes) {
       fundir(cfg, opcoes || {});
       Idioma.montarDicionario();
+      ligarCofreComum();
 
       var guardado = Guardar.ler('idioma', null, !!cfg.idiomaCompartilhado);
       var doNavegador = (navigator.language || 'pt').toLowerCase().indexOf('en') === 0 ? 'en' : 'pt';
@@ -7031,6 +7227,9 @@
       capacidades: function () { return Object.keys(CAPS).map(function (c) { return { id: c, icone: CAPS[c].icone, nome: CAPS[c][Idioma.atual] || CAPS[c].pt }; }); },
       provedorPara: function (cap) { completarProvedores(); return PorUso.provedor(cap); },
       chavePara: function (cap) { completarProvedores(); return PorUso.chave(cap); },
+      /* 1.10.0: as mesmas, mas esperando o cofre abrir (pede o PIN se estiver trancado) */
+      lerChave: function (prov) { return IA.lerChave(prov || IA.provedor()); },
+      lerChavePara: function (cap) { completarProvedores(); return PorUso.lerChave(cap); },
       definirPara: function (cap, prov) { if (cap === 'texto') IA.definirProvedor(prov); else PorUso.definir(cap, prov); },
       guia: function (prov, cap) { return abrirChaves(prov, cap); },
       provedoresProntos: function () { return IA.provedoresProntos(); },
