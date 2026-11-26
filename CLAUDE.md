@@ -85,7 +85,7 @@ verificável e registro. Vai nascer também uma teia de integrações entre os a
 ## AssistONE: quem cuida (decisão do dono, 26/Nov/2026)
 
 - O **AssistONE** (personagem, balão, tour, busca, passo a passo e "Perguntar ao assistente") é desenvolvido, melhorado e
-  controlado pela **conta nova do Claude (marceloneco@gmail.com), conversa ASSISTONE**. Registrado na `01-PONTE-GERAL`
+  controlado pela **conta nova do Claude, conversa ASSISTONE**. Registrado na `01-PONTE-GERAL`
   (Drive "0-Orchestration": índice, "Quem escreve onde" e "Pedidos e conflitos").
 - O **master** mora no repositório privado **`MarceloNeco/assist-one`**: `balao/assistone.js` (o balão), `balao/visual/` (o
   visual novo: personagem, menu, conversa, cores, fontes), `servidor/` (cópia sem segredos do leitor da fila e do Hermes da
